@@ -1101,6 +1101,11 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	CMD_InitSendCommands();
 #endif
+#if ENABLE_HTTP_HEADER_TIME
+	extern int CMD_InitGetHeaderTime();
+	CMD_InitGetHeaderTime();
+#endif
+
 	CMD_InitChannelCommands();
 	EventHandlers_Init();
 
