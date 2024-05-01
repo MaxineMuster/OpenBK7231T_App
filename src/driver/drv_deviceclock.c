@@ -48,11 +48,11 @@ commandResult_t CLOCK_SetLatlong(const void *context, const char *cmd, const cha
 	}
     newValue = Tokenizer_GetArg(0);
     sun_data.latitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP latitude set to %s", newValue);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK latitude set to %s", newValue);
 
     newValue = Tokenizer_GetArg(1);
 		sun_data.longitude = (int) (atof(newValue) * SUN_DATA_COORD_MULT);
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP longitude set to %s", newValue);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "CLOCK longitude set to %s", newValue);
     return CMD_RES_OK;
 }
 
@@ -191,11 +191,7 @@ void CLOCK_Init() {
 	//cmddetail:"descr":"Sets the NTP latitude and longitude",
 	//cmddetail:"fn":"CLOCK_SetLatlong","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":"CLOCK_SetLatlong -34.911498 138.809488"}
-    CMD_RegisterCommand("clock_setLatLong", CLOCK_SetLatlong, NULL);
-    
-#pragma message ( "\n\n!!!!!!! C Preprocessor - ENABLE_CLOCK_SUNRISE_SUNSET is true!!!!! \n\n" )
-#else
-#pragma message ( "\n\n!!!!!!! C Preprocessor - ENABLE_CLOCK_SUNRISE_SUNSET is false!!!!! \n\n" )
+    CMD_RegisterCommand("clock_setLatLong", CLOCK_SetLatlong, NULL);    
 #endif
 #if ENABLE_CALENDAR_EVENTS
 	CLOCK_Init_Events();
