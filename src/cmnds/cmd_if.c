@@ -251,34 +251,34 @@ float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
 float getWeekDay(const char *s) {
-	return NTP_GetWeekDay();
+	return CLOCK_GetWeekDay();
 }
 float getMinute(const char *s) {
-	return NTP_GetMinute();
+	return CLOCK_GetMinute();
 }
 float getHour(const char *s) {
-	return NTP_GetHour();
+	return CLOCK_GetHour();
 }
 float getSecond(const char *s) {
-	return NTP_GetSecond();
+	return CLOCK_GetSecond();
 }
 float getYear(const char *s) {
-	return NTP_GetYear();
+	return CLOCK_GetYear();
 }
 float getMonth(const char *s) {
-	return NTP_GetMonth();
+	return CLOCK_GetMonth();
 }
 float getMDay(const char *s) {
-	return NTP_GetMDay();
+	return CLOCK_GetMDay();
 }
 
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_CLOCK_SUNRISE_SUNSET
 
 float getSunrise(const char *s) {
-	return NTP_GetSunrise();
+	return CLOCK_GetSunrise();
 }
 float getSunset(const char *s) {
-	return NTP_GetSunset();
+	return CLOCK_GetSunset();
 }
 
 #endif
@@ -431,7 +431,7 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
-#if ENABLE_NTP_SUNRISE_SUNSET
+#if ENABLE_CLOCK_SUNRISE_SUNSET
 	////cnstdetail:{"name":"$sunrise",
 	////cnstdetail:"title":"$sunrise",
 	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",

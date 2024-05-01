@@ -36,6 +36,7 @@
 
 
 #include "driver/drv_ntp.h"
+#include "driver/drv_deviceclock.h"
 #include "driver/drv_ssdp.h"
 #include "driver/drv_uart.h"
 
@@ -647,6 +648,7 @@ void Main_OnEverySecond()
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
 		char timestring[50];
 		if (Clock_IsTimeSynced() == true) {
+			CLOCK_OnEverySecond();
 			time_t localTime = (time_t)Clock_GetCurrentTime();
 			strftime(timestring, sizeof(timestring), "Date: %Y-%m-%dT%H:%M:%S", gmtime(&localTime));
 		}

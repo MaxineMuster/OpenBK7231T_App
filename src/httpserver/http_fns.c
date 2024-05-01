@@ -17,6 +17,7 @@
 #include "../cJSON/cJSON.h"
 #include <time.h>
 #include "../driver/drv_ntp.h"
+#include "../driver/drv_deviceclock.h"		// to set clock via Javascript in pmntp
 #include "../driver/drv_local.h"
 
 static char SUBMIT_AND_END_FORM[] = "<br><input type=\"submit\" value=\"Submit\"></form>";
@@ -161,7 +162,8 @@ int http_fn_pmntp(http_request_t* request) {
 	if (http_getArg(request->url, "EPOCH", tmpA, sizeof(tmpA))) {
 		// atoi will only work on signed integers, we might get a higher value after 2038 , so use strtoul here
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
-		g_epochOnStartup = actepoch - g_secondsElapsed ;
+//		g_epochOnStartup = actepoch - g_secondsElapsed ;
+		CLOCK_setDeviceTime(actepoch);
 //addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u!! \n",g_epochOnStartup,actepoch, g_secondsElapsed);	
 	}
 	if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
