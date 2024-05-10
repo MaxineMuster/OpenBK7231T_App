@@ -730,6 +730,8 @@ int http_fn_index(http_request_t* request) {
 #endif
 
 	poststr(request, "</table>");
+// insert <details> section so you can show/hide status information
+poststr(request, "<details><summary>Status</summary>");
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);
 #endif
@@ -876,6 +878,9 @@ typedef enum {
 		hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
 			MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
 	}
+	// end of <details> section - maybe include Pins, too? 
+	// but since you ave to "enable" it vir flag, you will probably want to see them ...
+	poststr(request, "</details>");
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
