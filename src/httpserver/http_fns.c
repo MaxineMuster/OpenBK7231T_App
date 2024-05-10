@@ -285,6 +285,13 @@ int http_fn_index(http_request_t* request) {
 			MAIN_ScheduleUnsafeInit(3);
 		}
 		poststr(request, "</div>"); // end div#change
+		
+		// as default, don't show status
+//		poststr(request, "<script>status_vis=false;</script>");
+		// save to session storage to keep value even if page is reloaded (e.g. switch toggled ...)
+		// .. but make sure, this is only set on initial load ...
+		poststr(request, "<script>(sessionStorage.getItem(\"status_vis\"))||sessionStorage.setItem(\"status_vis\",\"\");</script>");
+		
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
@@ -731,7 +738,16 @@ int http_fn_index(http_request_t* request) {
 
 	poststr(request, "</table>");
 // insert <details> section so you can show/hide status information
-poststr(request, "<details><summary>Status</summary>");
+// using only <details> is not enough, since this code section is inside the "state" div, which will be reloadad every 3 seconds.
+// The reload of this section will "close" this section.
+// So we need to track the status via "ontoggle" function:
+// status_vis will be "open", if status is opened or empty, if not. 
+// We will use this to replace "STATUS_OPEN" with this value after reload
+// in new_http.c:
+// [...]     e.innerHTML=req.responseText.replace(\"STATUS_OPEN\", status_vis) 
+//
+//	poststr(request, "<details STATUS_OPEN ontoggle='status_vis=this.open? \"open\" : \"\"' ><summary>Status</summary>");
+	poststr(request, "<details STATUS_OPEN ontoggle='sessionStorage.setItem(\"status_vis\",this.open? \"open\" : \"\")' ><summary>Status</summary>");	
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	DRV_AppendInformationToHTTPIndexPage(request);
 #endif
