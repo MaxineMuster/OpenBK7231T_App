@@ -544,12 +544,13 @@ extern union DST g_clocksettings;
 
 int testNsetDST(uint32_t val);
 
+#if ! WINDOWS
 // to use ticks for time keeping
 // since usual ticktimer (uint32_t) rolls over after approx 50 days,
 // we need to count this rollovers
 extern TickType_t lastTick;
 extern uint8_t timer_rollover; // I don't expect uptime > 35 years ...
-
+#endif
 uint32_t getSecondsElapsed();
 
 uint32_t Clock_GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running

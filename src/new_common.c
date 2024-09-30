@@ -372,6 +372,7 @@ int g_DSToffset = 0;
 uint32_t g_next_dst_change=0;
 #endif
 
+#if ! WINDOWS
 TickType_t lastTick=0;
 // it's a pitty we cant use rtos' "xNumOfOverflows" here, but its not accessable, so we need to take care of owerflows here
 // a 32 bit TickType_t counter of ms will rollover after (4294836225÷1000÷3600÷24=49,7088) ~ 49,7 days we should expect uptimes 
@@ -386,9 +387,10 @@ uint16_t timer_rollovers=0;
 // g_secondsElapsed is drifting of after some time (for me it was ~ 1 to 2 minutes (!) a day)
 // when using rtos ticks, it was reduced to 1 to 2 seconds(!) a day
 // if we want to use this for emulating an RTC, we should get the time as good as possible 
+#endif
 
 uint32_t getSecondsElapsed(){
-
+#if ! WINDOWS
 	// xTicks are not bound to be in ms, 
 	// but for all plattforms xTicks can be converted to MS with "portTICK_RATE_MS"
 
@@ -408,6 +410,7 @@ uint32_t getSecondsElapsed(){
 	 // version 1 :
 	 // use the time also to adjust g_secondsElapsed 
 	 g_secondsElapsed = (uint32_t)(((uint64_t) timer_rollovers << (sizeof(TickType_t)*8) | actTick) / 1000 );
+#endif
 	 return  g_secondsElapsed;
 	 // 
 	 // possible version 2 :
