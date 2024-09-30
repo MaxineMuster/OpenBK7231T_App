@@ -318,7 +318,9 @@ typedef void *beken_thread_arg_t;
 typedef void *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
 typedef int OSStatus;
-
+#ifdef PLATFORM_W600
+	typedef portTickType TickType_t;		// W600/W800: xTaskGetTickCount() is of type "portTickType", all others "TickType_t" , W600 has no definition for TickType_t
+#endif
 #define BEKEN_DEFAULT_WORKER_PRIORITY      (6)
 #define BEKEN_APPLICATION_PRIORITY         (7)
 
@@ -334,6 +336,8 @@ OSStatus rtos_create_thread( beken_thread_t* thread,
 
 // TODO:LN882H Platform setup here.
 #include <stdbool.h>
+#include <FreeRTOS.h>
+#include <task.h>
 
 #define ASSERT
 #define os_strcpy strcpy
@@ -496,6 +500,62 @@ extern int g_bootFailures;
 extern int g_secondsElapsed;
 extern int g_rebootReason;
 extern float g_wifi_temperature;
+
+// some variables and functions for handling device time even without NTP driver present
+// vars will be initialised in new_common.c 
+// "eoch" on startup of device; If we add g_secondsElapsed we get the actual time  
+extern uint32_t g_epochOnStartup ;
+// UTC offset
+extern int g_UTCoffset;
+extern int g_DST_offset;
+extern uint32_t g_next_dst_change;
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+// handle daylight saving time
+
+// define a union to hold all settings regarding local clock (timezone, dst settings ...)
+// we will use somthing simmilar to tasmotas handling of dst with the commands:
+// TimeStd
+// TimeDst
+// use a union, to be able to save/restore all values as one 64 bit integer
+union DST{
+	struct {
+		uint32_t DST_H : 1;	// 0-1		only once - you can only be in one DST_hemisphere ;-)
+		uint32_t DST_Ws : 3; // 0-7
+		uint32_t DST_Ms : 4; // 0-15
+		uint32_t DST_Ds : 3; // 0-7
+		uint32_t DST_hs : 5; // 0-31
+		// up to here: 16 bits
+		int32_t Tstd : 11; // -1024 - +1023 	( regular (non DST)  offset to UTC max 14 h = 840 Min) 
+		uint32_t DST_he : 5; // 0-31
+		// up to here: 32 bits
+		uint32_t DST_We : 3; // 0-7
+		uint32_t DST_Me : 4; // 0-15
+		uint32_t DST_De : 3; // 0-7
+		int32_t Tdst : 8; // -128 - +127  (Eire has "negative" DST in winter (-60) ...; max DST offset is 120 minutes)
+		int32_t TZ : 12; //  -2048 - 2047 for TZ hours (max offset is +14h and - 12h  -- we will use 99 as indicator for "DST" like tasmota, all otDST_hers values are interpreted as the <hour><minutes> of the time zone eg: -1400 for -14:00)
+		// up to here: 62 bits
+		};
+	uint64_t value;	// to save/store all values in one large integer 
+};
+
+extern union DST g_clocksettings;
+
+#endif
+
+int testNsetDST(uint32_t val);
+
+// to use ticks for time keeping
+// since usual ticktimer (uint32_t) rolls over after approx 50 days,
+// we need to count this rollovers
+extern TickType_t lastTick;
+extern uint8_t timer_rollover; // I don't expect uptime > 35 years ...
+
+uint32_t getSecondsElapsed();
+
+uint32_t Clock_GetCurrentTime(); 			// might replace for NTP_GetCurrentTime() to return time regardless of NTP present/running
+uint32_t Clock_GetCurrentTimeWithoutOffset(); 		// ... same for NTP_GetCurrentTimeWithoutOffset()...
+bool Clock_IsTimeSynced(); 				// ... and for NTP_IsTimeSynced()
+int Clock_GetTimesZoneOfsSeconds();			// ... and for NTP_GetTimesZoneOfsSeconds()
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);
 #if ENABLE_TASMOTA_JSON
