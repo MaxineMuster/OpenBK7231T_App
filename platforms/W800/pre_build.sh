@@ -39,3 +39,12 @@
 #
 # patch -p 1 -d sdk/OpenW800 < platforms/W800/my_change.diff
 
+FILE=sdk/OpenW800/platform/drivers/adc/wm_adc.c
+# show content before sed
+echo "wm_adc.c before prebuild.sh:"
+grep -A 6 offset: $FILE
+# do the sed
+sed -i "/offset:/ s%printf%//&%" $FILE
+# show content after sed
+echo "wm_adc.c after change from prebuild.sh:"
+grep -A 6 offset: $FILE
