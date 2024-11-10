@@ -243,19 +243,22 @@ void OWWriteBit(int Pin, int bit)
 //-----------------------------------------------------------------------------
 int OWReadBit(int Pin)
 {
-	int result;
+	int result=0;
 
 	noInterrupts();
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	usleepshort(OWtimeA);
-	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	usleepshort(OWtimeE);
-	HAL_PIN_Setup_Input(Pin);
-	result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
+	usleepshort(2);  // was usleepshort(OWtimeA)  -- needs to pull down "at least 1 us", so 2 us should be o.k.
+	HAL_PIN_Setup_Input(Pin); // Releases the bus - let pullup pull bus high 
+	usleepshort(2); // was usleepshort(OWtimeE) --  just wait 2 us to let bus get high again, if slave won't pull low
+	// HAL_PIN_Setup_Input(Pin);
+	for (int x=0; x<10; x++) {
+		result += HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
+	}
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 	usleepmed(OWtimeF); // Complete the time slot and 10us recovery
-	return result;
+	if (result > 2 && result < 8) return -1 ;
+	return result <=2 ? 0 : 1;
 }
 
 //-----------------------------------------------------------------------------
@@ -292,7 +295,7 @@ void OWWriteByte(int Pin, int data)
 //-----------------------------------------------------------------------------
 int OWReadByte(int Pin)
 {
-	int loop, result = 0;
+	int loop, res, result = 0;
 
 	for(loop = 0; loop < 8; loop++)
 	{
@@ -300,7 +303,12 @@ int OWReadByte(int Pin)
 		result >>= 1;
 
 		// if result is one, then set MS bit
-		if(OWReadBit(Pin))
+		res = OWReadBit(Pin);
+		if (res < 0) {
+			DS1820_LOG(ERROR, "ReadBit failed");
+			return -1;
+		}
+		if(res)
 			result |= 0x80;
 	}
 	return result;
@@ -321,7 +329,12 @@ int OWTouchByte(int Pin, int data)
 		// If sending a '1' then read a bit else write a '0'
 		if(data & 0x01)
 		{
-			if(OWReadBit(Pin))
+			res = OWReadBit(Pin);
+			if (res < 0) {
+				DS1820_LOG(ERROR, "OWTouchByte: OWReadBit failed!");
+				return -1;
+			}
+			if(res)
 				result |= 0x80;
 		}
 		else
@@ -370,7 +383,7 @@ void DS1820_driver_Init()
 
 void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h5>DS18%s20 Temperature: ", family == 0x28 ? "B" : "20/DS18S20");
+	hprintf255(request, "<h5>DS18%s20 Temperature: ", ds18_family == 0x28 ? "B" : "20/DS18S20");
 	if (t  != DSUNDEFTEMP) 	hprintf255(request, "%.2f C (read %i secs ago)</h5>", (float)t / 100, g_secondsElapsed - lastconv);
 	else  	hprintf255(request, "-</h5>");
 }
@@ -382,13 +395,18 @@ int DS1820_DiscoverFamily()
 		DS1820_LOG(DEBUG, "Discover Reset failed");
 		return 0;
 	}
-
+	int res;
 	// Read ROM
 	uint8_t ROM[8];
 	OWWriteByte(Pin, 0x33);
 	for(int i = 0; i < 8; i++)
 	{
-		ROM[i] = OWReadByte(Pin);
+		res = OWReadByte(Pin);
+		if (res < 0) {
+			DS1820_LOG(ERROR, "Discover: OWReadByte failed!");
+			return 0;
+		}
+		ROM[i] = res;
 	}
 
 	// Check CRC
@@ -417,6 +435,7 @@ int DS1820_DiscoverFamily()
 
 void DS1820_OnEverySecond()
 {
+	int res;
 	// for now just find the pin used
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
 	uint8_t scratchpad[9], crc;
@@ -442,7 +461,14 @@ void DS1820_OnEverySecond()
 
 			for(int i = 0; i < 9; i++)
 			{
-				scratchpad[i] = OWReadByte(Pin); //read Scratchpad Memory of DS
+				res = OWReadByte(Pin);
+				if (res < 0) {
+					DS1820_LOG(ERROR, "Reading scratchpad: OWReadByte for scratchpad[%i] failed!",i);
+					break;	// just leave loop here - let CRC increase errcount ...
+				}
+				else {
+					scratchpad[i] = res; //read Scratchpad Memory of DS
+				}
 			}
 			crc = Crc8CQuick(scratchpad, 8);
 			if(crc != scratchpad[8])
