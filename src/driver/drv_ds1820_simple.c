@@ -319,7 +319,7 @@ int OWReadByte(int Pin)
 //-----------------------------------------------------------------------------
 int OWTouchByte(int Pin, int data)
 {
-	int loop, result = 0;
+	int loop, res, result = 0;
 
 	for(loop = 0; loop < 8; loop++)
 	{
