@@ -20,7 +20,7 @@
 
 
 static uint8_t dsread = 0;
-static int Pin;
+static int Pin, debugPin=99;
 static int t = DSUNDEFTEMP;
 static int errcount = 0;
 static int lastconv=0; // secondsElapsed on last successfull reading
@@ -241,6 +241,8 @@ void OWWriteBit(int Pin, int bit)
 //-----------------------------------------------------------------------------
 // Read a bit from the 1-Wire bus and return it. Provide 10us recovery time.
 //-----------------------------------------------------------------------------
+// do debug output on a "debug pin" only, if this pi was defined
+#define DEBUGREAD debugPin != 99
 int OWReadBit(int Pin)
 {
 	int result=0;
@@ -253,9 +255,14 @@ int OWReadBit(int Pin)
 	HAL_PIN_Setup_Input(Pin); // Releases the bus - let pullup pull bus high 
 	usleepshort(2); // was usleepshort(OWtimeE) --  just wait 2 us to let bus get high again, if slave won't pull low
 	// HAL_PIN_Setup_Input(Pin);
+        // if we are in DEBUG read, we can be sure, debugPin is defined and set to Output an level "1". 
+        // We can just set the value "0" here to signal time of reading on OW line
+        if (DEBUGREAD) HAL_PIN_SetOutputValue(debugPin,0);
+
 	for (int x=0; x<10; x++) {
 		result += HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 	}
+	if (DEBUGREAD) HAL_PIN_SetOutputValue(debugPin,1);
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 	usleepmed(OWtimeF); // Complete the time slot and 10us recovery
 	if (result > 2 && result < 8) return -1 ;
@@ -449,6 +456,15 @@ void DS1820_OnEverySecond()
 	if(Pin != 99)
 	{
 		// only if pin is set
+		
+		// DEBUG timing - will set this pin to low while taking sample of devices response
+		// search for defined pin and if it is defined, set to high output
+		debugPin=PIN_FindPinIndexForRole(IOR_DS1820_DEB_Rx_PULSE, 99);
+        	if (debugPin != 99) {
+        		HAL_PIN_Setup_Output(debugPin);
+        		HAL_PIN_SetOutputValue(debugPin,1);
+        	}
+
 		// request temp if conversion was requested two seconds after request
 		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
 		// better if we don't use parasitic power, we can check if conversion is ready		
