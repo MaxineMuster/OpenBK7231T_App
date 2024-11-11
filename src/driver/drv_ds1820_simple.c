@@ -264,12 +264,13 @@ int OWReadBit(int Pin)
 	if (DEBUGREAD) HAL_PIN_SetOutputValue(debugPin,1);
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 	usleepmed(OWtimeF); // Complete the time slot and 10us recovery
-	if (result > 0 && result < 3){ 
+//	if (result > 0 && result < 3){ 
+	if (result ==2){ 
 		DS1820_LOG(ERROR, "OWReadBit read result %i",result);
 		return -1 ;
 	}
 	DS1820_LOG(DEBUG, "OWReadBit read result %i",result);
-	return result ==0 ? 0 : 1;
+	return result < 2 ? 0 : 1;
 }
 
 //-----------------------------------------------------------------------------
