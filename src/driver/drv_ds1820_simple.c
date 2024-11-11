@@ -247,8 +247,8 @@ int OWReadBit(int Pin)
 {
 	int result=0;
 
-	noInterrupts();
 	HAL_PIN_Setup_Output(Pin);
+	noInterrupts();
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
 	usleepshort(2);  // was usleepshort(OWtimeA)  -- needs to pull down "at least 1 us", so 2 us should be o.k.
 	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
@@ -264,7 +264,11 @@ int OWReadBit(int Pin)
 	if (DEBUGREAD) HAL_PIN_SetOutputValue(debugPin,1);
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 	usleepmed(OWtimeF); // Complete the time slot and 10us recovery
-	if (result > 2 && result < 8) return -1 ;
+	if (result > 2 || result < 8){ 
+		DS1820_LOG(ERROR, "OWReadBit read result %i",result);
+		return -1 ;
+	}
+	DS1820_LOG(DEBUG, "OWReadBit read result %i",result);
 	return result <=2 ? 0 : 1;
 }
 
