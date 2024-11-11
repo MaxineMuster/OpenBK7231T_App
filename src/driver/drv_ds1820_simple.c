@@ -249,6 +249,7 @@ int OWReadBit(int Pin)
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
 	usleepshort(2);  // was usleepshort(OWtimeA)  -- needs to pull down "at least 1 us", so 2 us should be o.k.
+	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
 	HAL_PIN_Setup_Input(Pin); // Releases the bus - let pullup pull bus high 
 	usleepshort(2); // was usleepshort(OWtimeE) --  just wait 2 us to let bus get high again, if slave won't pull low
 	// HAL_PIN_Setup_Input(Pin);
@@ -428,7 +429,9 @@ int DS1820_DiscoverFamily()
 	}
 	else
 	{
-		DS1820_LOG(DEBUG, "Discover Family 0x%02X not supported", family);
+		DS1820_LOG(ERROR, "Discover Family 0x%02X not supported", family);
+		DS1820_LOG(DEBUG, "ROM Data Read: 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X",
+				ROM[0], ROM[1], ROM[2], ROM[3], ROM[4], ROM[5], ROM[6], ROM[7]);
 		return 0;
 	}
 }
