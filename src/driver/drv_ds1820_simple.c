@@ -258,18 +258,18 @@ int OWReadBit(int Pin)
         // We can just set the value "0" here to signal time of reading on OW line
         if (DEBUGREAD) HAL_PIN_SetOutputValue(debugPin,0);
 
-	for (int x=0; x<10; x++) {
+	for (int x=0; x<3; x++) {
 		result += HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 	}
 	if (DEBUGREAD) HAL_PIN_SetOutputValue(debugPin,1);
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 	usleepmed(OWtimeF); // Complete the time slot and 10us recovery
-	if (result > 2 && result < 8){ 
+	if (result > 0 && result < 3){ 
 		DS1820_LOG(ERROR, "OWReadBit read result %i",result);
 		return -1 ;
 	}
 	DS1820_LOG(DEBUG, "OWReadBit read result %i",result);
-	return result <=2 ? 0 : 1;
+	return result ==0 ? 0 : 1;
 }
 
 //-----------------------------------------------------------------------------
