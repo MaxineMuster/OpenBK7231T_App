@@ -252,9 +252,8 @@ int OWReadBit(int Pin)
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
 	usleepshort(2);  // was usleepshort(OWtimeA)  -- needs to pull down "at least 1 us", so 2 us should be o.k.
 	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	HAL_PIN_Setup_Input(Pin); // Releases the bus - let pullup pull bus high 
 	usleepshort(2); // was usleepshort(OWtimeE) --  just wait 2 us to let bus get high again, if slave won't pull low
-	// HAL_PIN_Setup_Input(Pin);
+	HAL_PIN_Setup_Input(Pin);
         // if we are in DEBUG read, we can be sure, debugPin is defined and set to Output an level "1". 
         // We can just set the value "0" here to signal time of reading on OW line
         if (DEBUGREAD) HAL_PIN_SetOutputValue(debugPin,0);
