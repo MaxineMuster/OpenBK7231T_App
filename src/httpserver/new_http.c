@@ -11,7 +11,9 @@
 #include "../hal/hal_wifi.h"
 #include "../base64/base64.h"
 #include "http_basic_auth.h"
-
+#if ENABLE_LOCAL_CLOCK
+#include "../driver/drv_deviceclock.h"
+#endif
 
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_HTTP
