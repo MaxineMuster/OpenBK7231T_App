@@ -875,6 +875,9 @@ void CMD_Init_Delayed() {
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS) || defined(PLATFORM_BL602) || defined(PLATFORM_ESPIDF)
 	UART_AddCommands();
 #endif
+#if ENABLE_LOCAL_CLOCK || WINDOWS
+	CLOCK_Init();
+#endif
 }
 
 
