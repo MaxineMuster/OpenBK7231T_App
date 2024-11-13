@@ -169,7 +169,7 @@ static commandResult_t CMD_GET_HTTP_Headertime(const void* context, const char* 
 	return CMD_RES_OK;
 }
 
-int CMD_InitGetHeaderTime() {
+void CMD_InitGetHeaderTime() {
 	CMD_RegisterCommand("getHeaderTime", CMD_GET_HTTP_Headertime, NULL);
 }
 

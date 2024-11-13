@@ -1172,7 +1172,7 @@ void Main_Init_BeforeDelay_Unsafe(bool bAutoRunScripts) {
 	CMD_InitSendCommands();
 #endif
 #if ENABLE_HTTP_HEADER_TIME
-	extern int CMD_InitGetHeaderTime();
+	extern void CMD_InitGetHeaderTime();
 	CMD_InitGetHeaderTime();
 #endif
 
