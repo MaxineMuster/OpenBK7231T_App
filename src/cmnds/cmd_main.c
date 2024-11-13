@@ -30,6 +30,9 @@ int cmd_uartInitIndex = 0;
 #include "driver/ledc.h"
 #include "esp_check.h"
 #endif
+#if ENABLE_LOCAL_CLOCK
+#include "../driver/drv_deviceclock.h"	// for CLOCK_Init()
+#endif
 
 #define HASH_SIZE 128
 
