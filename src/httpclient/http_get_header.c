@@ -10,8 +10,9 @@
 #include "../cmnds/cmd_local.h"
 #include "../logging/logging.h"
 #include "../new_common.h"
+#include "../hal/hal_wifi.h"	// for HAL_GetMyGatewayString()
 
-
+extern uint32_t g_epochOnStartup ;
 
 #define MAX_REQUEST_LEN 64	// 64 chars for the request line should be enough
 #define TCP_PROTO 6
@@ -55,7 +56,7 @@ err_t myrecv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	gmt[0]=date[32];gmt[1]=date[33]; gmt[2]=date[34]; 
 	if (conv < 35  || strstr(date, "GMT") - date != 32 ){
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "  get_HTTP_Header -- Date:-line found but format is unknown");
-		fprintf(stderr, "Date line found, but unknown format [%s] - conv=%d -- gmt=%s - found at %i (values strstr(date, 'GMT')=%i  AND date=%i)\n",date,conv,gmt,strstr(date, "GMT")-date,strstr(date, "GMT"),date);
+		fprintf(stderr, "Date line found, but unknown format [%s] - conv=%d -- gmt=%s - found at %i\n",date,conv,gmt,strstr(date, "GMT")-date);
 		pbuf_free(p);
  		tcp_close(pcb);
 		return(EXIT_FAILURE);		
