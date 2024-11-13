@@ -229,7 +229,10 @@
 #define ENABLE_DRIVER_DDP			1
 #define ENABLE_DRIVER_SSDP			1
 #define ENABLE_DRIVER_CHT83XX		1
-
+// test for local clock
+#define ENABLE_LOCAL_CLOCK_ADVANCED	1
+#define ENABLE_LOCAL_CLOCK		1
+#define  ENABLE_HTTP_HEADER_TIME	1
 #else
 
 #error "Platform not defined"
