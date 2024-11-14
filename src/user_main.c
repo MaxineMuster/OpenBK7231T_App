@@ -755,8 +755,10 @@ void Main_OnEverySecond()
 		if  ( Clock_GetCurrentTimeWithoutOffset() > g_next_dst_change ){ // since Clock_GetCurrentTimeWithoutOffset() is 0 if time is not set, we don't need to test if time is set before
 			if (testNsetDST(Clock_GetCurrentTimeWithoutOffset())) ADDLOGF_INFO("DST switch from normal time to DST at epoch %u -- next switch at %u!! \n", Clock_GetCurrentTimeWithoutOffset(), g_next_dst_change);
 			else  ADDLOGF_INFO("DST switch back from DST at epoch %u -- next switch at %u!! \n", Clock_GetCurrentTimeWithoutOffset(),g_next_dst_change);
-			// maybe introduce another #define later, for now directly adjust ntp timezone to DST settings 
+			#if ENABLE_NTP
+			// maybe introduce another #define later, for now directly adjust ntp timezone to DST settings, if NTP is running
 				NTP_SetTimesZoneOfsSeconds(g_UTCoffset + g_DSToffset);	// set new offset
+			#endif
 		}
 #endif
 
