@@ -189,11 +189,17 @@ int CLOCK_GetYear() {
 
 
 #if ENABLE_LOCAL_CLOCK
-void CLOCK_setDeviceTime(uint32_t time)
+void CLOCK_setDeviceTime(uint32_t time, bool testdst=1)
 {
 // done in CMD_Init_Delayed()  in cmd_main.c
 //	if (g_epochOnStartup < 10) CLOCK_Init();
 	g_epochOnStartup = time - g_secondsElapsed;
+#if ENABLE_LOCAL_CLOCK_ADVANCED
+	// if we  don't check for DST later (this is done e.g. when time is set via PMNTP) check for DST
+	// used e.g. if time is set via NTP, to make sure everything is set correctly
+		if (testdst) testNsetDST(time);
+#endif
+
 }
 
 void CLOCK_setDeviceTimeOffset(int offs)
