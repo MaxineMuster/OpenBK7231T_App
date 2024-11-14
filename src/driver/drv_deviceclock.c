@@ -198,7 +198,7 @@ void CLOCK_setDeviceTime(uint32_t time)
 	// if we  set the time to a value lower than time of next DST change, we might have gone back in time
 	// so to be sure, reset g_next_dst_change to 0
 	// will be checked next time in "on every second loop"
-		if (testdst < g_next_dst_change) g_next_dst_change=0;
+		if (time < g_next_dst_change) g_next_dst_change=0;
 #endif
 
 }
