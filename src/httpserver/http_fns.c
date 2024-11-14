@@ -190,7 +190,7 @@ int http_fn_pmntp(http_request_t* request) {
 		// atoi will only work on signed integers, we might get a higher value after 2038 , so use strtoul here
 		actepoch = (uint32_t)strtoul(tmpA,0,10);
 //		g_epochOnStartup = actepoch - g_secondsElapsed ;
-		CLOCK_setDeviceTime(actepoch,0); // don't need testNsteDST here, will be called in next step 
+		CLOCK_setDeviceTime(actepoch);  
 //addLogAdv(LOG_INFO, LOG_FEATURE_HTTP,"PoormMansNTP - set g_epochOnStartup to %u -- got actepoch=%u secondsElapsed=%u!! \n",g_epochOnStartup,actepoch, g_secondsElapsed);	
 	}
 	if (http_getArg(request->url, "OFFSET", tmpA, sizeof(tmpA)) && actepoch != 0 ) {
