@@ -69,6 +69,14 @@ int NTP_GetTimesZoneOfsSeconds()
 {
     return g_timeOffsetSeconds;
 }
+
+// set offset seconds directly
+void NTP_SetTimesZoneOfsSeconds(int o) {
+	g_ntpTime -= g_timeOffsetSeconds;	// sub old offset
+	g_timeOffsetSeconds = o;		// set new offset
+	g_ntpTime += g_timeOffsetSeconds;	// add offset again
+}
+
 commandResult_t NTP_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	int a, b;
 	const char *arg;
