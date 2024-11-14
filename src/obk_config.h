@@ -130,7 +130,7 @@
 // set to 0 to disable
 #define ENABLE_TASMOTADEVICEGROUPS 1
 #define ENABLE_LITTLEFS			1
-//#define ENABLE_NTP    1
+#define ENABLE_NTP    1
 #define ENABLE_CLOCK_SUNRISE_SUNSET	1
 #define ENABLE_DRIVER_LED       1
 #define ENABLE_DRIVER_BL0937    1
