@@ -358,6 +358,7 @@ union DST g_clocksettings;
 const uint32_t SECS_PER_DAY = 3600UL * 24UL;
 
 // function derived from tasmotas "RuleToTime"
+// note: we want to use UTC as base, so the resulting hour (local swith time - TZ-offset) can be "negative"
 uint32_t RuleToTime(uint8_t dow, uint8_t mo, uint8_t week,  uint8_t hr, int yr) {
   struct tm tm={0};
   uint32_t t;
@@ -441,8 +442,8 @@ int testNsetDST(uint32_t val)
 	int year=(int)(val/31556926)+1970;
 
 
-	uint32_t b= RuleToTime(g_clocksettings.DST_Ds,g_clocksettings.DST_Ms,g_clocksettings.DST_Ws,g_clocksettings.DST_hs-g_clocksettings.Tstd/60,year);
-	uint32_t e= RuleToTime(g_clocksettings.DST_De,g_clocksettings.DST_Me,g_clocksettings.DST_We,g_clocksettings.DST_he-(g_clocksettings.Tstd+g_clocksettings.Tdst)/60,year);
+	uint32_t b= RuleToTime(g_clocksettings.DST_Ds,g_clocksettings.DST_Ms,g_clocksettings.DST_Ws,g_clocksettings.DST_hs,year) - g_clocksettings.Tstd*60;
+	uint32_t e= RuleToTime(g_clocksettings.DST_De,g_clocksettings.DST_Me,g_clocksettings.DST_We,g_clocksettings.DST_he,year) - (g_clocksettings.Tstd+g_clocksettings.Tdst)*60;
 	char tmp[30];	// to hold date string of timestamp
 	dump_u64(g_clocksettings.value,tmp);  // printf with %llu doesn't work :-( so we print it to a string by our own
 //	ADDLOG_INFO(LOG_FEATURE_RAW, "INFO: in testNsetDST with ClockSettings: %i  %i,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i -- g_clocksettings.value as uint64_t:%s \r\n",g_clocksettings.TZ,  g_clocksettings.DST_H, g_clocksettings.DST_We, g_clocksettings.DST_Me, g_clocksettings.DST_De, g_clocksettings.DST_he, g_clocksettings.Tstd, g_clocksettings.DST_Ws, g_clocksettings.DST_Ms, g_clocksettings.DST_Ds, g_clocksettings.DST_hs, g_clocksettings.Tdst,tmp);
