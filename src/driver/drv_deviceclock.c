@@ -462,7 +462,7 @@ int testNsetDST(uint32_t val)
 			g_DSToffset = 60*g_clocksettings.Tdst;
 			return 1;
 		} else {
-			b=RuleToTime(g_clocksettings.DST_Ds,g_clocksettings.DST_Ms,g_clocksettings.DST_Ws,g_clocksettings.DST_hs-g_clocksettings.Tstd/60,year+1);
+			b=RuleToTime(g_clocksettings.DST_Ds,g_clocksettings.DST_Ms,g_clocksettings.DST_Ws,g_clocksettings.DST_hs,year+1) - g_clocksettings.Tstd*60;;
 			printtime(b,tmp);
 			ADDLOG_INFO(LOG_FEATURE_RAW, "After DST in %i. Next switch at %lu (%s - thats next year)\r\n",year,b,tmp);
 			g_next_dst_change=b;
@@ -483,7 +483,7 @@ int testNsetDST(uint32_t val)
 			g_DSToffset = 0;
 			return 0;
 		} else {
-			e=RuleToTime(g_clocksettings.DST_De,g_clocksettings.DST_Me,g_clocksettings.DST_We,g_clocksettings.DST_he-(g_clocksettings.Tstd+g_clocksettings.Tdst)/60,year+1);
+			e=RuleToTime(g_clocksettings.DST_De,g_clocksettings.DST_Me,g_clocksettings.DST_We,g_clocksettings.DST_he,year+1) - (g_clocksettings.Tstd+g_clocksettings.Tdst)*60;
 			printtime(e,tmp);
 			ADDLOG_INFO(LOG_FEATURE_RAW, "In second DST of %i. Next switch at %lu (%s - thats next year)\r\n",year,e,tmp);
 			g_next_dst_change=e;
