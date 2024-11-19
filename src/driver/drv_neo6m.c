@@ -31,7 +31,7 @@ static int UART_TryToGetNextPacket(void) {
 	int c_garbage_consumed = 0;
 	byte checksum,rxb;
 	char data[NEO6M_UART_RECEIVE_BUFFER_SIZE+5]={0};
-        char DATA1[4],DATA2[8],DATA3[8]; // to deal with leading "0", use characters	DATA1: LAT/LONG; DATA2: minutes; DATA3: fraction of minutes
+        char DATA1[4],DATA2[9],DATA3[9]; // to deal with leading "0", use characters	DATA1: LAT/LONG; DATA2: minutes; DATA3: fraction of minutes
 
 	cs = UART_GetDataSize();
 
