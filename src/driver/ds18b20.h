@@ -38,6 +38,10 @@ static const uint8_t dscrc2x16_table[] = {
 	0x8C, 0x11, 0xAF, 0x32, 0xCA, 0x57, 0xE9, 0x74
 };
 
+void DS18B20_OnEverySecond();
+void DS18B20_AppendInformationToHTTPIndexPage(http_request_t* request);
+void DS18B20_driver_Init();
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
 extern "C" {

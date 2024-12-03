@@ -39,3 +39,4 @@
 #
 # patch -p 1 -d sdk/OpenW600 < platforms/W600/my_change.diff
 
+

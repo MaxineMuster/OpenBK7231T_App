@@ -25,6 +25,198 @@
 #include "../hal/hal_pins.h"
 
 #include "ds18b20.h"
+#include "OneWire_common.h"
+
+static int ds18_conversionPeriod = 15;	// time between refreshs of temperature
+static int ds18_count = 1;		// max number of devices 
+static int errcount = 0;
+static int lastconv; 			// secondsElapsed on last successfull reading
+static uint8_t dsread = 0;
+static int Pin;
+
+// dynamic Array for the devices
+typedef struct {
+  DeviceAddress *array;
+  float *lasttemp;
+  size_t used;
+  size_t size;
+} devicesArray;
+
+static devicesArray ds18b20devices;
+
+void initArray(devicesArray *a, size_t initialSize) {
+  a->array = malloc(initialSize * sizeof(DeviceAddress));
+  a->lasttemp = malloc(initialSize * sizeof(float));
+  
+  if (! a->array || ! a->lasttemp ){
+  	 bk_printf ("initArray: malloc failed!\n");
+  	 return;
+  }
+  a->used = 0;
+  a->size = initialSize;
+}
+
+void insertArray(devicesArray *a, DeviceAddress dev) {
+  // a->used is the number of used entries, because a->array[a->used++] updates a->used only *after* the array has been accessed.
+  // Therefore a->used can go up to a->size 
+  if (a->used == a->size) {
+    a->size++;
+    a->array = realloc(a->array, a->size * sizeof(DeviceAddress));
+    if (! a->array ){
+    	bk_printf ("insertArray: realloc of array failed!\n");
+    }
+    a->lasttemp = realloc(a->lasttemp, a->size * sizeof(float));
+    if (! a->lasttemp ){
+    	bk_printf ("insertArray: realloc of lasttemp failed!\n");
+    }
+  }
+  memcpy(a->array[a->used++], dev,sizeof(DeviceAddress));
+}
+
+void freeArray(devicesArray *a) {
+  free(a->array);
+  free(a->lasttemp);
+  a->array = NULL;
+  a->lasttemp = NULL;
+  a->used = a->size = 0;
+}
+
+//for now jus use simple DS1820 code
+/*
+// usleep adopted from DHT driver
+// enhanced in drv_ds1820_simple.c
+void OWusleep(int r)
+{
+#ifdef WIN32
+	// not possible on Windows port
+#elif PLATFORM_BL602 
+	for(volatile int i = 0; i < r; i++)
+	{
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//10
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+	}
+#elif PLATFORM_W600
+	for(volatile int i = 0; i < r; i++)
+	{
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+	}
+#elif PLATFORM_W800
+	for(volatile int i = 0; i < r; i++)
+	{
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//10
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//15
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//20
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+	}
+#elif PLATFORM_BEKEN
+	float adj = 1;
+	if(g_powersave) adj = 1.5;
+	usleep((17 * r * adj) / 10); // "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
+#elif PLATFORM_LN882H
+	usleep(5 * r); // "5" seems o.k
+#elif PLATFORM_ESPIDF
+	usleep(r);
+#else
+	for(volatile int i = 0; i < r; i++)
+	{
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+	}
+#endif
+}
+
+// add some "special timing" for Beken - works w/o and with powerSave 1 for me
+void OWusleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#if PLATFORM_BEKEN
+	int newr = r / (3 * g_powersave + 1);		// devide by 4 if powerSave set to 1
+	for(volatile int i = 0; i < newr; i++)
+	{
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		//__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop");
+	}
+
+#else
+	OWusleep(r);
+#endif
+}
+
+void OWusleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#if PLATFORM_BEKEN
+	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
+	for(volatile int i = 0; i < newr; i++)
+	{
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+	}
+
+#else
+	OWusleep(r);
+#endif
+}
+
+void OWusleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
+{
+#if PLATFORM_BEKEN
+	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
+	for(volatile int i = 0; i < newr; i++)
+	{
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
+		//		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
+		__asm__("nop\nnop\nnop\nnop\nnop");	// 5
+	}
+
+#else
+	OWusleep(r);
+#endif
+}
+*/
 
 // OneWire commands
 #define GETTEMP			0x44  // Tells device to take a temperature reading and put it on the scratchpad
@@ -71,18 +263,18 @@ void ds18b20_write(char bit) {
 		HAL_PIN_Setup_Output(DS_GPIO);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(DS_GPIO, 0);
-		usleep(6);
+		OWusleepshort(6); 	// was usleep(6);
 		HAL_PIN_Setup_Input(DS_GPIO);	// release bus
-		usleep(64);
+		OWusleepmed(64);		// was usleep(64);
 		interrupts();
 	}
 	else {
 		HAL_PIN_Setup_Output(DS_GPIO);
 		noInterrupts();
 		HAL_PIN_SetOutputValue(DS_GPIO, 0);
-		usleep(60);
+		OWusleepmed(60);		// was usleep(60);
 		HAL_PIN_Setup_Input(DS_GPIO);	// release bus
-		usleep(10);
+		OWusleepshort(10);		// was usleep(10);
 		interrupts();
 	}
 }
@@ -93,11 +285,11 @@ unsigned char ds18b20_read(void) {
 	HAL_PIN_Setup_Output(DS_GPIO);
 	noInterrupts();
 	HAL_PIN_SetOutputValue(DS_GPIO, 0);
-	usleep(6);
+	OWusleepshort(6);		// was usleep(6);
 	HAL_PIN_Setup_Input(DS_GPIO);
-	usleep(9);
+	OWusleepshort(9);		// was usleep(9);
 	value = HAL_PIN_ReadDigitalInput(DS_GPIO);
-	usleep(55);
+	OWusleepmed(55);		// was usleep(55);
 	interrupts();
 	return (value);
 }
@@ -110,7 +302,7 @@ void ds18b20_write_byte(char data) {
 		x &= 0x01;
 		ds18b20_write(x);
 	}
-	usleep(100);
+	OWusleepmed(100);		// was usleep(100);
 }
 // Reads one byte from bus
 unsigned char ds18b20_read_byte(void) {
@@ -119,7 +311,7 @@ unsigned char ds18b20_read_byte(void) {
 	for (i = 0; i < 8; i++)
 	{
 		if (ds18b20_read()) data |= 0x01 << i;
-		usleep(15);
+		OWusleepshort(15);		// was usleep(15);
 	}
 	return(data);
 }
@@ -129,12 +321,12 @@ unsigned char ds18b20_reset(void) {
 	HAL_PIN_Setup_Output(DS_GPIO);
 	noInterrupts();
 	HAL_PIN_SetOutputValue(DS_GPIO, 0);
-	usleep(480);
+	OWusleeplong(480);		// was usleep(480);
 	HAL_PIN_SetOutputValue(DS_GPIO, 1);
 	HAL_PIN_Setup_Input(DS_GPIO);
-	usleep(70);
+	OWusleepmed(70);		// was usleep(70);
 	presence = (HAL_PIN_ReadDigitalInput(DS_GPIO) == 0);
-	usleep(410);
+	OWusleeplong(410);		// was usleep(410);
 	interrupts();
 	return presence;
 }
@@ -283,12 +475,12 @@ float ds18b20_getTempC(const DeviceAddress *deviceAddress) {
 	if (ds18b20_isConnected(deviceAddress, scratchPad)) {
 		int16_t rawTemp = calculateTemperature(deviceAddress, scratchPad);
 		if (rawTemp <= DEVICE_DISCONNECTED_RAW)
-			return DEVICE_DISCONNECTED_F;
+			return DEVICE_DISCONNECTED_C;
 		// C = RAW/128
 		// F = (C*1.8)+32 = (RAW/128*1.8)+32 = (RAW*0.0140625)+32
 		return (float)rawTemp / 128.0f;
 	}
-	return DEVICE_DISCONNECTED_F;
+	return DEVICE_DISCONNECTED_C;
 }
 
 // reads scratchpad and returns fixed-point temperature, scaling factor 2^-7
@@ -472,4 +664,88 @@ bool search(uint8_t *newAddr, bool search_mode) {
 		devices++;
 	}
 	return search_result;
+}
+
+
+int DS18B20_fill_devicelist()
+{
+	DeviceAddress devaddr;
+	if (ds18b20devices.used  != 0) freeArray(&ds18b20devices);
+	initArray(&ds18b20devices, 1);  // initially 1 element
+	int ret=0;
+	while (search(devaddr,1)){
+		insertArray(&ds18b20devices,devaddr);
+		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+		ret++;
+	}
+	return ret;
+};
+
+// startDriver DS18B20 [conversionPeriod (seconds) - default 15]
+void DS18B20_driver_Init()
+{
+	int Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
+	if(Pin != 99)
+	{
+		ds18b20_init(Pin);
+		DS18B20_fill_devicelist();
+	}
+	ds18_conversionPeriod = Tokenizer_GetArgIntegerDefault(1, 15);
+	lastconv = 0;
+};
+
+void DS18B20_AppendInformationToHTTPIndexPage(http_request_t* request)
+{
+	hprintf255(request, "<h5>DS18B20 devices detected: %i</h5>",ds18b20devices.used);
+	for (int i=0; i < ds18b20devices.used; i++) {
+		hprintf255(request, "<h5>Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f</h5>",i,
+		ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
+		ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7], ds18b20devices.lasttemp[i]);
+	}
+
+	hprintf255(request, "<h5>DS1820 Temperatures last read %i secs ago</h5>",  g_secondsElapsed - lastconv);
+}
+
+
+void DS18B20_OnEverySecond()
+{
+	// for now just find the pin used
+	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, 99);
+	uint8_t scratchpad[9], crc;
+	if(Pin != 99)
+	{
+		if (ds18b20devices.used == 0) DS18B20_fill_devicelist();
+		// only if pin is set
+		// request temp if conversion was requested two seconds after request
+		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
+		// better if we don't use parasitic power, we can check if conversion is ready		
+		if(dsread == 1 && isConversionComplete())
+		{
+			float t = -127;
+			bk_printf("Reading temperature from DS18B20 sensor(s)\r\n");
+			for (int i=0; i < ds18b20devices.used; i++) {
+				errcount = 0;
+				t = -127;
+				while ( t == -127 && errcount++ < 5){ 
+					t = ds18b20_getTempC(&ds18b20devices.array[i]);
+					bk_printf("Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f\r\n",i,
+						ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
+						ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
+				}
+				if (t != -127){
+					ds18b20devices.lasttemp[i] = t;
+					lastconv = g_secondsElapsed;
+				}
+				
+			}
+			dsread=0;
+			
+		}	
+		else if(dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0))
+		{
+			ds18b20_requestTemperatures();
+			dsread = 1;
+			errcount = 0;
+		}
+	}
 }
