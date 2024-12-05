@@ -627,11 +627,11 @@ void DS18B20_OnEverySecond()
 					lastconv = g_secondsElapsed;
 				} else{
 					if (ds18b20devices.last_read[i] > 60) {
-						bk_printf("No temperature read for over 60 seconds for" 
+						bk_printf("No temperature read for over 60 seconds for"
 							" device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X)! Setting to -127°C!\r\n",i,
 							ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],
 							ds18b20devices.array[i][3],ds18b20devices.array[i][4],ds18b20devices.array[i][5],
-							ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
+							ds18b20devices.array[i][6],ds18b20devices.array[i][7]);
 						ds18b20devices.lasttemp[i] = -127;	
 					}
 				}
