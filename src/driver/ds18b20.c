@@ -560,7 +560,6 @@ int DS18B20_fill_devicelist()
 		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
 			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
 		insertArray(&ds18b20devices,devaddr);
-		insertArray(&ds18b20devices,devaddr);
 		ret++;
 	}
 	return ret;
