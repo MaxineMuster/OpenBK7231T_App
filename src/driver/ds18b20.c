@@ -28,21 +28,23 @@
 #include "OneWire_common.h"
 
 static int ds18_conversionPeriod = 15;	// time between refreshs of temperature
-static int ds18_count = 1;		// max number of devices 
+static int ds18_count = 0;		// detected number of devices 
 static int errcount = 0;
 static int lastconv; 			// secondsElapsed on last successfull reading
 static uint8_t dsread = 0;
 static int Pin;
+static devicesArray ds18b20devices;
 
+/*
 // dynamic Array for the devices
 typedef struct {
-  DeviceAddress *array;
+  DeviceAddress[];
   float *lasttemp;
   size_t used;
   size_t size;
 } devicesArray;
 
-static devicesArray ds18b20devices;
+
 
 void initArray(devicesArray *a, size_t initialSize) {
   a->array = malloc(initialSize * sizeof(DeviceAddress));
@@ -80,143 +82,8 @@ void freeArray(devicesArray *a) {
   a->lasttemp = NULL;
   a->used = a->size = 0;
 }
-
-//for now jus use simple DS1820 code
-/*
-// usleep adopted from DHT driver
-// enhanced in drv_ds1820_simple.c
-void OWusleep(int r)
-{
-#ifdef WIN32
-	// not possible on Windows port
-#elif PLATFORM_BL602 
-	for(volatile int i = 0; i < r; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//10
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-#elif PLATFORM_W600
-	for(volatile int i = 0; i < r; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-#elif PLATFORM_W800
-	for(volatile int i = 0; i < r; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//10
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//15
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	//20
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-#elif PLATFORM_BEKEN
-	float adj = 1;
-	if(g_powersave) adj = 1.5;
-	usleep((17 * r * adj) / 10); // "1" is to fast and "2" to slow, 1.7 seems better than 1.5 (only from observing readings, no scope involved)
-#elif PLATFORM_LN882H
-	usleep(5 * r); // "5" seems o.k
-#elif PLATFORM_ESPIDF
-	usleep(r);
-#else
-	for(volatile int i = 0; i < r; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-#endif
-}
-
-// add some "special timing" for Beken - works w/o and with powerSave 1 for me
-void OWusleepshort(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
-{
-#if PLATFORM_BEKEN
-	int newr = r / (3 * g_powersave + 1);		// devide by 4 if powerSave set to 1
-	for(volatile int i = 0; i < newr; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		//__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop");
-	}
-
-#else
-	OWusleep(r);
-#endif
-}
-
-void OWusleepmed(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
-{
-#if PLATFORM_BEKEN
-	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
-	for(volatile int i = 0; i < newr; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-	}
-
-#else
-	OWusleep(r);
-#endif
-}
-
-void OWusleeplong(int r) //delay function do 10*r nops, because rtos_delay_milliseconds is too much
-{
-#if PLATFORM_BEKEN
-	int newr = 10 * r / (10 + 5 * g_powersave);		// devide by 1.5 powerSave set to 1
-	for(volatile int i = 0; i < newr; i++)
-	{
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");
-		//		__asm__("nop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop\nnop");	// 5
-		__asm__("nop\nnop\nnop\nnop\nnop");	// 5
-	}
-
-#else
-	OWusleep(r);
-#endif
-}
 */
+
 
 // OneWire commands
 #define GETTEMP			0x44  // Tells device to take a temperature reading and put it on the scratchpad
@@ -667,15 +534,33 @@ bool search(uint8_t *newAddr, bool search_mode) {
 }
 
 
+void insertArray(devicesArray *a, DeviceAddress devaddr) {
+	if (ds18_count >= DS18B20MAX){
+		bk_printf("insertArray ERROR:Arry is full, can't add device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+	  	return;
+	}
+	bk_printf("insertArray - ds18_count=%i  -- adding device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",ds18_count,
+		devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+	for (int i = 0; i < 8; i++) {
+		a->array[ds18_count][i] = devaddr[i];
+	}
+	a->lasttemp[ds18_count] = -127;
+	a->last_read[ds18_count] = 0;
+	ds18_count++;
+}
+
+
 int DS18B20_fill_devicelist()
 {
 	DeviceAddress devaddr;
-	if (ds18b20devices.used  != 0) freeArray(&ds18b20devices);
-	initArray(&ds18b20devices, 1);  // initially 1 element
 	int ret=0;
-	while (search(devaddr,1)){
+	while (search(devaddr,1) && ds18_count < DS18B20MAX ){
+		ret++;
+		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",
+			devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
 		insertArray(&ds18b20devices,devaddr);
-		bk_printf("found device 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X ",devaddr[0],devaddr[1],devaddr[2],devaddr[3],devaddr[4],devaddr[5],devaddr[6],devaddr[7]);
+		insertArray(&ds18b20devices,devaddr);
 		ret++;
 	}
 	return ret;
@@ -696,14 +581,17 @@ void DS18B20_driver_Init()
 
 void DS18B20_AppendInformationToHTTPIndexPage(http_request_t* request)
 {
-	hprintf255(request, "<h5>DS18B20 devices detected: %i</h5>",ds18b20devices.used);
-	for (int i=0; i < ds18b20devices.used; i++) {
-		hprintf255(request, "<h5>Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f</h5>",i,
+	hprintf255(request, "<h5>DS18B20 devices detected: %i</h5>",ds18_count);
+	for (int i=0; i < ds18_count; i++) {
+		hprintf255(request, "<h5>Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) temperature:",i,
 		ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
-		ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7], ds18b20devices.lasttemp[i]);
+		ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7]);
+		if (ds18b20devices.lasttemp[i] > -127){
+			hprintf255(request, " %0.2f (%i seconds ago)</h5>", ds18b20devices.lasttemp[i],ds18b20devices.last_read[i]);
+		}		
+		else 
+		hprintf255(request, " -- </h5>");
 	}
-
-	hprintf255(request, "<h5>DS1820 Temperatures last read %i secs ago</h5>",  g_secondsElapsed - lastconv);
 }
 
 
@@ -714,7 +602,7 @@ void DS18B20_OnEverySecond()
 	uint8_t scratchpad[9], crc;
 	if(Pin != 99)
 	{
-		if (ds18b20devices.used == 0) DS18B20_fill_devicelist();
+		if (ds18_count == 0) DS18B20_fill_devicelist();
 		// only if pin is set
 		// request temp if conversion was requested two seconds after request
 		// if (dsread == 1 && g_secondsElapsed % 5 == 2) {
@@ -723,29 +611,45 @@ void DS18B20_OnEverySecond()
 		{
 			float t = -127;
 			bk_printf("Reading temperature from DS18B20 sensor(s)\r\n");
-			for (int i=0; i < ds18b20devices.used; i++) {
+			for (int i=0; i < ds18_count; i++) {
+				ds18b20devices.last_read[i] += 1 ;
 				errcount = 0;
 				t = -127;
 				while ( t == -127 && errcount++ < 5){ 
-					t = ds18b20_getTempC(&ds18b20devices.array[i]);
+					t = ds18b20_getTempC(ds18b20devices.array[i]);
 					bk_printf("Device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X) reported %0.2f\r\n",i,
 						ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],ds18b20devices.array[i][3],
 						ds18b20devices.array[i][4],ds18b20devices.array[i][5],ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
 				}
 				if (t != -127){
 					ds18b20devices.lasttemp[i] = t;
+					ds18b20devices.last_read[i] = 0;
 					lastconv = g_secondsElapsed;
+				} else{
+					if (ds18b20devices.last_read[i] > 60) {
+						bk_printf("No temperature read for over 60 seconds for" 
+							" device %i (0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X)! Setting to -127°C!\r\n",i,
+							ds18b20devices.array[i][0],ds18b20devices.array[i][1],ds18b20devices.array[i][2],
+							ds18b20devices.array[i][3],ds18b20devices.array[i][4],ds18b20devices.array[i][5],
+							ds18b20devices.array[i][6],ds18b20devices.array[i][7],t);
+						ds18b20devices.lasttemp[i] = -127;	
+					}
 				}
 				
 			}
 			dsread=0;
 			
 		}	
-		else if(dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0))
-		{
-			ds18b20_requestTemperatures();
-			dsread = 1;
-			errcount = 0;
+		else{
+			for (int i=0; i < ds18_count; i++) {
+				ds18b20devices.last_read[i] += 1 ;
+			}
+			if(dsread == 0 && (g_secondsElapsed % ds18_conversionPeriod == 0 || lastconv == 0))
+			{
+				ds18b20_requestTemperatures();
+				dsread = 1;
+				errcount = 0;
+			}
 		}
 	}
 }

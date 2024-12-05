@@ -24,9 +24,16 @@
 #define DEVICE_DISCONNECTED_RAW -7040
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 #define pgm_read_byte(addr)   (*(const unsigned char *)(addr))
+#define DS18B20MAX	5
+
 
 typedef uint8_t DeviceAddress[8];
 typedef uint8_t ScratchPad[9];
+typedef struct {
+  DeviceAddress array[DS18B20MAX];
+  float lasttemp[DS18B20MAX];
+  unsigned short last_read[DS18B20MAX];
+} devicesArray;
 
 // Dow-CRC using polynomial X^8 + X^5 + X^4 + X^0
 // Tiny 2x16 entry CRC table created by Arjen Lentz
