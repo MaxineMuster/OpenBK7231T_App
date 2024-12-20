@@ -39,3 +39,4 @@
 #
 # patch -p 1 -d sdk/OpenBK7231T < platforms/BK7231T/my_change.diff
 
+sed -i "/0123456789ABCDEF0123456789ABCDEF -i 0123456789ABCDEF/ {s%-p app%-p \$\{APP_BIN_NAME\}%; s%-v \$CURRENT_TIME%-v \$\{APP_VERSION\}%}" sdk/OpenBK7231T/platforms/bk7231t/bk7231t_os/build.sh
