@@ -56,7 +56,6 @@ CSRCS += $(_SHARED_APP)/driver/drv_ds1820_simple.c
 CSRCS += $(_SHARED_APP)/driver/drv_charts.c
 CSRCS += $(_SHARED_APP)/driver/drv_deviceclock.c
 CSRCS += $(_SHARED_APP)/driver/drv_timed_events.c
-CSRCS += $(_SHARED_APP)/httpclient/http_get_header.c 
 CSRCS += $(_SHARED_APP)/user_main.c
 CSRCS += main.c
 
