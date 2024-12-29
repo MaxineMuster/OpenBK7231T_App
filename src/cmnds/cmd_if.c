@@ -258,11 +258,6 @@ float getToday(const char *s) {
 }
 
 
-
-float getNTPOn(const char *s) {
-	return NTP_IsTimeSynced();
-}
-
 #endif
 
 float getRand(const char *s) {
@@ -299,6 +294,12 @@ float getMonth(const char *s) {
 float getMDay(const char *s) {
 	return CLOCK_GetMDay();
 }
+
+#ifdef ENABLE_NTP
+float getNTPOn(const char *s) {
+	return NTP_IsTimeSynced();
+}
+#endif
 #if ENABLE_CLOCK_DST
 float isDST(const char *s){
 	return Time_IsDST();
@@ -433,12 +434,22 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$energy", &getEnergy},
+	////cnstdetail:{"name":"$yesterday",
+	////cnstdetail:"title":"$yesterday",
+	////cnstdetail:"descr":"Yesterdays energy consuption",
+	////cnstdetail:"requires":""}
+	{ "$yesterday", &getYesterday },
+	////cnstdetail:{"name":"$today",
+	////cnstdetail:"title":"$today",
+	////cnstdetail:"descr":"Todays energy consuption",
+	////cnstdetail:"requires":""}
+	{ "$today", &getToday },
+#endif	//ENABLE_DRIVER_BL0937
+#ifdef ENABLE_NTP
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
 	//cnstdetail:"descr":"Current weekday from NTP",
 	//cnstdetail:"requires":""}
-#endif	//ENABLE_DRIVER_BL0937
-#ifdef ENABLE_NTP
 	{"$day", &getWeekDay},
 	//cnstdetail:{"name":"$hour",
 	//cnstdetail:"title":"$hour",
@@ -470,16 +481,6 @@ const constant_t g_constants[] = {
 	////cnstdetail:"descr":"Current Year from NTP",
 	////cnstdetail:"requires":""}
 	{ "$year", &getYear },
-	////cnstdetail:{"name":"$yesterday",
-	////cnstdetail:"title":"$yesterday",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$yesterday", &getYesterday },
-	////cnstdetail:{"name":"$today",
-	////cnstdetail:"title":"$today",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
-	{ "$today", &getToday },
 #if ENABLE_CLOCK_DST
 	////cnstdetail:{"name":"$isDST",
 	////cnstdetail:"title":"$isDST",
