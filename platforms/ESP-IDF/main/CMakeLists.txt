@@ -57,7 +57,6 @@ set(PROJ_ALL_SRC
 	../../../src/driver/drv_ntp.c
 	../../../src/driver/drv_timed_events.c
 	../../../src/driver/drv_deviceclock.c
-	../../../src/httpclient/http_get_header.c
 	../../../src/driver/drv_pt6523.c
 	../../../src/driver/drv_pwm_groups.c
 	../../../src/driver/drv_pwmToggler.c
