@@ -40,7 +40,6 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 // test for local clock
-#define  ENABLE_HTTP_HEADER_TIME	1
 #define ENABLE_CLOCK_SUNRISE_SUNSET	1
 #define ENABLE_CALENDAR_EVENTS	1
 // parse things like $CH1 or $hour etc
@@ -178,7 +177,6 @@
 //#define ENABLE_I2C_LCD_PCF8574	1
 
 // test for local clock
-#define  ENABLE_HTTP_HEADER_TIME	1
 
 #elif PLATFORM_LN882H
 
@@ -199,7 +197,6 @@
 #define ENABLE_DRIVER_DS1820		1
 // test for local clock
 
-#define  ENABLE_HTTP_HEADER_TIME	1
 #define ENABLE_CLOCK_SUNRISE_SUNSET	1
 #define ENABLE_CALENDAR_EVENTS	1
 // parse things like $CH1 or $hour etc

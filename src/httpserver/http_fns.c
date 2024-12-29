@@ -947,10 +947,6 @@ typedef enum {
 	};
 
 #endif
-#if ENABLE_LOCAL_CLOCK
-	hprintf255(request, "<p hidden id='utc' data-utc='%u'></p>",Clock_IsTimeSynced()? Clock_GetCurrentTimeWithoutOffset()-g_secondsElapsed : 1);
-//	hprintf255(request, "<p hidden id='utc1' data-utc='%u'></p>",Clock_IsTimeSynced()? Clock_GetDeviceTimeWithoutOffset()-g_secondsElapsed : 1);
-#endif
 
 #if WINDOWS
 #elif PLATFORM_BL602
@@ -2482,11 +2478,6 @@ int http_fn_cfg(http_request_t* request) {
 	postFormAction(request, "cmd_tool", "Execute Custom Command");
 	//postFormAction(request, "flash_read_tool", "Flash Read Tool");
 	postFormAction(request, "startup_command", "Change Startup Command Text");
-#if ENABLE_LOCAL_CLOCK
-	poststr(request, "<form action=\"javascript:location.href=PoorMansNTP() \">\
-			<input type=\"submit\" value=\"Set device clock to browser time\">\
-			</form>");
-#endif
 
 #if 0
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
