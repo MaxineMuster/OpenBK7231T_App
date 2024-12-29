@@ -387,7 +387,7 @@ static int http_tasmota_json_status_SNS(void* request, jsonCb_t printer, bool bA
 #else
 // replaced "NTP_GetCurrentTime()" and "NTP_GetCurrentTimeWithoutOffset()" 
 // with "Clock_GetCurrentTime()" and "Clock_GetCurrentTimeWithoutOffset" 
-// (whih will return 0 if no clock is synched), so no more need for a workaround here...
+// (which will return 0 if no clock is synched), so no more need for a workaround here...
 #endif
 
 // Topic:  tele/tasmota_48E7F3/STATE

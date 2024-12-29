@@ -74,6 +74,7 @@ function onLoad() {
 			setInterval(updateOnlineFor, 1000);
 		}
 	}
+
 	showState();
 }
 

@@ -19,9 +19,6 @@
 
 #define OBK_DISABLE_ALL_DRIVERS       1
 
-// test for local clock
-
-
 #elif PLATFORM_W600
 
 // Some limited drivers are supported on W600, OBK_DISABLE_ALL_DRIVERS is not defined
