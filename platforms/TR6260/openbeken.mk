@@ -84,6 +84,7 @@ CSRCS  += driver/drv_max72xx_single.c
 CSRCS  += driver/drv_mcp9808.c
 CSRCS  += driver/drv_timed_events.c
 CSRCS  += driver/drv_ntp.c
+CSRCS  += driver/drv_drv_deviceclock.c
 CSRCS  += driver/drv_pt6523.c
 CSRCS  += driver/drv_pwm_groups.c
 CSRCS  += driver/drv_pwmToggler.c
