@@ -12,7 +12,6 @@
 #include "../base64/base64.h"
 #include "http_basic_auth.h"
 
-
 // define the feature ADDLOGF_XXX will use
 #define LOG_FEATURE LOG_FEATURE_HTTP
 
@@ -280,7 +279,6 @@ void http_html_end(http_request_t* request) {
 	poststr(request, g_build_str);
 
 	hprintf255(request, "<br>Online for&nbsp;<span id=\"onlineFor\" data-initial=\"%i\">-</span>", g_secondsElapsed);
-
 	WiFI_GetMacAddress((char*)mac);
 
 	snprintf(upTimeStr, sizeof(upTimeStr), "<br>Device MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
@@ -794,7 +792,6 @@ int HTTP_ProcessPacket(http_request_t* request) {
 	if (http_checkUrlBase(urlStr, "ota")) return http_fn_ota(request);
 	if (http_checkUrlBase(urlStr, "ota_exec")) return http_fn_ota_exec(request);
 	if (http_checkUrlBase(urlStr, "cm")) return http_fn_cm(request);
-
 	return http_fn_other(request);
 }
 
