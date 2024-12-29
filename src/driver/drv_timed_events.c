@@ -329,11 +329,13 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 		// hour, minute and second has correct value parsed
 	}
 #if ENABLE_CLOCK_SUNRISE_SUNSET
-#include <string.h>
-	else if (strcasestr(s, "sunrise")) {
+//#include <string.h>
+//	else if (strcasestr(s, "sunrise")) {	// eg W800 won't have strcasestr, so use wal_stricmp from new_common
+	else if (! wal_stricmp(s, "sunrise")) {
 		sunflags |= SUNRISE_FLAG;
 	}
-	else if (strcasestr(s, "sunset")) {
+//	else if (strcasestr(s, "sunset")) {
+	else if (! wal_stricmp(s, "sunset")) {
 		sunflags |= SUNSET_FLAG;
 	}
 #endif
