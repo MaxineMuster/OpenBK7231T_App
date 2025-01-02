@@ -2,6 +2,8 @@
 
 #include "../hal_generic.h"
 #include "../hal_uart.h"
+#include "../../logging/logging.h"
+
 #include "wm_include.h"
 #include "wm_uart.h"
 #define UART_DEV_NAME "uart1"
