@@ -105,6 +105,12 @@ int fd_console = -1;
 uart_port_t uartnum = UART_NUM_0;
 static QueueHandle_t uart_queue;
 uint8_t* data = NULL;
+#elif PLATFORM_W800
+#include "wm_uart.h"
+static xQueueHandle receive_evt_queue = NULL;
+#define UART_DEV_NAME "uart1"
+#define READ_BUF_SIZE 256
+
 #else
 #endif
 
@@ -237,6 +243,45 @@ static void uart_event_task(void* pvParameters)
 }
 
 #endif
+#ifdef PLATFORM_W800
+#define	UART_RECEIVE_DATA	1
+typedef struct W800_UART
+{
+    tls_os_queue_t *uart_q;
+    char *rx_buf;
+    int rx_msg_num;
+    int rx_data_len;
+} W800_UART_ST;
+
+static W800_UART_ST *w800_uart = NULL;
+
+
+static s16 obk_uart_rx(u16 len)
+{
+
+//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "W800 obk_uart_rx - len=%i\r\n",len);
+    u8 *buf=malloc(READ_BUF_SIZE);
+    int i;
+    if (! buf ){ 
+    	addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "W800 obk_uart_rx -malloc failed!\r\n");
+    	return WM_FAILED;
+    }
+    while(len){
+	int ml=tls_uart_read(TLS_UART_1, buf,READ_BUF_SIZE-1 );
+//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "W800 obk_uart_rx - ml=%i\r\n",ml);
+	buf[READ_BUF_SIZE-1]=0;
+//addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "W800 obk_uart_rx - read=%s - len=%i - READ_BUF=%i\r\n",buf,len,READ_BUF_SIZE);
+	for(i = 0; i < len && i < ml; i++)
+	{
+		UART_AppendByteToReceiveRingBuffer(buf[i]);
+	}
+	len -=i;
+    }
+    free(buf);
+    return WM_SUCCESS;
+}
+
+#endif
 
 void UART_SendByte(byte b) {
 #if PLATFORM_BK7231T | PLATFORM_BK7231N
@@ -255,6 +300,8 @@ void UART_SendByte(byte b) {
 	//bl_uart_data_send(g_id, b);
 #elif PLATFORM_ESPIDF
     uart_write_bytes(uartnum, &b, 1);
+#elif PLATFORM_W800
+    tls_uart_write(TLS_UART_1, &b, 1);
 #endif
 }
 commandResult_t CMD_UART_Send_Hex(const void *context, const char *cmd, const char *args, int cmdFlags) {
@@ -430,6 +477,20 @@ int UART_InitUART(int baud, int parity)
         data = (uint8_t*)malloc(256);
         xTaskCreate(uart_event_task, "uart_event_task", 1024, NULL, 16, NULL);
     }
+#elif PLATFORM_W800
+    struct tls_uart_options uart_opts;
+    uart_opts.baudrate = baud;
+    uart_opts.charlength = TLS_UART_CHSIZE_8BIT;
+    uart_opts.flow_ctrl = TLS_UART_FLOW_CTRL_NONE;
+    uart_opts.paritytype = parity;
+    uart_opts.stopbits = TLS_UART_ONE_STOPBITS;
+    wm_uart1_rx_config(WM_IO_PB_07);
+    wm_uart1_tx_config(WM_IO_PB_06);
+
+    if (WM_SUCCESS != tls_uart_port_init(TLS_UART_1, &uart_opts, 1))
+            return;
+    tls_uart_rx_callback_register((u16) TLS_UART_1, (s16(*)(u16, void*))obk_uart_rx, NULL);
+//    tls_uart_tx_callback_register(TLS_UART_1, (s16(*)(struct tls_uart_port *))uart_tx_sent_callback);
 #endif
     return g_uart_init_counter;
 }

@@ -31,7 +31,7 @@ static int UART_TryToGetNextPacket(void) {
 	int c_garbage_consumed = 0;
 	byte checksum,rxb;
 	char data[NEO6M_UART_RECEIVE_BUFFER_SIZE+5]={0};
-        char DATA1[4],DATA2[9],DATA3[9]; // to deal with leading "0", use characters	DATA1: LAT/LONG; DATA2: minutes; DATA3: fraction of minutes
+        char DATA1[4],DATA2[8],DATA3[8]; // to deal with leading "0", use characters	DATA1: LAT/LONG; DATA2: minutes; DATA3: fraction of minutes
 
 	cs = UART_GetDataSize();
 
@@ -183,12 +183,15 @@ $PUBX,40,VTG,0,0,0,0*5E   // Disable VTG
 $PUBX,40,ZDA,0,0,0,0*44   // Disable ZDA
 */
 static void UART_WriteDisableNMEA(void) {
-    char send[7][26]={
+    char send[8][26]={
     	"$PUBX,40,GGA,0,0,0,0*5A\r\n",
+    	"$PUBX,40,GGA,0,0,0,0*5A\r\n",
+//    	"$PUBX,40,GGA,0,1,0,0*5B\r\n",   // Enable GGA
     	"$PUBX,40,GLL,0,0,0,0*5C\r\n",
     	"$PUBX,40,GSA,0,0,0,0*4E\r\n",
     	"$PUBX,40,GSV,0,0,0,0*59\r\n",
-    	"$PUBX,40,RMC,0,0,0,0*47\r\n",
+//    	"$PUBX,40,RMC,0,0,0,0*47\r\n",
+    	"$PUBX,40,RMC,0,1,0,0*46\r\n",   // Enable RMC
     	"$PUBX,40,VTG,0,0,0,0*5E\r\n",
     	"$PUBX,40,ZDA,0,0,0,0*44\r\n"
     	};
@@ -243,6 +246,7 @@ void NEO6M_UART_RunEverySecond(void) {
 	if (g_secondsElapsed % 5 == 0) {	// every 5 seconds
 		NEO6M_requestData();
 	}
+	else UART_ConsumeBytes(UART_GetDataSize()-1);
 
 }
 

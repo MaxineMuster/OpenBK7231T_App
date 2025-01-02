@@ -84,7 +84,8 @@ set(PROJ_ALL_SRC
     app/src/driver/drv_tm1638.c
 #    app/src/driver/drv_tuyaMCU.c
 #    app/src/driver/drv_tuyaMCUSensor.c
-#    app/src/driver/drv_uart.c
+    app/src/driver/drv_uart.c
+    app/src/driver/drv_neo6m.c
 #    app/src/driver/drv_ucs1912.c
     app/src/driver/drv_wemo.c
     app/src/driver/drv_ds1820_simple.c
