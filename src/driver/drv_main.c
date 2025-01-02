@@ -3,6 +3,7 @@
 #include "drv_bl0937.h"
 #include "drv_bl0942.h"
 #include "drv_bl_shared.h"
+#include "drv_neo6m.h"
 #include "drv_cse7766.h"
 #include "drv_ir.h"
 #include "drv_local.h"
@@ -149,6 +150,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). By default, it uses 4800 baud, but you can also enable it with baud 9600 by using 'startDriver BL0942 9600', see [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20957896#20957896)",
 	//drvdetail:"requires":""}
 	{ "BL0942",		BL0942_UART_Init,	BL0942_UART_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_NEO6M
+	//drvdetail:{"name":"NEO6M",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
+	//drvdetail:"requires":""}
+	{ "NEO6M",		NEO6M_UART_Init,	NEO6M_UART_RunEverySecond,		NEO6M_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_PWM_GROUP
 	//drvdetail:{"name":"PWMG",
