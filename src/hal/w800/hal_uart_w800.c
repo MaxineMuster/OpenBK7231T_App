@@ -1,6 +1,7 @@
 #if defined(PLATFORM_W800) || defined(PLATFORM_W600) 
 
 #include "../hal_generic.h"
+#include "../hal_uart.h"
 #include "wm_include.h"
 #include "wm_uart.h"
 #define UART_DEV_NAME "uart1"
