@@ -34,6 +34,7 @@ CSRCS += $(_SHARED_APP)/hal/w800/hal_generic_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_main_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_pins_w800.c
 CSRCS += $(_SHARED_APP)/hal/w800/hal_wifi_w800.c
+CSRCS += $(_SHARED_APP)/hal/w800/hal_uart_w800.c
 CSRCS += $(_SHARED_APP)/hal/generic/hal_adc_generic.c
 CSRCS += $(_SHARED_APP)/hal/generic/hal_flashConfig_generic.c
 CSRCS += $(_SHARED_APP)/hal/generic/hal_flashVars_generic.c
