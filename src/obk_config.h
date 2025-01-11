@@ -57,7 +57,7 @@
 #define OBK_OTA_EXTENSION 		".img"
 #define ENABLE_I2C					1
 #define ENABLE_OBK_SCRIPTING			1
-#define ENABLE_NEO6M			1
+#define ENABLE_DRIVER_NEO6M			1
 
 
 #elif WINDOWS
