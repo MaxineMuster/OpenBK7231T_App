@@ -99,6 +99,7 @@ CSRCS += $(_SHARED_APP)/driver/drv_ds1820_simple.c
 CSRCS += $(_SHARED_APP)/driver/drv_charts.c
 CSRCS += $(_SHARED_APP)/driver/drv_dht.c
 CSRCS += $(_SHARED_APP)/driver/drv_uart.c
+CSRCS += $(_SHARED_APP)/driver/drv_neo6m.c
 CSRCS += $(_SHARED_APP)/i2c/drv_i2c_main.c
 CSRCS += $(_SHARED_APP)/i2c/drv_i2c_tc74.c
 CSRCS += $(_SHARED_APP)/i2c/drv_i2c_ads1115.c
