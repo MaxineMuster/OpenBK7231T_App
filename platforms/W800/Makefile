@@ -106,6 +106,7 @@ CSRCS += $(_SHARED_APP)/i2c/drv_i2c_lcd_pcf8574t.c
 CSRCS += $(_SHARED_APP)/i2c/drv_i2c_mcp23017.c
 CSRCS += $(_SHARED_APP)/driver/drv_dht_internal.c
 CSRCS += $(_SHARED_APP)/driver/drv_openWeatherMap.c
+CSRCS += $(_SHARED_APP)/driver/drv_neo6m.c
 CSRCS += $(_SHARED_APP)/user_main.c
 CSRCS += main.c
 

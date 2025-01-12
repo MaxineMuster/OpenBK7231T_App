@@ -57,6 +57,7 @@
 #define OBK_OTA_EXTENSION 		".img"
 #define ENABLE_I2C					1
 #define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_DRIVER_NEO6M			1
 
 
 #elif WINDOWS
@@ -144,6 +145,7 @@
 #define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".bin.xz.ota"
 //#define ENABLE_I2C					1
+#define ENABLE_DRIVER_NEO6M			1
 
 
 #elif PLATFORM_BEKEN
@@ -205,6 +207,7 @@
 #define ENABLE_OBK_SCRIPTING			1
 //#define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define OBK_OTA_EXTENSION 		".rbl"
+#define ENABLE_DRIVER_NEO6M			1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -265,6 +268,7 @@
 #define ENABLE_DRIVER_CHT83XX		1
 #define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".img"
+#define ENABLE_DRIVER_NEO6M			1
 
 #elif PLATFORM_TR6260
 

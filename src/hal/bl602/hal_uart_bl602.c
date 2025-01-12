@@ -97,7 +97,7 @@ int fd_console = -1;
 
 static void console_cb_read(int fd, void* param)
 {
-	char buffer[64];  /* adapt to usb cdc since usb fifo is 64 bytes */
+	char buffer[256];  /* adapt to usb cdc since usb fifo is 64 bytes */
 	int ret;
 	int i;
 
@@ -108,7 +108,7 @@ static void console_cb_read(int fd, void* param)
 		{
 			fd_console = fd;
 			buffer[ret] = 0;
-			addLogAdv(LOG_INFO, LOG_FEATURE_ENERGYMETER, "BL602 received: %s\n", buffer);
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_ENERGYMETER, "BL602 received: %s\n", buffer);
 			for(i = 0; i < ret; i++)
 			{
 				UART_AppendByteToReceiveRingBuffer(buffer[i]);
