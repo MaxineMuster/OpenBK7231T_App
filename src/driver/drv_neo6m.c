@@ -137,8 +137,8 @@ void parseGPS(char *data){
 		
 		
 		bool timeread =0, dateread=0;
-		if (Nvalue[NMEA_TIME]) timeread = (sscanf (Nvalue[NMEA_TIME],"%2d%2d%2d.%d",&H,&M,&S,&SS) >=3);
-		if (Nvalue[NMEA_DATE]) dateread = (sscanf (Nvalue[NMEA_DATE],"%2d%2d%2d",&DD,&MM,&YY) ==3);
+		timeread = (sscanf (Nvalue[NMEA_TIME],"%2d%2d%2d.%d",&H,&M,&S,&SS) >=3);
+		dateread = (sscanf (Nvalue[NMEA_DATE],"%2d%2d%2d",&DD,&MM,&YY) ==3);
 		YY+=2000;
 
 		gpslocked=(Nvalue[NMEA_LOCK][0]=='A');
@@ -163,11 +163,11 @@ void parseGPS(char *data){
 //		sscanf (Nvalue[NMEA_LAT],"%2f%f",&Lat_f,&frac);			// Lat_f now contains whole part of degrees
 //		sscanf (Nvalue[NMEA_LAT],"%2d%f",&whole,&frac);			// whole now contains whole part of degrees
 //		sscanf (Nvalue[NMEA_LAT],"%f",&frac);			// frac now contains the complete float (degrees + minutes)
-		if (Nvalue[NMEA_LAT]) {
-			Lat_f=atof(Nvalue[NMEA_LAT]);
-			whole=(int)(Lat_f/100);
-			Lat_f=(float)whole + (Lat_f - 100*whole)/60;
-		}
+
+		Lat_f=atof(Nvalue[NMEA_LAT]);
+		whole=(int)(Lat_f/100);
+		Lat_f=(float)whole + (Lat_f - 100*whole)/60;
+
 
 
 		if (Nvalue[NMEA_LONG_DIR][0]) EW=Nvalue[NMEA_LONG_DIR][0];
@@ -176,12 +176,9 @@ void parseGPS(char *data){
 //		sscanf (Nvalue[NMEA_LONG],"%f",&frac);					// frac now contains the complete float (degrees + minutes)
 
 
-		if (Nvalue[NMEA_LONG]){
-			Long_f = atof(Nvalue[NMEA_LONG]);
-			whole = (int)(Long_f/100);
-			Long_f=(float)whole + (Long_f - 100*whole)/60;
-		}
-		
+		Long_f = atof(Nvalue[NMEA_LONG]);
+		whole = (int)(Long_f/100);
+		Long_f=(float)whole + (Long_f - 100*whole)/60;
 		ADDLOG_INFO(LOG_FEATURE_DRV, 
 			    "Read GPS DATA:%02i.%02i.%i - %02i:%02i:%02i.%02i (epoch=%u) LAT=%f%c - LONG=%f%c  \r\n", DD,MM,YY,H,M,S,SS,obkmktime(YY,MM-1,DD,H,M,S),Lat_f,NS,Long_f,EW);
 
