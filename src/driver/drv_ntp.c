@@ -57,6 +57,7 @@ static struct sockaddr_in g_address;
 static int adrLen;
 // in seconds, before next retry
 static int g_ntp_delay = 0;
+static int g_ntp_syncinterval=60;
 static bool g_synced;
 // time offset (time zone?) in seconds
 //#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
@@ -178,8 +179,8 @@ void NTP_Init() {
 	//cmddetail:"fn":"NTP_Info","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_info", NTP_Info, NULL);
-
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
+    g_ntp_syncinterval = Tokenizer_GetArgIntegerDefault(1, 60);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d, syncing every %i seconds", CFG_GetNTPServer(), g_timeOffsetSeconds,g_ntp_syncinterval);
     g_synced = false;
 }
 
@@ -213,7 +214,7 @@ void NTP_Shutdown() {
     }
     g_ntp_socket = 0;
     // can attempt in next 10 seconds
-    g_ntp_delay = 60;
+    g_ntp_delay = g_ntp_syncinterval-1;
 }
 void NTP_SendRequest(bool bBlocking) {
     byte *ptr;

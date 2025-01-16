@@ -107,7 +107,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
+	//drvdetail:"descr":"NTP driver is used to get current time and date from web. Without it, there is no correct datetime. You can add a value for a sync interval in seconds (defaults to 60 seconds). Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
 	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NTP_Stop , NULL, false },
 #endif
