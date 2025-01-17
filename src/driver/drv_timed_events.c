@@ -328,6 +328,15 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 	if (sscanf(s, "%2d:%2d:%2d", &hour, &minute, &second) >= 2) {
 		// hour, minute and second has correct value parsed
 	}
+	else if (sscanf(str, "addsecs(%d)", &addsec) >0) {
+		time_t tmptime;
+		tmptime=Clock_GetCurrentTime()+addsec;
+		struct tm *ltm;,
+		ltm=gmtime(&tmptime);
+		hour=ltm->tm_hour;
+		minute=ltm->tm_min;
+		second=ltm->tm_sec;
+	}
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 //#include <string.h>
 //	else if (strcasestr(s, "sunrise")) {	// eg W800 won't have strcasestr, so use wal_stricmp from new_common
