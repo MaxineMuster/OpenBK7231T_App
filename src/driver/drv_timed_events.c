@@ -305,7 +305,7 @@ int CLOCK_RemoveEvent(int id) {
 // Example: do event every Wednesday at sunrise
 // addClockEvent sunrise 0x08 12 POWER OFF
 commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const char *args, int cmdFlags) {
-	int hour, minute = 0, second = 0;
+	int hour, minute = 0, second = 0, addsec = 0;
 	const char *s;
 	int flags;
 	int id;
