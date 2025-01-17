@@ -331,7 +331,7 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 	else if (sscanf(s, "addsecs(%d)", &addsec) >0) {
 		time_t tmptime;
 		tmptime=Clock_GetCurrentTime()+addsec;
-		struct tm *ltm;,
+		struct tm *ltm;
 		ltm=gmtime(&tmptime);
 		hour=ltm->tm_hour;
 		minute=ltm->tm_min;
