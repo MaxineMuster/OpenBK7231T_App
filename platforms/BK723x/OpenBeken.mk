@@ -137,6 +137,7 @@ APP_C += $(OBK_DIR)/driver/drv_uart.c
 APP_C += $(OBK_DIR)/driver/drv_ucs1912.c
 APP_C += $(OBK_DIR)/driver/drv_wemo.c
 APP_C += $(OBK_DIR)/driver/drv_ds1820_simple.c
+APP_C += $(OBK_DIR)/driver/drv_neo6m.c
 APP_C += $(OBK_DIR)/httpclient/http_client.c
 APP_C += $(OBK_DIR)/httpclient/utils_net.c
 APP_C += $(OBK_DIR)/httpclient/utils_timer.c
