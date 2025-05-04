@@ -260,7 +260,7 @@ void NEO6M_UART_Init(void) {
 	Init();
 
 	NEO6M_baudRate = Tokenizer_GetArgIntegerDefault(1, 9600);
-	UART_InitUART(NEO6M_baudRate, 0);
+	UART_InitUART(NEO6M_baudRate, 0, 0);
 	UART_InitReceiveRingBuffer(NEO6M_UART_RECEIVE_BUFFER_SIZE);
 	UART_WriteDisableNMEA();
 	
@@ -315,8 +315,10 @@ ADDLOG_INFO(LOG_FEATURE_DRV, "EO6M_UART_RunEverySecond: calling UART_WritePollRe
 }
 
 
-void NEO6M_AppendInformationToHTTPIndexPage(http_request_t *request)
+void NEO6M_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 {
+	if (bPreState)
+		return;
 	if (gpslocked) hprintf255(request, "<h5>GPS: %i-%02i-%02iT%02i:%02i:%02i Lat: %f%c Long: %f%c </h5>", YY,MM,DD,H,M,S,Lat_f,NS,Long_f,EW);
 }
 #endif // ENABLE_DRIVER_NEO6M
