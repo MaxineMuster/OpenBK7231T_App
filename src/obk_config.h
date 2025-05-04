@@ -28,6 +28,11 @@
 #define NO_CHIP_TEMPERATURE			1
 #define OBK_DISABLE_ALL_DRIVERS		1
 
+#elif PLATFORM_XR872
+
+#define NO_CHIP_TEMPERATURE			1
+#define OBK_DISABLE_ALL_DRIVERS		1
+
 #elif PLATFORM_W600
 
 // parse things like $CH1 or $hour etc
@@ -72,7 +77,16 @@
 
 #elif WINDOWS
 
+#if LINUX
 
+#else
+
+#define ENABLE_SDL_WINDOW	1
+
+#endif
+
+
+#define	ENABLE_DRIVER_PIR		1
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
@@ -126,6 +140,7 @@
 #define ENABLE_DRIVER_SGP				1
 #define ENABLE_DRIVER_SHIFTREGISTER		1
 #define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_OBK_BERRY				1
 
 #elif PLATFORM_BL602
 
@@ -160,7 +175,6 @@
 
 #elif PLATFORM_BEKEN
 
-
 #define	ENABLE_HA_DISCOVERY		1
 #define ENABLE_SEND_POSTANDGET		1
 #define ENABLE_MQTT 1
@@ -174,7 +188,7 @@
 #define ENABLE_DRIVER_BL0942    1
 #define ENABLE_DRIVER_BL0942SPI 1
 #define ENABLE_DRIVER_CSE7766   1
-#define ENABLE_DRIVER_BMP280 1
+//#define ENABLE_DRIVER_BMP280 1
 //#define ENABLE_DRIVER_PT6523	1
 //#define ENABLE_DRIVER_MAX6675	1
 //#define ENABLE_DRIVER_TEXTSCROLLER	1
@@ -192,7 +206,7 @@
 #define ENABLE_DRIVER_HUE		1
 //#define ENABLE_DRIVER_CHARGINGLIMIT		1
 #define ENABLE_DRIVER_BATTERY	1
-#if PLATFORM_BK7231N
+#if PLATFORM_BK7231N && !PLATFORM_BEKEN_NEW
 //#define ENABLE_DRIVER_PWM_GROUP 1
 #define ENABLE_DRIVER_SM16703P 1
 #define ENABLE_DRIVER_PIXELANIM	1
@@ -218,6 +232,10 @@
 //#define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define OBK_OTA_EXTENSION 		".rbl"
 #define ENABLE_DRIVER_NEO6M			1
+#if PLATFORM_BEKEN_NEW
+#define NEW_TCP_SERVER				1
+#endif
+// #define ENABLE_OBK_BERRY			1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -247,6 +265,7 @@
 #define ENABLE_TASMOTA_JSON		1
 #define ENABLE_DRIVER_DS1820		1
 #define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_DRIVER_SSDP			1
 #define OBK_OTA_EXTENSION 		".bin"
 #define OBK_OTA_NAME_EXTENSION 		"_OTA"
 
@@ -284,20 +303,23 @@
 #elif PLATFORM_TR6260
 
 
-#define	ENABLE_HA_DISCOVERY		1
-#define ENABLE_MQTT 1
-#define NO_CHIP_TEMPERATURE			1
-#define ENABLE_LITTLEFS				1
-#define NEW_TCP_SERVER				1
-#define ENABLE_EXPAND_CONSTANT		1
-#define ENABLE_I2C					1
-#define ENABLE_DRIVER_AHT2X			1
-#define ENABLE_DRIVER_BMPI2C		1
-#define ENABLE_DRIVER_DS1820		1
-#define ENABLE_DRIVER_LED 			1
-#define ENABLE_DRIVER_WEMO			1
-#define ENABLE_DRIVER_SSDP			1
-#define ENABLE_OBK_SCRIPTING		1
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define NO_CHIP_TEMPERATURE						1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_I2C								1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_DRIVER_BMPI2C					1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_LED 						1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+
+#define OBK_OTA_EXTENSION 						".img"
 
 #elif PLATFORM_RTL87X0C
 
@@ -324,7 +346,67 @@
 #define ENABLE_DRIVER_BL0942		1
 #define ENABLE_DRIVER_BL0937		1
 #define ENABLE_DRIVER_CSE7766		1
-#define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY			1
+#define OBK_OTA_EXTENSION 			".img"
+#define ENABLE_OBK_SCRIPTING		1
+
+#elif PLATFORM_RTL8710B || PLATFORM_RTL8710A || PLATFORM_RTL8720D
+
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define NO_CHIP_TEMPERATURE						1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_TASMOTADEVICEGROUPS				1
+#define ENABLE_NTP								1
+#define ENABLE_CALENDAR_EVENTS					1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_I2C								1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_DRIVER_BMPI2C					1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_LED 						1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_CHT83XX					1
+#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_BL0942					1
+#define ENABLE_DRIVER_BL0937					1
+#define ENABLE_DRIVER_CSE7766					1
+#define ENABLE_DRIVER_UART_TCP					1
+#define OBK_OTA_EXTENSION 						".img"
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_DRIVER_SSDP						1
+
+#elif PLATFORM_ECR6600
+
+#define	ENABLE_HA_DISCOVERY						1
+#define ENABLE_MQTT								1
+#define ENABLE_LITTLEFS							1
+#define NEW_TCP_SERVER							1
+#define ENABLE_EXPAND_CONSTANT					1
+#define ENABLE_I2C								1
+#define ENABLE_DRIVER_AHT2X						1
+#define ENABLE_DRIVER_BMPI2C					1
+#define ENABLE_DRIVER_DS1820					1
+#define ENABLE_DRIVER_DHT						1
+#define ENABLE_DRIVER_LED 						1
+#define ENABLE_DRIVER_WEMO						1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_OBK_SCRIPTING					1
+#define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
+#define ENABLE_DRIVER_SSDP						1
+#define ENABLE_TASMOTA_JSON						1
+#define ENABLE_TASMOTADEVICEGROUPS				1
+#define ENABLE_NTP								1
+#define ENABLE_CALENDAR_EVENTS					1
+#define ENABLE_DRIVER_TUYAMCU					1
+#define ENABLE_DRIVER_BL0942					1
+#define ENABLE_DRIVER_BL0937					1
+
+#define OBK_OTA_EXTENSION 						".img"
 
 #else
 
@@ -342,8 +424,11 @@
 // if power metering chip is enabled, also enable backend for that
 #if ENABLE_DRIVER_BL0937 || ENABLE_DRIVER_BL0942 || ENABLE_DRIVER_BL0942SPI || ENABLE_DRIVER_CSE7766
 #define ENABLE_BL_SHARED	1
+//allow use two BL0942 on two ports  +940 bytes
+//#define ENABLE_BL_TWIN	1
+//allow moving average energy calculation +180 bytes
+//#define ENABLE_BL_MOVINGAVG	1
 #endif
 
 // closing OBK_CONFIG_H
 #endif
-
