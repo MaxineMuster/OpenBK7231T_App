@@ -72,6 +72,7 @@
 #define OBK_OTA_EXTENSION 		".img"
 #define ENABLE_I2C					1
 #define ENABLE_OBK_SCRIPTING			1
+#define ENABLE_DRIVER_NEO6M			1
 
 
 #elif WINDOWS
@@ -169,6 +170,7 @@
 #define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".bin.xz.ota"
 //#define ENABLE_I2C					1
+#define ENABLE_DRIVER_NEO6M			1
 
 
 #elif PLATFORM_BEKEN
@@ -229,6 +231,7 @@
 #define ENABLE_OBK_SCRIPTING			1
 //#define ENABLE_DRIVER_OPENWEATHERMAP	1
 #define OBK_OTA_EXTENSION 		".rbl"
+#define ENABLE_DRIVER_NEO6M			1
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER				1
 #endif
@@ -295,6 +298,7 @@
 #define ENABLE_DRIVER_CHT83XX		1
 #define ENABLE_OBK_SCRIPTING			1
 #define OBK_OTA_EXTENSION 		".img"
+#define ENABLE_DRIVER_NEO6M			1
 
 #elif PLATFORM_TR6260
 
