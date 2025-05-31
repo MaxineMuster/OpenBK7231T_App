@@ -320,7 +320,7 @@ uint32_t setDST() {
 
     tempt = next_DST_switch_epoch + (uint32_t)g_UTCoffset + (dst_config.DSTactive)*dst_config.DSToffset;	// DST calculation is in UTC, so add offset for local time
     
-    ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) -- g_UTCoffset=%u  - DSToffset=%u\r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG),(uint32_t)g_UTCoffset, (dst_config.DSTactive)*dst_config.DSToffset);
+    ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) -- g_UTCoffset=%u  - DSToffset=%u  ## dst_config.isDST1=%i  - dst_config.isDST2=%i\r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG),(uint32_t)g_UTCoffset, (dst_config.DSTactive)*dst_config.DSToffset, dst_config.isDST1, dst_config.isDST2);
 
     return dst_config.DSTactive;
 }
