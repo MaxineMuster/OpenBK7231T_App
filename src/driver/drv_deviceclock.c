@@ -444,7 +444,7 @@ void CLOCK_OnEverySecond()
 #endif
 #if ENABLE_CLOCK_DST
     if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
-    	int8_t old_DST=getDST_offset();
+    	int old_DST=getDST_offset();
 	setDST();
     	addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Passed DST switch time - recalculated DST offset. Was:%i - now:%i",old_DST,getDST_offset());
     }
