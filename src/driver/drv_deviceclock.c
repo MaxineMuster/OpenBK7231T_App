@@ -421,6 +421,9 @@ void CLOCK_Init() {
 	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
 	//cmddetail:"examples":"CLOCK_setDST 0 3 1 2 60 0 10 1 3 0	-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time -- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time "}
     CMD_RegisterCommand("clock_setDST",CLOCK_SetDST, NULL);
+    
+    dst_config.DSTinitialized = 0;
+    
 #endif
 #if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cmddetail:{"name":"clock_setTZ","args":"[Value]",
