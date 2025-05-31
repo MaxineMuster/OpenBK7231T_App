@@ -313,14 +313,14 @@ uint32_t setDST() {
 		dst_config.DSTactive = dst_config.isDST1;
     	}
     	else {
-    		next_DST_switch_epoch = RuleToTime(dst_config.day1, dst_config.month1, dst_config.week1, dst_config.hour1, year+1) - g_UTCoffset - (dst_config.isDST1) * dst_config.DSToffset;
+    		next_DST_switch_epoch = RuleToTime(dst_config.day1, dst_config.month1, dst_config.week1, dst_config.hour1, year+1) - g_UTCoffset - (dst_config.isDST2) * dst_config.DSToffset;
 		dst_config.DSTactive = dst_config.isDST2;
     	}
     }
 
     tempt = next_DST_switch_epoch + (uint32_t)g_UTCoffset + (dst_config.DSTactive)*dst_config.DSToffset;	// DST calculation is in UTC, so add offset for local time
     
-    ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) -- g_UTCoffset=%u  - DSToffset=%u  ## dst_config.isDST1=%i  - dst_config.isDST2=%i\r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG),(uint32_t)g_UTCoffset, (dst_config.DSTactive)*dst_config.DSToffset, dst_config.isDST1, dst_config.isDST2);
+    ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %u (%s) \r\n", (dst_config.DSTactive)?"summer":"standard",  (uint32_t)tempt, TS2STR(tempt,TIME_FORMAT_LONG));
 
     return dst_config.DSTactive;
 }
