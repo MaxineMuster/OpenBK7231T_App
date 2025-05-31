@@ -54,8 +54,11 @@ set(PROJ_ALL_SRC
 	../../../src/driver/drv_max72xx_internal.c
 	../../../src/driver/drv_max72xx_single.c
 	../../../src/driver/drv_mcp9808.c
-	../../../src/driver/drv_ntp_events.c
+#	../../../src/driver/drv_ntp_events.c
 	../../../src/driver/drv_ntp.c
+	../../../src/driver/drv_timed_events.c
+	../../../src/driver/drv_deviceclock.c
+	../../../src/libraries/obktime/obktime.c
 	../../../src/driver/drv_pt6523.c
 	../../../src/driver/drv_pwm_groups.c
 	../../../src/driver/drv_pwmToggler.c
@@ -86,6 +89,7 @@ set(PROJ_ALL_SRC
 #	../../../src/driver/drv_ucs1912.c
 	../../../src/driver/drv_wemo.c
 	../../../src/driver/drv_ds1820_simple.c
+	../../../src/driver/drv_neo6m.c
 	../../../src/hal/espidf/hal_adc_espidf.c
 	../../../src/hal/espidf/hal_flashConfig_espidf.c
 	../../../src/hal/espidf/hal_flashVars_espidf.c

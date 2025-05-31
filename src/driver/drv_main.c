@@ -3,10 +3,12 @@
 #include "drv_bl0937.h"
 #include "drv_bl0942.h"
 #include "drv_bl_shared.h"
+#include "drv_neo6m.h"
 #include "drv_cse7766.h"
 #include "drv_ir.h"
 #include "drv_local.h"
 #include "drv_ntp.h"
+#include "drv_deviceclock.h"
 #include "drv_public.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
@@ -119,8 +121,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
-	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+	{ "NTP",		NTP_Init,			NTP_OnEverySecond,			NTP_AppendInformationToHTTPIndexPage, NULL, NTP_Stop , NULL, NULL, false },
 #endif
+	//drvdetail:{"name":"CLOCK",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"CLOCK driver will allways run. It will usually get time from NTP and handle timed events",
+	//drvdetail:"requires":""}
+	{ "CLOCK",		CLOCK_Init,			CLOCK_OnEverySecond,			NULL, NULL, NULL , NULL, NULL, false },
 #if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
@@ -176,6 +183,13 @@ static driver_t g_drivers[] = {
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). By default, it uses 4800 baud, but you can also enable it with baud 9600 by using 'startDriver BL0942 9600', see [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20957896#20957896)",
 	//drvdetail:"requires":""}
 	{ "BL0942",		BL0942_UART_Init,	BL0942_UART_RunEverySecond,		BL09XX_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, NULL, false },
+#endif
+#if ENABLE_DRIVER_NEO6M
+	//drvdetail:{"name":"NEO6M",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
+	//drvdetail:"requires":""}
+	{ "NEO6M",		NEO6M_UART_Init,	NEO6M_UART_RunEverySecond,		NEO6M_AppendInformationToHTTPIndexPage, NULL, NULL, NULL, false },
 #endif
 #if ENABLE_DRIVER_PWM_GROUP
 	//drvdetail:{"name":"PWMG",
