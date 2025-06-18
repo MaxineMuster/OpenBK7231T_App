@@ -740,12 +740,16 @@ static commandResult_t CMD_Delay_ms(const void *context, const char *cmd, const 
 	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
-	if(g_activeThread == 0) {
-		ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: this can be only used from a script");
-		return CMD_RES_ERROR;
-	}
-
 	del = Tokenizer_GetArgInteger(0);
+	if(g_activeThread == 0) {
+		if (del > 500){
+			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: Delay %i - to high. Only up to 500 ms!\n",del);
+			return CMD_RES_ERROR
+		}
+		ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: CMD delay %i ms\n",del);
+		delay_ms(del);
+		return CMD_RES_ok;
+	}
 
 	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: thread will delay %i\n",del);
 	g_activeThread->currentDelayMS += del;
