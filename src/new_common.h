@@ -468,6 +468,8 @@ OSStatus rtos_suspend_thread(beken_thread_t* thread);
 
 #define kNoErr                      0       //! No error occurred.
 #define rtos_delay_milliseconds OS_MsDelay
+#define delay_ms OS_ThreadSleep
+
 typedef void *beken_thread_arg_t;
 typedef void *beken_thread_t;
 typedef void (*beken_thread_function_t)( beken_thread_arg_t arg );
