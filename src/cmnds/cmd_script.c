@@ -744,7 +744,7 @@ static commandResult_t CMD_Delay_ms(const void *context, const char *cmd, const 
 	if(g_activeThread == 0) {
 		if (del > 500){
 			ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_Delay_ms: Delay %i - to high. Only up to 500 ms!\n",del);
-			return CMD_RES_ERROR
+			return CMD_RES_ERROR;
 		}
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: CMD delay %i ms\n",del);
 		delay_ms(del);
