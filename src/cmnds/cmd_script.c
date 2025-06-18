@@ -748,7 +748,7 @@ static commandResult_t CMD_Delay_ms(const void *context, const char *cmd, const 
 		}
 		ADDLOG_DEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: CMD delay %i ms\n",del);
 		delay_ms(del);
-		return CMD_RES_ok;
+		return CMD_RES_OK;
 	}
 
 	ADDLOG_EXTRADEBUG(LOG_FEATURE_CMD, "CMD_Delay_ms: thread will delay %i\n",del);
