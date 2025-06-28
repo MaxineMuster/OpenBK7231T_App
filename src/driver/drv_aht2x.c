@@ -216,14 +216,6 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 }
 
 
-commandResult_t CMD_AHT2X_AddSensor(const void* context, const char* cmd, const char* args, int cmdFlags){
-    if (g_num_aht2x_sensors >= MAX_AHT2X_SENSORS){
-        ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AHT2X_AddSensor: Maximum number of sensors (%d) reached!", MAX_AHT2X_SENSORS);
-        return CMD_RES_ERROR;
-    }
-    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    AHT2X_AddSensor();
-}
 
 // Initialize a single sensor
 void AHT2X_AddSensor() {
@@ -251,6 +243,16 @@ void AHT2X_AddSensor() {
     AHT2X_Initialization(sensor);
     ADDLOG_INFO(LOG_FEATURE_CMD, "AHT2X_AddSensor: Added AHT2X on pins clk=%d data=%d as sensor # %d!", g_num_aht2x_sensors,sensor->softI2C.pin_clk, sensor->softI2C.pin_data);
     g_num_aht2x_sensors++;
+}
+
+commandResult_t CMD_AHT2X_AddSensor(const void* context, const char* cmd, const char* args, int cmdFlags){
+    if (g_num_aht2x_sensors >= MAX_AHT2X_SENSORS){
+        ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AHT2X_AddSensor: Maximum number of sensors (%d) reached!", MAX_AHT2X_SENSORS);
+        return CMD_RES_ERROR;
+    }
+    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+    AHT2X_AddSensor();
+    return CMD_RES_OK;
 }
 
 
