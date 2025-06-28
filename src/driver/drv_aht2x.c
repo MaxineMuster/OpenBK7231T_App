@@ -87,6 +87,7 @@ void AHT2X_Measure(AHT2X_Sensor* sensor) {
     Soft_I2C_WriteByte(&sensor->softI2C, AHT2X_DAT_TMS2);
     Soft_I2C_Stop(&sensor->softI2C);
 
+ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_Measure: Measuring sensor clk=%d data=%d) .",sensor->softI2C.pin_clk, sensor->softI2C.pin_data);
     bool ready = false;
     rtos_delay_milliseconds(80);
 
@@ -214,13 +215,23 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
     return CMD_RES_OK;
 }
 
+
+commandResult_t CMD_AHT2X_AddSensor(const void* context, const char* cmd, const char* args, int cmdFlags){
+    if (g_num_aht2x_sensors >= MAX_AHT2X_SENSORS){
+        ADDLOG_INFO(LOG_FEATURE_CMD, "CMD_AHT2X_AddSensor: Maximum number of sensors (%d) reached!", MAX_AHT2X_SENSORS);
+        return CMD_RES_ERROR;
+    }
+    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
+    AHT2X_AddSensor();
+}
+
 // Initialize a single sensor
 void AHT2X_AddSensor() {
     if (g_num_aht2x_sensors >= MAX_AHT2X_SENSORS)
         return;
     // Parse args for the sensor
-    int pin_clk = Tokenizer_GetPin(1, 9);
-    int pin_data = Tokenizer_GetPin(2, 14);
+    short pin_clk = Tokenizer_GetPin(1, 9);
+    short pin_data = Tokenizer_GetPin(2, 14);
     int channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
     int channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
 
@@ -238,10 +249,8 @@ void AHT2X_AddSensor() {
     Soft_I2C_PreInit(&sensor->softI2C);
     rtos_delay_milliseconds(100);
     AHT2X_Initialization(sensor);
-    ADDLOG_INFO(LOG_FEATURE_CMD, "AHT2X Sensor added as Sensor # %d !", g_num_aht2x_sensors);
-
-	g_num_aht2x_sensors++;
-	
+    ADDLOG_INFO(LOG_FEATURE_CMD, "AHT2X_AddSensor: Added AHT2X on pins clk=%d data=%d as sensor # %d!", g_num_aht2x_sensors,sensor->softI2C.pin_clk, sensor->softI2C.pin_data);
+    g_num_aht2x_sensors++;
 }
 
 
@@ -272,7 +281,7 @@ void AHT2X_Init() {
 	//cmddetail:"descr":"Add another AHT2X with CLK and DATA pin and (optional) channels for temp and hum",
 	//cmddetail:"fn":"AHT2X_Addsensor","file":"driver/drv_aht2x.c","requires":"",
 	//cmddetail:"examples":"AHT2X_Addsensor 10 11 4 5<br /> Sensor with CLK on pin 10 Data pin 11, channel for temp 4 channel for hum 5"}
-	CMD_RegisterCommand("AHT2X_Addsensor", AHT2X_AddSensor, NULL);
+	CMD_RegisterCommand("AHT2X_Addsensor", CMD_AHT2X_AddSensor, NULL);
 		
 }
 
