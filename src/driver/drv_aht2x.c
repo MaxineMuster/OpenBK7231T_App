@@ -218,14 +218,10 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 
 
 // Initialize a single sensor
-void AHT2X_AddSensor() {
+void AHT2X_AddSensor(short pin_clk,short pin_data,int channel_temp,int channel_humid) {
     if (g_num_aht2x_sensors >= MAX_AHT2X_SENSORS)
         return;
     // Parse args for the sensor
-    short pin_clk = Tokenizer_GetPin(1, 9);
-    short pin_data = Tokenizer_GetPin(2, 14);
-    int channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
-    int channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
 
     AHT2X_Sensor* sensor = &g_aht2x_sensors[g_num_aht2x_sensors];
     sensor->softI2C.pin_clk = pin_clk;
@@ -251,7 +247,11 @@ commandResult_t CMD_AHT2X_AddSensor(const void* context, const char* cmd, const 
         return CMD_RES_ERROR;
     }
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES | TOKENIZER_DONT_EXPAND);
-    AHT2X_AddSensor();
+    short pin_clk = Tokenizer_GetPin(0, 9);
+    short pin_data = Tokenizer_GetPin(1, 14);
+    int channel_temp = Tokenizer_GetArgIntegerDefault(2, -1);
+    int channel_humid = Tokenizer_GetArgIntegerDefault(3, -1);
+    AHT2X_AddSensor(pin_clk,pin_data,channel_temp,channel_humid);
     return CMD_RES_OK;
 }
 
@@ -259,7 +259,12 @@ commandResult_t CMD_AHT2X_AddSensor(const void* context, const char* cmd, const 
 void AHT2X_Init() {
 	// Default: parse args for a single/first sensor on driver start
 	g_num_aht2x_sensors=0; // AddSensor will increase to 1 afterfirst sensor is registered
-	AHT2X_AddSensor();
+	short pin_clk = Tokenizer_GetPin(1, 9);
+	short pin_data = Tokenizer_GetPin(2, 14);
+	int channel_temp = Tokenizer_GetArgIntegerDefault(3, -1);
+	int channel_humid = Tokenizer_GetArgIntegerDefault(4, -1);
+
+	AHT2X_AddSensor(pin_clk,pin_data,channel_temp,channel_humid);
 	//cmddetail:{"name":"AHT2X_Calibrate","args":"<DeltaTemp> [DeltaHumidity - default 0] [Sensor - default 0]",
 	//cmddetail:"descr":"Calibrate the AHT2X Sensor as Tolerance is +/-2 degrees C.",
 	//cmddetail:"fn":"AHT2X_Calibrate","file":"driver/drv_aht2x.c","requires":"",
