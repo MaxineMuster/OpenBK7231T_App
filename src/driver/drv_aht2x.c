@@ -310,15 +310,17 @@ void AHT2X_OnEverySecond() {
             if(sensor->isWorking){
                 AHT2X_Measure(sensor);
             }
+/*
             else {
-ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_OnEverySecond: Sensor %i (clk=%d data=%d) not working, trying to re-init",i,sensor->softI2C.pin_clk, sensor->softI2C.pin_data);
-    Soft_I2C_PreInit(&sensor->softI2C);
-    rtos_delay_milliseconds(100);
-    AHT2X_Initialization(sensor);
-    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Reinit done for sensor %i (clk=%d data=%d) - sensor is %s working!",i,sensor->softI2C.pin_clk, sensor->softI2C.pin_data, sensor->isWorking?'now':'still not' );
-            if(sensor->isWorking)
-                AHT2X_Measure(sensor);
+ 		ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_OnEverySecond: Sensor %i (clk=%d data=%d) not working, trying to re-init",i,sensor->softI2C.pin_clk, sensor->softI2C.pin_data);
+		Soft_I2C_PreInit(&sensor->softI2C);
+		rtos_delay_milliseconds(100);
+		AHT2X_Initialization(sensor);
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "Reinit done for sensor %i (clk=%d data=%d) - sensor is %s working!",i,sensor->softI2C.pin_clk, sensor->softI2C.pin_data, sensor->isWorking?"now":"still not");
+		if(sensor->isWorking)
+          	      AHT2X_Measure(sensor);
             }
+*/
             sensor->secondsUntilNextMeasurement = sensor->secondsBetweenMeasurements;
         }
         if(sensor->secondsUntilNextMeasurement > 0) {
