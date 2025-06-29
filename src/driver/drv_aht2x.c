@@ -241,7 +241,7 @@ void AHT2X_AddSensor() {
     Soft_I2C_PreInit(&sensor->softI2C);
     rtos_delay_milliseconds(100);
     AHT2X_Initialization(sensor);
-    ADDLOG_INFO(LOG_FEATURE_CMD, "AHT2X_AddSensor: Added AHT2X on pins clk=%d data=%d as sensor # %d!", g_num_aht2x_sensors,sensor->softI2C.pin_clk, sensor->softI2C.pin_data);
+    ADDLOG_INFO(LOG_FEATURE_CMD, "AHT2X_AddSensor: Added AHT2X on pins clk=%d data=%d as sensor # %d!",sensor->softI2C.pin_clk, sensor->softI2C.pin_data,g_num_aht2x_sensors);
     g_num_aht2x_sensors++;
 }
 
@@ -258,6 +258,7 @@ commandResult_t CMD_AHT2X_AddSensor(const void* context, const char* cmd, const 
 
 void AHT2X_Init() {
 	// Default: parse args for a single/first sensor on driver start
+	g_num_aht2x_sensors=0; // AddSensor will increase to 1 afterfirst sensor is registered
 	AHT2X_AddSensor();
 	//cmddetail:{"name":"AHT2X_Calibrate","args":"<DeltaTemp> [DeltaHumidity - default 0] [Sensor - default 0]",
 	//cmddetail:"descr":"Calibrate the AHT2X Sensor as Tolerance is +/-2 degrees C.",
@@ -292,8 +293,18 @@ void AHT2X_OnEverySecond() {
     for(int i = 0; i < g_num_aht2x_sensors; ++i) {
         AHT2X_Sensor* sensor = &g_aht2x_sensors[i];
         if(sensor->secondsUntilNextMeasurement <= 0) {
+            if(sensor->isWorking){
+                AHT2X_Measure(sensor);
+            }
+            else {
+ADDLOG_INFO(LOG_FEATURE_SENSOR, "AHT2X_OnEverySecond: Sensor %i (clk=%d data=%d) not working, trying to re-init",i,sensor->softI2C.pin_clk, sensor->softI2C.pin_data);
+    Soft_I2C_PreInit(&sensor->softI2C);
+    rtos_delay_milliseconds(100);
+    AHT2X_Initialization(sensor);
+    ADDLOG_INFO(LOG_FEATURE_SENSOR, "Reinit done for sensor %i (clk=%d data=%d) - sensor is %s working!",i,sensor->softI2C.pin_clk, sensor->softI2C.pin_data, sensor->isWorking?'now':still not' );
             if(sensor->isWorking)
                 AHT2X_Measure(sensor);
+            }
             sensor->secondsUntilNextMeasurement = sensor->secondsBetweenMeasurements;
         }
         if(sensor->secondsUntilNextMeasurement > 0) {
