@@ -78,6 +78,15 @@ void AHT2X_StopDriver(AHT2X_Sensor* sensor) {
     AHT2X_SoftReset(sensor);
 }
 
+// find channels used by driver
+bool aht2x_used_channel(int ch){
+    for(int i = 0; i < g_num_aht2x_sensors; ++i) {
+        AHT2X_Sensor* s = &g_aht2x_sensors[i];
+        if (s->channel_temp == ch || s->channel_hum == ch) return true;
+    }
+    return false;
+}
+
 // Measurement
 void AHT2X_Measure(AHT2X_Sensor* sensor) {
     uint8_t data[6] = {0,};
