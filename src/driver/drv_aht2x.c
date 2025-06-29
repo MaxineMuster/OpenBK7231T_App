@@ -82,7 +82,7 @@ void AHT2X_StopDriver(AHT2X_Sensor* sensor) {
 bool aht2x_used_channel(int ch){
     for(int i = 0; i < g_num_aht2x_sensors; ++i) {
         AHT2X_Sensor* s = &g_aht2x_sensors[i];
-        if (s->channel_temp == ch || s->channel_hum == ch) return true;
+        if (s->channel_temp == ch || s->channel_humid == ch) return true;
     }
     return false;
 }
