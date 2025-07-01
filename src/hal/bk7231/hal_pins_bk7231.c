@@ -34,19 +34,19 @@ const char *HAL_PIN_GetPinNameAlias(int index)
 	// some of pins have special roles
 	switch(index)
 	{
-#if PLATFORM_BK7238
+#ifndef PLATFORM_BK7238
+		case 1:		return "RXD2";
+		case 10:	return "RXD1";
+		case 23:	return "ADC3";
+		case 24:	return "PWM4";
+		case 26:	return "PWM5";
+#else
 		case 1:		return "RXD2/ADC5";
 		case 10:	return "RXD1/ADC6";
 		case 26:	return "PWM5/ADC1";
 		case 24:	return "PWM4/ADC2";
 		case 20:	return "ADC3";
 		case 28:	return "ADC4";
-#else
-		case 1:		return "RXD2";
-		case 10:	return "RXD1";
-		case 23:	return "ADC3";
-		case 24:	return "PWM4";
-		case 26:	return "PWM5";
 #endif
 		case 0:		return "TXD2";
 		case 11:	return "TXD1";
@@ -65,24 +65,24 @@ int HAL_PIN_CanThisPinBePWM(int index) {
 	return 1;
 }
 void HAL_PIN_SetOutputValue(int index, int iVal) {
-	bk_gpio_output(index, iVal);
+	gpio_output(index, iVal);
 }
 
 int HAL_PIN_ReadDigitalInput(int index) {
-	return bk_gpio_input(index);
+	return gpio_input(index);
 }
 void HAL_PIN_Setup_Input_Pullup(int index) {
-	bk_gpio_config_input_pup(index);
+	gpio_config(index, GMODE_INPUT_PULLUP);
 }
 void HAL_PIN_Setup_Input_Pulldown(int index) {
-	bk_gpio_config_input_pdwn(index);
+	gpio_config(index, GMODE_INPUT_PULLDOWN);
 }
 void HAL_PIN_Setup_Input(int index) {
-	bk_gpio_config_input(index);
+	gpio_config(index, GMODE_INPUT);
 }
 void HAL_PIN_Setup_Output(int index) {
-	bk_gpio_config_output(index);
-	bk_gpio_output(index, 0);
+	gpio_config(index, GMODE_OUTPUT);
+	gpio_output(index, 0);
 }
 void HAL_PIN_PWM_Stop(int index) {
 	int pwmIndex;
