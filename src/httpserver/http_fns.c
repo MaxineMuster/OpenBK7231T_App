@@ -349,7 +349,9 @@ int http_fn_index(http_request_t* request) {
 		CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "prestate", request);
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
+		poststr(request, "<details open><summary>Driver Status</summary>"); // to "hide" driver output
 		DRV_AppendInformationToHTTPIndexPage(request, true);
+		poststr(request, "</details>"); // end details
 #endif
 
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
