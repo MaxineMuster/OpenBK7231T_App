@@ -352,7 +352,7 @@ int http_fn_index(http_request_t* request) {
 		DRV_AppendInformationToHTTPIndexPage(request, true);
 #endif
 
-		poststr(request, "<details open><summary>Device and Driver Status</summary>"); // to "hide" driver output
+		poststr(request, "<details id='det_main' open><summary>Device and Driver Status</summary>"); // to "hide" driver output
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
@@ -967,7 +967,7 @@ typedef enum {
 			stateStr = "disconnected";
 			colorStr = "yellow";
 		}
-		poststr(request, "<h5><details><summary>"); // to "hide" MQTT output - using status as summary
+		poststr(request, "<h5><details id='det_mqtt'><summary>"); // to "hide" MQTT output - using status as summary
 		hprintf255(request, "MQTT State: <span style=\"color:%s\">%s</span> RES: %d(%s)", colorStr,
 			stateStr, MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
 		poststr(request, "</summary>"); // to "hide" driver output
@@ -1050,7 +1050,7 @@ typedef enum {
 	// or we might try and hide/unhide it ...
 */
 //	if (DRV_IsRunning("Charts")) {
-		poststr(request, "<details id='obkchart_detail'><summary>Chart</summary>"); // end details
+		poststr(request, "<details id='det_charts'><summary>Chart</summary>"); // end details
 		poststr(request, "<canvas style='display: none' id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
 		poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
 		poststr(request, "</details>"); // end details
@@ -1076,6 +1076,8 @@ typedef enum {
 		}
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
+
+		poststr(request, "function saveDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{localStorage.setItem(e.id,e.open)})}function loadDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{'true'===localStorage.getItem(e.id)&&(e.open=!0)})}document.querySelectorAll('details').forEach(e=>{e.addEventListener('toggle',saveDetailsState)}),window.addEventListener('load',loadDetailsState);");
 
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);
