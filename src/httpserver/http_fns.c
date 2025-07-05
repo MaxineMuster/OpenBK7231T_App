@@ -967,11 +967,14 @@ typedef enum {
 			stateStr = "disconnected";
 			colorStr = "yellow";
 		}
-		hprintf255(request, "<h5>MQTT State: <span style=\"color:%s\">%s</span> RES: %d(%s)<br>", colorStr,
+		poststr(request, "<h5><details><summary>"); // to "hide" MQTT output - using status as summary
+		hprintf255(request, "MQTT State: <span style=\"color:%s\">%s</span> RES: %d(%s)", colorStr,
 			stateStr, MQTT_GetConnectResult(), get_error_name(MQTT_GetConnectResult()));
+		poststr(request, "</summary>"); // to "hide" driver output
 		hprintf255(request, "MQTT ErrMsg: %s <br>", (MQTT_GetStatusMessage() != NULL) ? MQTT_GetStatusMessage() : "");
-		hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d </h5>", MQTT_GetConnectEvents(),
+		hprintf255(request, "MQTT Stats:CONN: %d PUB: %d RECV: %d ERR: %d", MQTT_GetConnectEvents(),
 			MQTT_GetPublishEventCounter(), MQTT_GetReceivedEventCounter(), MQTT_GetPublishErrorCounter());
+		poststr(request, "</details> </h5>"); // end "hiding" MQTT output
 	}
 #endif
 	/* Format current PINS input state for all unused pins */
@@ -1015,7 +1018,7 @@ typedef enum {
 */
 	// since we can't simply stop showing the graph in updated status, we need to "hide" it if driver was stopped
 	if (! DRV_IsRunning("Charts")) {
-		poststr(request, "<style onload=\"document.getElementById('obkChart').style.display='none'\"></style>");		
+		poststr(request, "<style onload=\"document.getElementById('obkchart_detail').style.display='none'\"></style>");		
 	};
 
 #endif
@@ -1035,7 +1038,7 @@ typedef enum {
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
-		poststr(request, "</details>"); // end details
+		poststr(request, "</details><p>"); // end details
 
 #if ENABLE_DRIVER_CHARTS		
 /*	// moved from drv_charts.c:
@@ -1047,8 +1050,10 @@ typedef enum {
 	// or we might try and hide/unhide it ...
 */
 //	if (DRV_IsRunning("Charts")) {
+		poststr(request, "<details id='obkchart_detail'><summary>Chart</summary>"); // end details
 		poststr(request, "<canvas style='display: none' id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
 		poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
+		poststr(request, "</details>"); // end details
 //	};
 
 #endif
