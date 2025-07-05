@@ -1077,7 +1077,7 @@ typedef enum {
 		poststr(request, "<form action=\"/app\" target=\"_blank\"><input type=\"submit\" value=\"Launch Web Application\"></form> ");
 		poststr(request, "<form action=\"about\"><input type=\"submit\" value=\"About\"/></form>");
 
-		poststr(request, "function saveDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{localStorage.setItem(e.id,e.open)})}function loadDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{'true'===localStorage.getItem(e.id)&&(e.open=!0)})}document.querySelectorAll('details').forEach(e=>{e.addEventListener('toggle',saveDetailsState)}),window.addEventListener('load',loadDetailsState);");
+		poststr(request, "<script>function saveDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{localStorage.setItem(e.id,e.open)})}function loadDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{'true'===localStorage.getItem(e.id)&&(e.open=!0)})}document.querySelectorAll('details').forEach(e=>{e.addEventListener('toggle',saveDetailsState)}),window.addEventListener('load',loadDetailsState);</script>");
 
 		poststr(request, htmlFooterRefreshLink);
 		http_html_end(request);
