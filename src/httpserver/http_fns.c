@@ -349,11 +349,10 @@ int http_fn_index(http_request_t* request) {
 		CMD_Berry_RunEventHandlers_StrPtr(CMD_EVENT_ON_HTTP, "prestate", request);
 #endif
 #ifndef OBK_DISABLE_ALL_DRIVERS
-		poststr(request, "<details open><summary>Driver Status</summary>"); // to "hide" driver output
 		DRV_AppendInformationToHTTPIndexPage(request, true);
-		poststr(request, "</details>"); // end details
 #endif
 
+		poststr(request, "<details open><summary>Device and Driver Status</summary>"); // to "hide" driver output
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
@@ -1036,6 +1035,8 @@ typedef enum {
 	// for normal page loads, show the rest of the HTML
 	if (!http_getArg(request->url, "state", tmpA, sizeof(tmpA))) {
 		poststr(request, "</div>"); // end div#state
+		poststr(request, "</details>"); // end details
+
 #if ENABLE_DRIVER_CHARTS		
 /*	// moved from drv_charts.c:
 	// on every "state" request, JS code will be loaded and canvas is redrawn
