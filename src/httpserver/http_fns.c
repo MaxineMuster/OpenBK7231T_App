@@ -352,7 +352,7 @@ int http_fn_index(http_request_t* request) {
 		DRV_AppendInformationToHTTPIndexPage(request, true);
 #endif
 
-		poststr(request, "<input type='hidden' id='states'><div id='t_state'></div>"); // "states" to store open/collapsed fields "t_state" as temporary place to prepare output, before later assigning whole contetn to state-div
+		poststr(request, "<div  style='display: none' id='t_state'></div>"); // "states" to store open/collapsed fields "t_state" as temporary place to prepare output, before later assigning whole contetn to state-div
 
 		poststr(request, "<details id='det_main' open><summary>Device and Driver Status</summary>"); // to completely "hide" driver output
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
