@@ -1084,7 +1084,6 @@ typedef enum {
 		http_html_end(request);
 	}
 
-	poststr(request, "<script>const states=document.getElementById('states'),hidden=document.getElementById('t_state');function saveState(){state=Array.from(document.getElementById('state').querySelectorAll('details')).map((e=>e.open)),states.value=JSON.stringify(state)}function restoreState(){sv=states.value,sv&&(state=JSON.parse(sv),newDetails=hidden.querySelectorAll('details'),newDetails.forEach(((e,t)=>{e.open=state[t]})))}</script>");
 	poststr(request, NULL);
 	return 0;
 }
