@@ -352,7 +352,9 @@ int http_fn_index(http_request_t* request) {
 		DRV_AppendInformationToHTTPIndexPage(request, true);
 #endif
 
-		poststr(request, "<details id='det_main' open><summary>Device and Driver Status</summary>"); // to "hide" driver output
+		poststr(request, "<input type='hidden' id='states'><div id='t_state'></div>"); // "states" to store open/collapsed fields "t_state" as temporary place to prepare output, before later assigning whole contetn to state-div
+
+		poststr(request, "<details id='det_main' open><summary>Device and Driver Status</summary>"); // to completely "hide" driver output
 		poststr(request, "<div id=\"state\">"); // replaceable content follows
 	}
 
@@ -1082,7 +1084,7 @@ typedef enum {
 		http_html_end(request);
 	}
 
-	poststr(request, "<script>function saveDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{localStorage.setItem(e.id,e.open)})}function loadDetailsState(){const e=document.querySelectorAll('details');e.forEach(e=>{'true'===localStorage.getItem(e.id)&&(e.open=!0)})}document.querySelectorAll('details').forEach(e=>{e.addEventListener('toggle',saveDetailsState)}),window.addEventListener('load',loadDetailsState);</script>");
+	poststr(request, "<script>const states=document.getElementById('states'),hidden=document.getElementById('t_state');function saveState(){state=Array.from(document.getElementById('state').querySelectorAll('details')).map((e=>e.open)),states.value=JSON.stringify(state)}function restoreState(){sv=states.value,sv&&(state=JSON.parse(sv),newDetails=hidden.querySelectorAll('details'),newDetails.forEach(((e,t)=>{e.open=state[t]})))}</script>");
 	poststr(request, NULL);
 	return 0;
 }
