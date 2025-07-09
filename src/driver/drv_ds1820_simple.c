@@ -79,7 +79,9 @@ void DS1820_driver_Init()
 	CMD_RegisterCommand("DS1820_SetResolution", Cmd_SetResolution, NULL);
 	//Find PIN and check device so DS1820_SetResolution could be used in autoexec.bat
 	Pin = PIN_FindPinIndexForRole(IOR_DS1820_IO, -1);
+	DS1820_LOG(INFO, "DS1820_driver_Init()");
 	if (Pin >= 0)
+	DS1820_LOG(INFO, "DS1820_driver_Init() -- Pin=%i",Pin);
 		DS1820_DiscoverFamily();
 };
 
@@ -93,6 +95,7 @@ void DS1820_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSt
 
 static int DS1820_DiscoverFamily()
 {
+	DS1820_LOG(INFO, "DS1820_DiscoverFamily()");
 	if(!OWReset(Pin))
 	{
 //		DS1820_LOG(DEBUG, "Discover Reset failed");
@@ -100,6 +103,7 @@ static int DS1820_DiscoverFamily()
 	}
 
 	// Read ROM
+	DS1820_LOG(INFO, "DS1820_DiscoverFamily() -- start reading ROM");
 	uint8_t ROM[8];
 	OWWriteByte(Pin, READ_ROM);
 	for(int i = 0; i < 8; i++)
@@ -107,6 +111,7 @@ static int DS1820_DiscoverFamily()
 		ROM[i] = OWReadByte(Pin);
 	}
 
+	DS1820_LOG(INFO, "DS1820_DiscoverFamily() -- start checking CRC");
 	// Check CRC
 	uint8_t crc = Crc8CQuick(ROM, 7);
 	if(crc != ROM[7])
