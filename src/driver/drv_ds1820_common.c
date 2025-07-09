@@ -38,7 +38,7 @@ int OWReset(int Pin)
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
 	HAL_Delay_us(OWtimeH);
-#if CONFIG_IDF_TARGET_ESP32
+#ifdef CONFIG_IDF_TARGET_ESP32
 	HAL_PIN_Setup_Input(Pin); // Release the bus
 #else
 	HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
@@ -92,9 +92,11 @@ int OWReadBit(int Pin)
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
 	HAL_Delay_us(1);                 // give sensor time to react on start pulse
-#if CONFIG_IDF_TARGET_ESP32
+#ifdef CONFIG_IDF_TARGET_ESP32
+#pragma message("###################### ESP32 ######################")
 	HAL_PIN_Setup_Input(Pin); // Release the bus
 #else
+#pragma message("###################### non ESP32 ######################")
 	HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
 #endif
 	HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
