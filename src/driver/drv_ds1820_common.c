@@ -32,27 +32,21 @@ int OWReset(int Pin)
 {
 	int result;
 
-/*	noInterrupts();
+	noInterrupts();
 
 	//HAL_Delay_us(OWtimeG);
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
 	HAL_Delay_us(OWtimeH);
-	HAL_PIN_Setup_Input_Pullup(Pin);  // Releases the bus
+#if CONFIG_IDF_TARGET_ESP32
+	HAL_PIN_Setup_Input(Pin); // Release the bus
+#else
+	HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
+#endif
 	HAL_Delay_us(OWtimeI);
 	result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
 
 	interrupts();
-*/
-
-	HAL_PIN_Setup_Output(Pin);
-	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	HAL_Delay_us(OWtimeH);
-	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	HAL_Delay_us(OWtimeI);
-	HAL_PIN_Setup_Input(Pin);
-	result = HAL_PIN_ReadDigitalInput(Pin) ^ 0x01; // Sample for presence pulse from slave
-
 
 	HAL_Delay_us(OWtimeJ); // Complete the reset sequence recovery
 	return result; // Return sample presence pulse result
@@ -95,20 +89,15 @@ int OWReadBit(int Pin)
 	int result;
 
 	noInterrupts();
-/*
 	HAL_PIN_Setup_Output(Pin);
 	HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
 	HAL_Delay_us(1);                 // give sensor time to react on start pulse
+#if CONFIG_IDF_TARGET_ESP32
+	HAL_PIN_Setup_Input(Pin); // Release the bus
+#else
 	HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
+#endif
 	HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
-*/
-
-	HAL_PIN_Setup_Output(Pin);
-	HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-	HAL_Delay_us(OWtimeA);
-	HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
-	HAL_Delay_us(OWtimeE);
-	HAL_PIN_Setup_Input(Pin);
 
 	result = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 	interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
