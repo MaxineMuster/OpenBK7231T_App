@@ -217,7 +217,7 @@ int CLOCK_helper_gmtime(char c){
 
    if (daysleft < 0) {
         tempyear--;
-	if (c =='y') return;
+	if (c =='y') return tempyear;
         // if by subtracting leap days we "changed back" the year, 
         // we will be surely somwhere in december!
 	// no need to take care for leap - we are in "year - 1" and calculated possible leap for this before
@@ -231,11 +231,11 @@ int CLOCK_helper_gmtime(char c){
 	if (c =='y') return tempyear ;    
 	// Calculate month and day
 	while (month < 12 && daysleft >= DaysMonth[month]) {
-		printf("in loop tempyear %i - month=%i daysleft=%i\n",tempyear, month, daysleft);
+//		bk_printf("in loop tempyear %i - month=%i daysleft=%i\n",tempyear, month, daysleft);
 		daysleft  -= DaysMonth[month++];
 		if (month==1 && !((tempyear)%4)){	// we use actual year here, not "year after 1970", so check this for leap!!  
 			daysleft--;
-			printf("LEAP for tempyear %i \n",tempyear);
+//			bk_printf("LEAP for tempyear %i \n",tempyear);
 		}
 	}
 	if (c =='m') return month;
