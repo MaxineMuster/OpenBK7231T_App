@@ -23,7 +23,9 @@ uint32_t g_epochOnStartup = 0;
 int g_UTCoffset = 0;
 
 
+static const uint8_t DaysMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 #if ENABLE_CLOCK_DST
+#define LEAP_YEAR(Y)  ((!(Y%4) && (Y%100)) || !(Y%400))
 static uint32_t Start_DST_epoch=0 , End_DST_epoch=0, next_DST_switch_epoch=0;
 static uint8_t nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart;
 static int8_t g_DST_offset=0, g_DST=-128;	// g_DST_offset: offset during DST; 0: unset / g_DST: actual DST_offset in hours; -128: not initialised
@@ -32,8 +34,6 @@ const uint32_t SECS_PER_MIN = 60UL;
 const uint32_t SECS_PER_HOUR = 3600UL;
 const uint32_t SECS_PER_DAY = 3600UL * 24UL;
 const uint32_t MINS_PER_HOUR = 60UL;
-#define LEAP_YEAR(Y)  ((!(Y%4) && (Y%100)) || !(Y%400))
-static const uint8_t DaysMonth[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 #endif
 
 extern void CLOCK_Init_Events(void);
@@ -181,95 +181,81 @@ int CLOCK_GetSunset()
 #endif
 
 int CLOCK_GetWeekDay() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_wday;
+// simplify, no need for gmtime here
+	return ((int)(Clock_GetCurrentTime()/ 86400 )+4) % 7;	// 1970-01-01 was a Thursday
 }
 int CLOCK_GetHour() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_hour;
+// simplify, no need for gmtime here
+	return (Clock_GetCurrentTime()/3600) % 24;
 }
 int CLOCK_GetMinute() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_min;
+// simplify, no need for gmtime here
+	return (Clock_GetCurrentTime()/60) % 60;
 }
 int CLOCK_GetSecond() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_sec;
+// simplify, no need for gmtime here
+	return Clock_GetCurrentTime() % 60;
 }
-int CLOCK_GetMDay() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
 
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
 
-	if (ltm == 0) {
-		return 0;
+// helper will return 
+// year for c='y'
+// month for c='m'
+// mday for c='d'
+int CLOCK_helper_gmtime(char c){
+   int days = Clock_GetCurrentTime() / 86400 ; // Total days since epoch
+   int tempyear = (days*10 / 3652); // calc approx year - take care for leap years later
+   int month=0;
+   // we devide by 365.2 so take take slightly less than avarage ~ 365,25
+   // aproximation: since 1970 up to 2100 ALL years devidable by 4 are leap 
+   // we don't know where we are inside the actual year (if it's a leap at all) so only count leap years up to the proceeding year 
+   // aproximation: since 1970 up to 2100 ALL years devidable by 4 are leap
+   // but first leap was 1972, so year 2, 6, 10, ... after 1970 are leap !
+   // so we need to check for (tempyear+2)/4 to get leaps. 
+   int daysleft = days - tempyear*365 - (tempyear+1)/4 ;	//( we don't want to check actual year, so test only "tempyear +1" instead of tempyear +2   
+   tempyear += 1970; 
+
+   if (daysleft < 0) {
+        tempyear--;
+	if (c =='y') return;
+        // if by subtracting leap days we "changed back" the year, 
+        // we will be surely somwhere in december!
+	// no need to take care for leap - we are in "year - 1" and calculated possible leap for this before
+	month = 11;
+	if (c =='m') return month;
+	
+	return 31+daysleft+1;	// remember: daysleft was negative!! if its -1, we are on December 31, so add 1 
+    }
+
+    else {
+	if (c =='y') return tempyear ;    
+	// Calculate month and day
+	while (month < 12 && daysleft >= DaysMonth[month]) {
+		printf("in loop tempyear %i - month=%i daysleft=%i\n",tempyear, month, daysleft);
+		daysleft  -= DaysMonth[month++];
+		if (month==1 && !((tempyear)%4)){	// we use actual year here, not "year after 1970", so check this for leap!!  
+			daysleft--;
+			printf("LEAP for tempyear %i \n",tempyear);
+		}
 	}
+	if (c =='m') return month;
+	return daysleft+1;	// if no day left, we are on first day of that month, and so on --> add 1
+	}
+}
 
-	return ltm->tm_mday;
+int CLOCK_GetMDay() {
+// use our helper
+	return CLOCK_helper_gmtime('d');
 }
 int CLOCK_GetMonth() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_mon+1;
+// use our helper
+	return CLOCK_helper_gmtime('m')+1;
 }
+
+
 int CLOCK_GetYear() {
-	struct tm *ltm;
-	time_t act_deviceTime = (time_t)Clock_GetCurrentTime();
-
-	// NOTE: on windows, you need _USE_32BIT_TIME_T 
-	ltm = gmtime(&act_deviceTime);
-
-	if (ltm == 0) {
-		return 0;
-	}
-
-	return ltm->tm_year+1900;
+// use our helper
+	return CLOCK_helper_gmtime('y');
 }
 
 #if ENABLE_CLOCK_DST
@@ -496,7 +482,7 @@ void CLOCK_OnEverySecond()
 #if ENABLE_CALENDAR_EVENTS
 	CLOCK_RunEvents(Clock_GetCurrentTime(), Clock_IsTimeSynced());
 #endif
-#if ENABLE_CLOCK_DST && ENABLE_NTP
+#if ENABLE_CLOCK_DST
     if (useDST && (Clock_GetCurrentTimeWithoutOffset() >= next_DST_switch_epoch)){
     	int8_t old_DST=g_DST;
 	setDST();
