@@ -202,8 +202,9 @@ int CLOCK_GetSecond() {
 // year for c='y'
 // month for c='m'
 // mday for c='d'
-int CLOCK_helper_gmtime(char c){
-   int days = Clock_GetCurrentTime() / 86400 ; // Total days since epoch
+// YYYYmmdd for 'm' (or default) e.g.20250523
+uint32_t CLOCK_helper_gmtime(char c,uint32_t time){
+   int days = time / 86400 ; // Total days since epoch
    int tempyear = (days*10 / 3652); // calc approx year - take care for leap years later
    int month=0;
    // we devide by 365.2 so take take slightly less than avarage ~ 365,25
@@ -224,7 +225,8 @@ int CLOCK_helper_gmtime(char c){
 	month = 11;
 	if (c =='m') return month;
 	
-	return 31+daysleft+1;	// remember: daysleft was negative!! if its -1, we are on December 31, so add 1 
+	if (c =='d') return 31+daysleft+1;	// remember: daysleft was negative!! if its -1, we are on December 31, so add 1 
+	return tempyear*10000+(month+1)*100+31+daysleft+1;
     }
 
     else {
@@ -239,23 +241,24 @@ int CLOCK_helper_gmtime(char c){
 		}
 	}
 	if (c =='m') return month;
-	return daysleft+1;	// if no day left, we are on first day of that month, and so on --> add 1
+	if (c =='d') return daysleft+1;	// if no day left, we are on first day of that month, and so on --> add 1
+	return tempyear*10000+(month+1)*100+daysleft+1;
 	}
 }
 
 int CLOCK_GetMDay() {
 // use our helper
-	return CLOCK_helper_gmtime('d');
+	return (int)CLOCK_helper_gmtime('d',Clock_GetCurrentTime());
 }
 int CLOCK_GetMonth() {
 // use our helper
-	return CLOCK_helper_gmtime('m')+1;
+	return (int)CLOCK_helper_gmtime('m',Clock_GetCurrentTime())+1;
 }
 
 
 int CLOCK_GetYear() {
 // use our helper
-	return CLOCK_helper_gmtime('y');
+	return (int)CLOCK_helper_gmtime('y',Clock_GetCurrentTime());
 }
 
 #if ENABLE_CLOCK_DST
@@ -381,10 +384,11 @@ uint32_t setDST()
 //	g_ntpTime += (g_DST-old_DST)*60*setCLOCK;
 	tempt = (time_t)next_DST_switch_epoch + g_UTCoffset + g_DST_offset*3600*(g_DST>0);
 
-	struct tm *ltm;
-	ltm = gmtime(&tempt);
-	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (UTC) (" LTSTR ")\r\n",
-	(g_DST)?"summer":"standard", next_DST_switch_epoch, LTM2TIME(ltm));
+//	struct tm *ltm;
+//	ltm = gmtime(&tempt);
+	
+	ADDLOG_INFO(LOG_FEATURE_RAW, "In %s time - next DST switch at %lu (UTC) (%u %i:%i local)\r\n",
+	(g_DST)?"summer":"standard", next_DST_switch_epoch, CLOCK_helper_gmtime('a',(uint32_t)tempt),(tempt/3600) % 24,(tempt/60) % 60);
 	return (g_DST!=0);
   }
   else return 0;	// DST not (yet) set or can't be calculated (if ntp not synced)
@@ -538,14 +542,15 @@ void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreSta
 {
 	if (bPreState)
 		return;
-	struct tm *ltm;
+//	struct tm *ltm;
 	time_t tempt = (time_t)Clock_GetCurrentTime();
-	ltm = gmtime(&tempt);
+//	ltm = gmtime(&tempt);
 	char temp[128]={0};
 	if (DRV_IsRunning("NTP")){
 		NTP_Server_Status(temp,sizeof(temp)-1);
 	}
-	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>" LTSTR " (%u) %s</h5>",LTM2TIME(ltm),(uint32_t)tempt,temp);
+//	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>" LTSTR " (%u) %s</h5>",LTM2TIME(ltm),(uint32_t)tempt,temp);
+	if (Clock_IsTimeSynced()) hprintf255(request, "<h5>Local Time: %u %02i:%02i:%02i (%u) %s</h5>",CLOCK_helper_gmtime('a',(uint32_t)tempt),(int)(tempt/3600) % 24,(int)(tempt/60) % 60,(int)(tempt % 60),(uint32_t)tempt,temp);
 }
 
 
