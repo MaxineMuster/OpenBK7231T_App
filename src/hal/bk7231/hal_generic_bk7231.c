@@ -63,7 +63,72 @@ void HAL_Delay_us(int delay) {
 	// starting over again for BK7238
 	// read factors between 5 and 6,7 - using 6 seems a good start
 	// trying with 6.4 - higher values are off else
+/*
 	usleep((64*delay)/10);
+	
+void arch_delay_us(uint32_t us)
+{
+*/
+        uint32_t ret;
+        uint32_t div;
+        uint32_t clk = 0;
+        uint32_t cell;
+        SYS_CTRL_U param;
+
+        ret = sddev_control(SCTRL_DEV_NAME, CMD_GET_SCTRL_CONTROL, &param);
+        BK_ASSERT(SCTRL_SUCCESS == ret); /* ASSERT VERIFIED */
+
+        div = param.bits.mclk_div;
+        switch (param.bits.mclk_mux) {
+        case MCLK_MODE_DCO:
+        case MCLK_MODE_26M_XTAL:
+                clk = 26000000;
+                break;
+
+        case MCLK_MODE_DPLL:
+                clk = 480000000 / (2 << div);
+                break;
+
+        case MCLK_MODE_LPO:
+                clk = 32000;
+                break;
+
+        default:
+                break;
+        }
+
+        BK_ASSERT(clk); /* ASSERT VERIFIED */
+
+        cell = 100 * clk / 26000;
+	
+	cell *= delay;
+	volatile INT32 i, j;
+
+	for (i = 0; i < cell; i ++) {
+		for (j = 0; j < 100; j ++)
+			;
+	}
+
+
+/*        delay(ms_count * cell);
+
+void delay(INT32 num)
+{
+	volatile INT32 i, j;
+
+	for (i = 0; i < num; i ++) {
+		for (j = 0; j < 100; j ++)
+			;
+	}
+}
+*/
+
+
+/*
+}
+*/
+
+	
 #else
 	uint32_t startTick = getTicksCount();
 	if (delay > 1 && startTick != BK_TIMER_FAILURE ){		// be sure, timer works
