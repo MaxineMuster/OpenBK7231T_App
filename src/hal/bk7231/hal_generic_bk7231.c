@@ -6,6 +6,7 @@
 #include "../../beken378/driver/pwm/bk_timer.h"
 #include "../../beken378/driver/include/bk_timer_pub.h"
 #include "../../beken378/func/include/fake_clock_pub.h"
+#include "../../beken378/driver/include/sys_ctrl_pub.h"
 
 // from wlan_ui.c
 void bk_reboot(void);
