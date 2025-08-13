@@ -75,7 +75,7 @@ bool DS3231_ReadTime(ds3231_time_t* time)
 
 uint32_t DS3231_ReadEpoch()
 {
-    ds3231_time_t* time;
+    ds3231_time_t time;
     uint32_t retval = 0;
     if (DS3231_ReadTime(&time)) retval= (uint32_t)DS3231_TimeToEpoch(&time);
     return retval;
