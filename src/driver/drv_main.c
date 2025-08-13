@@ -156,7 +156,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_DS3231
 	//drvdetail:{"name":"DS3231",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"Driver for DS3231 RTC in I2S",
+	//drvdetail:"descr":"Driver for DS3231 RTC. Start with \"startdriver DS3231 <CLK-Pin> <DATA-Pin> [<optional sync>]\". Sync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
 	//drvdetail:"requires":""}
 	{ "DS3231",		DS3231_Init,			DS3231_OnEverySecond,			DS3231_AppendInformationToHTTPIndexPage, NULL, DS3231_Stop, NULL, NULL, false },
 #endif
