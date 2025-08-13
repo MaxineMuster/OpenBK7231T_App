@@ -9,7 +9,7 @@
 #define DS3231_I2C_ADDR (0x68 << 1)
 
 static softI2C_t g_ds3231_softI2C;
-static uint8_t sync = 0;	// 0 do nothing		1 set devicetime to RTC on startup	2 set devicetime to RTC regulary
+static uint8_t sync2device = 0;			// 0 do nothing		1 set devicetime to RTC on startup	2 set devicetime to RTC regulary
 
 
 static uint8_t bcd_to_dec(uint8_t val) {
@@ -203,8 +203,8 @@ void DS3231_Init()
     //cmddetail:"fn":"DS3231_SetEpochCmd","file":"drv/drv_ds3231.c","requires":"",
     //cmddetail:"examples":"DS3231_SetTime 3269879540"}
     CMD_RegisterCommand("DS3231_SetEpoch", DS3231_SetEpochCmd, NULL);
-    sync=Tokenizer_GetArgIntegerDefault(3, 0);
-    if (sync > 0 ) {
+    sync2device=Tokenizer_GetArgIntegerDefault(3, 0);
+    if (sync2device > 0 ) {
 	ADDLOG_INFO(LOG_FEATURE_RAW, "DS3231 set deviceclock to RTC time.");
     	time_t t = DS3231_ReadEpoch();
     	if ( t > g_secondsElapsed + 3600 ) CLOCK_setDeviceTime(t);
@@ -228,6 +228,6 @@ void DS3231_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreSt
 };
 
 void DS3231_OnEverySecond(){
-	if ( sync > 1 && g_secondsElapsed % 60 == 2 )
+	if ( sync2device > 1 && g_secondsElapsed % 60 == 2 )
 		CLOCK_setDeviceTime(DS3231_ReadEpoch());
 };
