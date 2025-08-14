@@ -103,6 +103,78 @@ static int bits_parity(const uint8_t* bits, int count) {
     return p;
 }
 
+int minute;
+int hour;
+int day;
+int weekday;
+int month;
+int year;
+int part_par_date;	// well start and calc parity up to day, so only year is open in ISR
+int partdecoded=0;
+struct tm t;
+int pre_valid=0;
+// DCF77 epoch calculation
+static int dcf77_part_decode(const uint8_t* bits) {
+    pre_valid=0;
+    // Minute: bits 21-27 (7), parity 28
+    minute = bits_to_bcd(bits+21, 7);
+    int minute_parity = bits[28];
+    // Hour: bits 29-34 (6), parity 35
+    hour = bits_to_bcd(bits+29, 6);
+    int hour_parity = bits[35];
+    // Day: bits 36-41 (6)
+    day = bits_to_bcd(bits+36, 6);
+    // Weekday: bits 42-44 (3)
+    weekday = bits_to_bcd(bits+42, 3);
+    // Month: bits 45-49 (5)
+    month = bits_to_bcd(bits+45, 5);
+    // Year: bits 50-57 (8)	--> later
+    
+    // Parity checks  
+    if (bits_parity(bits+21,7) != minute_parity){ 
+    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error minute - wanted %d got %d",bits_parity(bits+21,7), minute_parity);
+    	return 0;
+    }
+    if (bits_parity(bits+29,6) != hour_parity){
+    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error hour - wanted %d got %d",bits_parity(bits+29,6), hour_parity);
+    	return 0;
+    }
+    part_par_date=bits_parity(bits+36,14);		// part parity over bits 36 - 49 (day, weekday and month)
+
+    t.tm_sec = 0;
+    t.tm_min = minute;
+    t.tm_hour = hour;
+    t.tm_mday = day;
+    t.tm_mon = month-1;
+    t.tm_isdst = -1;
+    pre_valid=1;
+    return 1;
+}
+
+static int dcf77_finish_decode(const uint8_t* bits, time_t* epoch_out) {
+    if (!pre_valid){
+    	return 0;
+    }
+    year = bits_to_bcd(bits+50, 8);
+    int date_parity = bits[58];
+    for (int i = 50; i < 58; i++) {
+        part_par_date ^= bits[i];
+    }
+    if (part_par_date != date_parity){
+    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error date - wanted %d got %d",part_par_date, date_parity);
+    	return 0;
+    }
+    t.tm_year = year+100; // DCF77 gives 2-digit year; assume 2000+
+    time_t epoch = mktime(&t);
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %d.%d.%d %d:%d:00",day,month,year+2000,hour,minute);
+    if (epoch_out) *epoch_out = epoch;
+    return 1;
+}
+
+
+
+
+
 // DCF77 epoch calculation
 static int dcf77_decode(const uint8_t* bits, time_t* epoch_out) {
     // Minute: bits 21-27 (7), parity 28
@@ -131,7 +203,7 @@ static int dcf77_decode(const uint8_t* bits, time_t* epoch_out) {
     	return 0;
     }
     if (bits_parity(bits+36,22) != date_parity){
-    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error minute - wanted %d got %d",bits_parity(bits+36,22), date_parity);
+    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error date - wanted %d got %d",bits_parity(bits+36,22), date_parity);
     	return 0;
     }
 
@@ -167,11 +239,16 @@ static void DCF77_ISR_Common() {
     if (dcf77_last_edge_tick == 0) dcf77_last_edge_tick = now;		// start is no detected sync ;-)
     
     addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: gap to prev. interrupt  %i", now - dcf77_last_edge_tick );
+    
+     if (dcf77_pulse_count > 57) {
+     	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: DEBUG: gap to prev. interrupt  %i - pulsecount=%d", now - dcf77_last_edge_tick, dcf77_pulse_count );
+     }
 
     // handle detection of "long gap" == start of sync
     if (now - dcf77_last_edge_tick > DCF77_SYNC_THRESHOLD_MS){
            addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: detected sync pulse > %i", now - dcf77_last_edge_tick );
            dcf77_pulse_count = 0;
+           partdecoded=0;
             dcf77_synced = true;
             // If previous buffer is valid, set time here
             if (dcf77_has_valid_epoch) {
@@ -231,7 +308,9 @@ static void DCF77_ISR_Common() {
         // Buffer full, decode for next minute
         addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: got 59 bits!");
         time_t epoch = 0;
-        int valid = dcf77_decode(dcf77_minute_bits, &epoch);
+//        int valid = dcf77_decode(dcf77_minute_bits, &epoch);
+
+        int valid = dcf77_finish_decode(dcf77_minute_bits, &epoch);
         if (valid && epoch > 1609459200) { // sanity check for 2021+
             dcf77_next_minute_epoch = epoch;
             dcf77_has_valid_epoch = true;
@@ -369,7 +448,11 @@ void DCF77_OnEverySecond() {
     // Nothing needed, all logic is interrupt-driven and sync-based
     char str[60]={0};
     int i;
-    if (dcf77_pulse_count > 57){ 
+    if (dcf77_pulse_count > 53){
+    	if ( partdecoded==0 ){
+    		dcf77_part_decode(dcf77_minute_bits);
+    		partdecoded=1;
+    	}
     	for (i=0; i<dcf77_pulse_count && i<59; i++){ str[i]=dcf77_minute_bits[i] ==0? 'L':'H';} 
     	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: got %02i bits: %s\n", i,str);
     }
