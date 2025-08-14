@@ -268,7 +268,6 @@ void GPIOB_IRQHandler() {
     GPIOA_IRQHandler(); // Same logic for simplicity
 }
 #endif
-#define IRQ_raise_and_fall 1
 #elif PLATFORM_BEKEN
 static void DCF77_Interrupt(void* arg) {
     DCF77_ISR_Common();
@@ -289,7 +288,6 @@ static void DCF77_Interrupt(void* arg) {
 static void DCF77_Interrupt(void* arg) {
     DCF77_ISR_Common();
 }
-#define IRQ_raise_and_fall 1
 #else
 void DCF77_Interrupt(unsigned char pinNum) {
     DCF77_ISR_Common();
@@ -337,6 +335,18 @@ void DCF77_Init_Pins() {
     dcf77param.arg = (void*)0;
     HAL_GPIO_EnableIRQ(xr_dcf77->port, xr_dcf77->pin, &dcf77param);
 #elif PLATFORM_ESP8266 || PLATFORM_ESPIDF
+#if PLATFORM_ESPIDF
+//    from esp-idf/components/hal/include/hal/gpio_types.h
+typedef enum {
+    GPIO_INTR_DISABLE = 0,     /*!< Disable GPIO interrupt                             */
+    GPIO_INTR_POSEDGE = 1,     /*!< GPIO interrupt type : rising edge                  */
+    GPIO_INTR_NEGEDGE = 2,     /*!< GPIO interrupt type : falling edge                 */
+    GPIO_INTR_ANYEDGE = 3,     /*!< GPIO interrupt type : both rising and falling edge */
+    GPIO_INTR_LOW_LEVEL = 4,   /*!< GPIO interrupt type : input low level trigger      */
+    GPIO_INTR_HIGH_LEVEL = 5,  /*!< GPIO interrupt type : input high level trigger     */
+    GPIO_INTR_MAX,
+} gpio_int_type_t;
+#endif
     esp_dcf77 = g_pins + GPIO_DCF77;
     gpio_install_isr_service(0);
     ESP_ConfigurePin(esp_dcf77->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_ANYEGEDGE);
