@@ -7,7 +7,6 @@
 #include "../cmnds/cmd_public.h"
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
-#include "../ota/ota.h"
 #include "drv_local.h" 		//for DRV_IsRunning
 
 
