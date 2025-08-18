@@ -292,7 +292,7 @@ static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
     int year = u64_to_bcd(bits,50, 8);
     int date_parity = (bits & (1ULL <<58)) >>58;
 
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: - no parity check  dcf77_decode_u64 %d.%d.%d %d:%d:00 (weekday=%d)",day,month,year+2000,hour,minute, weekday);    
+    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check)  dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",day,month,year+2000,hour,minute, weekday);    
     // Parity checks  
     if (u64_to_parity(bits,21,7) != minute_parity){ 
     	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error minute - wanted %d got %d",u64_to_parity(bits,21,7), minute_parity);
@@ -625,7 +625,7 @@ void DCF77_OnEverySecond() {
     		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: Summer time bits Z1 and Z2: %d (%s)\n",ST, ST==1? "summer time": ST==2 ? "winter time" : "illegal");
     		// DCF77 will allways broadcast local time in Germany. So to get UTC: if ST==1 (summer time) sub 2h, if ST==2 (winter time) sub 1h to get
     		act_epoch -=  3600 * (3-ST);
-    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %llu (previous: %llu - diff=%llu seconds)\n",act_epoch, last_epoch, (act_epoch - last_epoch));
+//    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %llu (previous: %llu - diff=%llu seconds)\n",act_epoch, last_epoch, (act_epoch - last_epoch));
 		if (ST < 1 || ST > 2){
 			addLogAdv(LOG_ERROR, LOG_FEATURE_RAW, "DCF77: Illegal state of DST indcator (%d)! Not setting time \n",ST);
 			settime=4;
@@ -635,7 +635,7 @@ void DCF77_OnEverySecond() {
     		
     		if (settime==2){
     			// as an additonal sanity check: last time decoded must be one exactly minute (60 seconds) before! 
-    			if ((act_epoch - last_epoch) == 60) CLOCK_setDeviceTime((uint32_t)act_epoch);
+    			if ( (act_epoch - 60) == last_epoch ) CLOCK_setDeviceTime((uint32_t)act_epoch);
     			last_epoch = act_epoch;
     		}
     	}
@@ -650,7 +650,7 @@ void DCF77_OnEverySecond() {
         // Print the bit at position i
         str[i]=((dcfbits >> i) & 1)?'1':'0';
     }
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: %ssynced - state= %i - got %02i bits: %s (last_epoch = %lu)\n",dcf77_synced?"":"not ",settime, i,str, last_epoch);
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: %ssynced - state= %i - got %02i bits: %s \n",dcf77_synced?"":"not ",settime, i,str);
     	    	
 }
 
