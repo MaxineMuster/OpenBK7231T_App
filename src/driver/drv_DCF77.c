@@ -635,7 +635,7 @@ void DCF77_OnEverySecond() {
     		
     		if (settime==2){
     			// as an additonal sanity check: last time decoded must be one exactly minute (60 seconds) before! 
-    			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %u (previous: %u - diff=%u seconds)\n",act_epoch, last_epoch, (act_epoch - last_epoch));
+    			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %u (previous: %u - diff=%u seconds)\n",(uint32_t)act_epoch, (uint32_t)last_epoch, (uint32_t)(act_epoch - last_epoch));
     			if ( (act_epoch - 60) == last_epoch ) CLOCK_setDeviceTime((uint32_t)act_epoch);
     			last_epoch = act_epoch;
     		}
