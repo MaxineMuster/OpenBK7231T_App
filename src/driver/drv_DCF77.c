@@ -46,9 +46,10 @@ espPinMapping_t* esp_dcf77;
 #define IRQ_raise_and_fall 1
 #endif
 
-#define DCF77_PIN_DEFAULT 25
-int GPIO_DCF77 = DCF77_PIN_DEFAULT;
+static uint8_t settime=0;	// use to signal state outside ISR: 0: still collecting bits, 1: 59 bits collected (but not decoded), 2: time successfull decoded, 3: decoding failed, 4: bits for summer-/winter-time not valid
 
+
+int GPIO_DCF77 = -1;
 #if PLATFORM_W600 || PLATFORM_W800
 unsigned int GPIO_DCF77_pin;
 #endif
@@ -63,7 +64,7 @@ static volatile uint8_t dcf77_minute_bits[59];
 static volatile uint8_t dcf77_pulse_count = 0;
 static volatile bool dcf77_synced = false;
 static volatile time_t dcf77_next_minute_epoch = 0;
-static volatile bool dcf77_has_valid_epoch = false;
+//static volatile bool dcf77_has_valid_epoch = false;
 
 static uint32_t get_ms_tick() {
 #ifdef PLATFORM_W600
@@ -243,9 +244,6 @@ static int u64_to_bcd(const uint64_t bits, int pos, int count) {
     // mask out all but last "count" bits
     uint64_t x = (bits >> pos) & ((1ULL  << count) - 1);
     val = (int) x - (( x >> 3) & 30) * 3 ;
-
-    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: u64_to_bcd(%llu, %i, %i) x=%llu - val=%i ",bits, pos, count, x, val);
-
     // factors are: 1,2,4,8,10,20,40,80
     //  we'll use some "magic" to calc with standard 1,2,4,8,16,32,64,128
     //
@@ -323,20 +321,12 @@ static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
     time_t epoch = mktime(&t);
 //    const char *wdays[] = {"Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat","Sun"}; 
 //    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %s %d.%d.%d %d:%d:00",wdays[weekday],day,month,year+2000,hour,minute);
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %d.%d.%d %d:%d:00",day,month,year+2000,hour,minute);
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %02d.%02d.%d %02d:%02d:00",day,month,year+2000,hour,minute);
 
     if (epoch_out) *epoch_out = epoch;
     return 1;
 }
 
-
-
-
-static void DCF77_Reset() {
-    dcf77_pulse_count = 0;
-    dcf77_synced = false;
-    memset((void*)dcf77_minute_bits, 0, sizeof(dcf77_minute_bits));
-}
 /*
 // DCF77 interrupt handler for all platforms
 static void DCF77_ISR_Common() {
@@ -427,9 +417,9 @@ static void DCF77_ISR_Common() {
 */
 
 static uint64_t dcfbits=0;	// we are storing our bits here 
-static uint64_t decodebits=0;	// we copy our bits there, so it can be converted outside ISR 
+//static uint64_t decodebits=0;	// we copy our bits there, so it can be converted outside ISR 
 
-static uint64_t actbit=1;	// helper, "1" (only) at bit position we actually handle; after storing result well left shift it 1 position. to save 1, just OR it with dcfbits
+//static uint64_t actbit=1;	// helper, "1" (only) at bit position we actually handle; after storing result well left shift it 1 position. to save 1, just OR it with dcfbits
 
 // new DCF77 interrupt handler
 //static void DCF77_ISR() {
@@ -445,8 +435,11 @@ static void DCF77_ISR_Common() {
     if (now - dcf77_last_edge_tick > DCF77_SYNC_THRESHOLD_MS){
 //           addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: detected sync pulse > %i", now - dcf77_last_edge_tick );
            dcf77_pulse_count = 0;
-           decodebits=0;
+//           decodebits=0;
+           dcfbits=0;
+           actbit=1;
            dcf77_synced = true;
+           settime=0;
     }
 
     // this ISR is for both rising and falling, start pulse with rising edge
@@ -482,8 +475,9 @@ static void DCF77_ISR_Common() {
     }
     if (dcf77_pulse_count == 59) {
         // Buffer full, copy to decode for next minute (outside ISR)
-        decodebits = dcfbits;
-        dcf77_pulse_count++; // Don't record more until re-synced
+        settime=1;
+       // Wait for next sync
+       dcf77_synced = false;
     }
 }
 
@@ -540,8 +534,12 @@ void DCF77_Interrupt(unsigned char pinNum) {
 }
 #endif
 
-void DCF77_Init_Pins() {
-    GPIO_DCF77 = PIN_FindPinIndexForRole(IOR_DCF77, DCF77_PIN_DEFAULT);
+void DCF77_Init_Pin() {
+    GPIO_DCF77 = PIN_FindPinIndexForRole(IOR_DCF77, -1);
+    if (GPIO_DCF77 < 0 ){ 
+    	addLogAdv(LOG_ERROR, LOG_FEATURE_RAW, "DCF77: No pin defined for DCF77 signal!");
+    	return;
+    }
     HAL_PIN_Setup_Input_Pulldown(GPIO_DCF77);
 
 #if PLATFORM_W600 || PLATFORM_W800
@@ -586,11 +584,11 @@ void DCF77_Init_Pins() {
     ESP_ConfigurePin(esp_dcf77->pin, GPIO_MODE_INPUT, true, false, GPIO_INTR_ANYEDGE);
     gpio_isr_handler_add(esp_dcf77->pin, DCF77_Interrupt, NULL);
 #else
-    HAL_PIN_Setup_Input_Pullup(GPIO_DCF77);
+ 
 #endif
 }
 
-void DCF77_Shutdown_Pins() {
+void DCF77_Shutdown_Pin() {
 #if PLATFORM_W600 || PLATFORM_W800
     tls_gpio_irq_disable(GPIO_DCF77_pin);
 #elif PLATFORM_BEKEN
@@ -610,33 +608,59 @@ void DCF77_Shutdown_Pins() {
 #endif
 }
 
+static time_t act_epoch;
+static time_t last_epoch;
+
 void DCF77_OnEverySecond() {
+
+    if (GPIO_DCF77 < 0){
+	addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: No pin defined! \n");
+    	return;
+    }
+
+    if (settime != 0){
+    	if (settime == 1){
+		uint8_t ST = (uint8_t)((dcfbits >> 17) & 3);	// bits 17 and 18 are Z1 and Z2   - 01 = CEST / 10 = CET  (everything else: illegal) 
+    		settime = dcf77_decode_u64(dcfbits, &act_epoch) ? 2 : 3;
+    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: Summer time bits Z1 and Z2: %d (%s)\n",ST, ST==1? "summer time": ST==2 ? "winter time" : "illegal");
+    		// DCF77 will allways broadcast local time in Germany. So to get UTC: if ST==1 (summer time) sub 2h, if ST==2 (winter time) sub 1h to get
+    		act_epoch -=  3600 * (3-ST);
+    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %llu (previous: %llu - diff=%llu seconds)\n",act_epoch, last_epoch, (act_epoch - last_epoch));
+		if (ST < 1 || ST > 2){
+			addLogAdv(LOG_ERROR, LOG_FEATURE_RAW, "DCF77: Illegal state of DST indcator (%d)! Not setting time \n",ST);
+			settime=4;
+		}
+    	} else {
+    		// do this in "else" path, so it's 1 second after we got all bits ( = second 59)
+    		
+    		if (settime==2){
+    			// as an additonal sanity check: last time decoded must be one exactly minute (60 seconds) before! 
+    			if ((act_epoch - last_epoch) == 60) CLOCK_setDeviceTime((uint32_t)act_epoch);
+    			last_epoch = act_epoch;
+    		}
+    	}
+    }
+
 
     char str[60]={0};
     int i;
-    if (dcf77_pulse_count >= 59 && decodebits){
-    	time_t act_epoch = 0;
-    	if (dcf77_decode_u64(decodebits, &act_epoch)) CLOCK_setDeviceTime((uint32_t)act_epoch);
-    	decodebits=0;
-    }
 
     // Iterate through each bit from the least significant to the most significant
     for (i = 0; i < dcf77_pulse_count && i < 59; i++) {
         // Print the bit at position i
         str[i]=((dcfbits >> i) & 1)?'1':'0';
     }
+    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: %ssynced - state= %i - got %02i bits: %s (last_epoch = %lu)\n",dcf77_synced?"":"not ",settime, i,str, last_epoch);
     	    	
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: got %02i bits: %s\n", i,str);
-//    }
 }
 
 void DCF77_Init(void) {
-    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: DCF77_Init_Pins()\n");
-    DCF77_Init_Pins();
-    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: DCF77_Init_Reset()\n");
-    DCF77_Reset();
+    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: DCF77_Init_Pin()\n");
+    DCF77_Init_Pin();
+    dcf77_pulse_count = 0;
+    dcf77_synced = false;
 }
 void DCF77_Stop(){
-    DCF77_Shutdown_Pins();
+    DCF77_Shutdown_Pin();
 };
 #endif // ENABLE_DRIVER_DCF77

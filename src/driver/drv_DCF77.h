@@ -13,6 +13,6 @@ void DCF77_OnEverySecond(void);
 
 // Optionally, call on shutdown/reconfig
 void DCF77_Stop(void);
-void DCF77_Shutdown_Pins(void);
+void DCF77_Shutdown_Pin(void);
 
 
