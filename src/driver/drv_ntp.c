@@ -10,8 +10,9 @@
 #include "../cmnds/cmd_public.h"
 #include "../httpserver/new_http.h"
 #include "../logging/logging.h"
-#include "../ota/ota.h"
+#include "../hal/hal_ota.h"
 #include "drv_deviceclock.h"	// for CLOCK_Init()
+
 #include "drv_ntp.h"
 
 #define LOG_FEATURE LOG_FEATURE_NTP
@@ -379,15 +380,11 @@ void NTP_OnEverySecond()
 	if (b_ntp_simulatedTime) {
 		return;
 	}
-#elif PLATFORM_BL602
-#elif PLATFORM_W600 || PLATFORM_W800
-#elif PLATFORM_XR809
-#elif PLATFORM_BK7231N || PLATFORM_BK7231T
-    if (ota_progress() != -1)
+#endif
+    if (OTA_GetProgress() != -1)
     {
         return;
     }
-#endif
     if(g_ntp_socket == 0) {
         // if no socket, this is a reconnect delay
         if(g_ntp_delay > 0) {

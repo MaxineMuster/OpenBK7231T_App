@@ -52,7 +52,6 @@ set(OBKM_SRC
 	${OBK_SRCS}httpclient/utils_net.c
 	${OBK_SRCS}httpclient/utils_timer.c
 	${OBK_SRCS}littlefs/our_lfs.c
-	${OBK_SRCS}ota/ota.c
 
 	${OBK_SRCS}driver/drv_main.c
 
@@ -123,6 +122,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spidma.c
 	${OBK_SRCS}driver/drv_ssdp.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c
+	${OBK_SRCS}driver/drv_tca9554.c
 	${OBK_SRCS}driver/drv_tclAC.c
 	${OBK_SRCS}driver/drv_test.c
 	${OBK_SRCS}driver/drv_test_drivers.c
