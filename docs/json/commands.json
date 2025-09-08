@@ -4,7 +4,7 @@
     "args": "[int]",
     "descr": "Sets margines for ADC button codes. For given N margins, there are N+1 possible ADC button values (one should be reserved for 'no button')",
     "fn": "Cmd_ADCButtonMap",
-    "file": "drv/drv_adcButton.c",
+    "file": "driver/drv_adcButton.c",
     "requires": "",
     "examples": ""
   },
@@ -76,7 +76,7 @@
     "args": "",
     "descr": "Adds a new I2C device - PCF8574",
     "fn": "DRV_I2C_AddDevice_PCF8574",
-    "file": "i2c/drv_i2c_main.c",
+    "file": "i2c/drv_i2c_lcd_pcf8574t.c",
     "requires": "",
     "examples": ""
   },
@@ -85,7 +85,7 @@
     "args": "",
     "descr": "Adds a new I2C device - LCM1602",
     "fn": "DRV_I2C_AddDevice_LCM1602",
-    "file": "i2c/drv_i2c_main.c",
+    "file": "i2c/drv_i2c_lcm1602.c",
     "requires": "",
     "examples": ""
   },
@@ -94,7 +94,7 @@
     "args": "",
     "descr": "Adds a new I2C device - MCP23017",
     "fn": "DRV_I2C_AddDevice_MCP23017",
-    "file": "i2c/drv_i2c_main.c",
+    "file": "i2c/drv_i2c_mcp23017.c",
     "requires": "",
     "examples": ""
   },
@@ -103,7 +103,7 @@
     "args": "",
     "descr": "Adds a new I2C device - TC74",
     "fn": "DRV_I2C_AddDevice_TC74",
-    "file": "i2c/drv_i2c_main.c",
+    "file": "i2c/drv_i2c_tc74.c",
     "requires": "",
     "examples": ""
   },
@@ -165,8 +165,8 @@
     "name": "AHT2X_Cycle",
     "args": "[IntervalSeconds]",
     "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
-    "fn": "AHT2X_cycle",
-    "file": "drv/drv_aht2X.c",
+    "fn": "AHT2X_Cycle",
+    "file": "driver/drv_aht2x.c",
     "requires": "",
     "examples": "AHT2X_Cycle 60 <br /> measurement is taken every 60 seconds"
   },
@@ -174,8 +174,8 @@
     "name": "AHT2X_Measure",
     "args": "",
     "descr": "Retrieve OneShot measurement.",
-    "fn": "AHT2X_Measure",
-    "file": "drv/drv_aht2X.c",
+    "fn": "AHT2X_Force",
+    "file": "driver/drv_aht2x.c",
     "requires": "",
     "examples": "AHT2X_Measure"
   },
@@ -184,7 +184,7 @@
     "args": "",
     "descr": "Reinitialize sensor.",
     "fn": "AHT2X_Reinit",
-    "file": "drv/drv_aht2X.c",
+    "file": "driver/drv_aht2x.c",
     "requires": "",
     "examples": "AHT2X_Reinit"
   },
@@ -192,8 +192,8 @@
     "name": "alias",
     "args": "[Alias][Command with spaces]",
     "descr": "add an aliased command, so a command with spaces can be called with a short, nospaced alias",
-    "fn": "alias",
-    "file": "cmnds/cmd_test.c",
+    "fn": "CMD_CreateAliasForCommand",
+    "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
   },
@@ -202,7 +202,7 @@
     "args": "",
     "descr": "Internal usage only. See docs for 'alias' command.",
     "fn": "runcmd",
-    "file": "cmnds/cmd_test.c",
+    "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
   },
@@ -238,7 +238,7 @@
     "args": "[int]",
     "descr": "change cycle of measurement by default every 10 seconds",
     "fn": "Battery_cycle",
-    "file": "drv/drv_battery.c",
+    "file": "driver/drv_battery.c",
     "requires": "",
     "examples": "Battery_cycle 60"
   },
@@ -247,7 +247,7 @@
     "args": "[minbatt][maxbatt][V_divider][Vref][AD Bits]",
     "descr": "measure battery based on ADC. <br />req. args: minbatt in mv, maxbatt in mv. <br />optional: V_divider(2), Vref(default 2400), ADC bits(4096)",
     "fn": "Battery_Setup",
-    "file": "drv/drv_battery.c",
+    "file": "driver/drv_battery.c",
     "requires": "",
     "examples": "Battery_Setup 1500 3000 2 2400 4096"
   },
@@ -265,7 +265,7 @@
     "args": "opts",
     "descr": "BL0942opts 0= default mode (as set in config Flag 26), 3= two BL0942 on both UARTs (bit0 BL0942 on UART1, bit1 BL0942 on UART2)",
     "fn": "CMD_BL0942opts",
-    "file": "driver/drv_pwrCal.c",
+    "file": "driver/drv_bl0942.c",
     "requires": "",
     "examples": ""
   },
@@ -291,8 +291,8 @@
     "name": "BMPI2C_Cycle",
     "args": "[IntervalSeconds]",
     "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
-    "fn": "BMPI2C_cycle",
-    "file": "drv/drv_bmpi2c.c",
+    "fn": "BMPI2C_Cycle",
+    "file": "driver/drv_bmpi2c.c",
     "requires": "",
     "examples": "BMPI2C_Cycle 60 <br /> measurement is taken every 60 seconds"
   },
@@ -309,7 +309,7 @@
     "name": "BP1658CJ_Map",
     "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "Maps the RGBCW values to given indices of BP1658CJ channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP1658CJ_Map 0 1 2 3 4",
-    "fn": "BP1658CJ_Map",
+    "fn": "CMD_LEDDriver_Map",
     "file": "driver/drv_bp1658cj.c",
     "requires": "",
     "examples": ""
@@ -318,7 +318,7 @@
     "name": "BP1658CJ_RGBCW",
     "args": "[HexColor]",
     "descr": "Don't use it. It's for direct access of BP1658CJ driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-    "fn": "BP1658CJ_RGBCW",
+    "fn": "CMD_LEDDriver_WriteRGBCW",
     "file": "driver/drv_bp1658cj.c",
     "requires": "",
     "examples": ""
@@ -336,7 +336,7 @@
     "name": "BP5758D_Map",
     "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "Maps the RGBCW values to given indices of BP5758D channels. This is because BP5758D channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: BP5758D_Map 0 1 2 3 4",
-    "fn": "BP5758D_Map",
+    "fn": "CMD_LEDDriver_Map",
     "file": "driver/drv_bp5758d.c",
     "requires": "",
     "examples": ""
@@ -345,7 +345,7 @@
     "name": "BP5758D_RGBCW",
     "args": "[HexColor]",
     "descr": "Don't use it. It's for direct access of BP5758D driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-    "fn": "BP5758D_RGBCW",
+    "fn": "CMD_LEDDriver_WriteRGBCW",
     "file": "driver/drv_bp5758d.c",
     "requires": "",
     "examples": ""
@@ -453,7 +453,7 @@
     "name": "chSetupLimit",
     "args": "[limitChannelIndex] [maxAllowedLimitChannelDelta] [timeoutOr-1] [commandToRun]",
     "descr": "After executing this command, chargingLimit driver will watch channel for changes and count down timer. When a timer runs our or channel change (from the initial state) is larger than given margin, given command is run",
-    "fn": "ChargingLimit_SetupCommand);",
+    "fn": "ChargingLimit_SetupCommand",
     "file": "driver/drv_chargingLimit.c",
     "requires": "",
     "examples": ""
@@ -462,8 +462,8 @@
     "name": "CHT_Alert",
     "args": "[TempDiff][HumDiff][Freq][FQ]",
     "descr": "Enable alert pin. TempDif (temperature difference is any float higher than 0.05�C) = set detected difference in temperature required for device to wake. HumDiff (humidity difference is any float higher than 0.1%). Freq (time per measurement in s) = 1, 5, 10, 60, 120 (default if wrong = 1). FQ (fault queue number) = 1, 2, 4, 6 (default if wrong = 1)",
-    "fn": "CHT_Alert",
-    "file": "drv/drv_cht8305.c",
+    "fn": "CHT83XX_Alert",
+    "file": "driver/drv_cht8305.c",
     "requires": "",
     "examples": "CHT_Alert 0.5 0 5 2 <br /> alert pin will trigger when temperature deviates by more than 0.5�C. Humidity will be ignored. Sensor measures every 5s with fault queue number 2."
   },
@@ -471,7 +471,7 @@
     "name": "CHT_Calibrate",
     "args": "[DeltaTemp][DeltaHumidity]",
     "descr": "Calibrate the CHT Sensor as Tolerance is +/-2 degrees C.",
-    "fn": "CHT_Calibrate",
+    "fn": "CHT83XX_Calibrate",
     "file": "driver/drv_cht8305.c",
     "requires": "",
     "examples": "CHT_Calibrate -4 10 <br /> meaning -4 on current temp reading and +10 on current humidity reading"
@@ -480,8 +480,8 @@
     "name": "CHT_Cycle",
     "args": "[IntervalSeconds]",
     "descr": "This is the interval between measurements in seconds, by default 1. Max is 255.",
-    "fn": "CHT_cycle",
-    "file": "drv/drv_cht8305.c",
+    "fn": "CHT83XX_Cycle",
+    "file": "driver/drv_cht8305.c",
     "requires": "",
     "examples": "CHT_Cycle 60 <br /> measurement is taken every 60 seconds"
   },
@@ -589,7 +589,7 @@
     "args": "",
     "descr": "Causes a crash",
     "fn": "CMD_CrashNull",
-    "file": "cmnds/cmd_main.c",
+    "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
@@ -724,7 +724,7 @@
     "args": "-",
     "descr": "(Re-)Scan all GPIOs defined for DS1820 for sensors",
     "fn": "CMD_DS18B20_scansensors",
-    "file": "driver/drv_ds1802_simple.c",
+    "file": "driver/drv_ds1820_full.c",
     "requires": "",
     "examples": "DS1820_FULL_scansensors"
   },
@@ -732,8 +732,8 @@
     "name": "DS1820_FULL_SetResolution",
     "args": "[int]",
     "descr": "Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
-    "fn": "Cmd_SetResolution",
-    "file": "drv/drv_ds1820_simple.c",
+    "fn": "Cmd_DS18B20_SetResolution",
+    "file": "driver/drv_ds1820_full.c",
     "requires": "",
     "examples": ""
   },
@@ -742,7 +742,7 @@
     "args": "DS18B20-Addr name [channel]",
     "descr": "Sets a name [and optional channel] to a DS18B20 sensor by sensors address",
     "fn": "CMD_DS18B20_setsensor",
-    "file": "driver/drv_ds1802_simple.c",
+    "file": "driver/drv_ds1820_full.c",
     "requires": "",
     "examples": "DS1820_FULL_setsensor \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"
   },
@@ -751,7 +751,7 @@
     "args": "[int]",
     "descr": "Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
     "fn": "Cmd_SetResolution",
-    "file": "drv/drv_ds1820_simple.c",
+    "file": "driver/drv_ds1820_simple.c",
     "requires": "",
     "examples": ""
   },
@@ -760,7 +760,7 @@
     "args": "[edgeCode][optionalPinIndex]",
     "descr": "DeepSleep (PinDeepSleep) wake configuration command. 0 means always wake up on rising edge, 1 means on falling, 2 means if state is high, use falling edge, if low, use rising. Default is 2. Second argument is optional and allows to set per-pin DSEdge instead of setting it for all pins.",
     "fn": "CMD_DeepSleep_SetEdge",
-    "file": "drv/drv_doorSensorWithDeepSleep.c",
+    "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
   },
@@ -769,7 +769,7 @@
     "args": "[timeSeconds][optionalAutoWakeUpTimeSeconds]",
     "descr": "DoorSensor driver configuration command. Time to keep device running before next sleep after last door sensor change. In future we may add also an option to automatically sleep after MQTT confirms door state receival. You can also use this to extend current awake time (at runtime) with syntax: 'DSTime +10', this will make device stay awake 10 seconds longer. You can also restart current value of awake counter by 'DSTime clear', this will make counter go from 0 again.",
     "fn": "DoorDeepSleep_SetTime",
-    "file": "drv/drv_doorSensorWithDeepSleep.c",
+    "file": "driver/drv_doorSensorWithDeepSleep.c",
     "requires": "",
     "examples": ""
   },
@@ -994,7 +994,7 @@
     "args": "[TODO]",
     "descr": "Sends IR commands for HVAC control (TODO)",
     "fn": "IR_AC_Cmd",
-    "file": "driver/drv_ir.cpp",
+    "file": "driver/drv_ir_new.cpp",
     "requires": "",
     "examples": ""
   },
@@ -1011,8 +1011,8 @@
     "name": "IRParam",
     "args": "[MinSize] [Noise Threshold]",
     "descr": "Set minimal size of the message and noise threshold",
-    "fn": "IR_Enable",
-    "file": "driver/drv_ir.cpp",
+    "fn": "IR_Param",
+    "file": "driver/drv_ir_new.cpp",
     "requires": "",
     "examples": ""
   },
@@ -1056,7 +1056,7 @@
     "name": "KP18058_Map",
     "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "Maps KP18058_Map RGBCW values to given indices of KP18058 channels. This is because KP18058 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: KP18058_Map 0 1 2 3 4",
-    "fn": "KP18058_Map",
+    "fn": "CMD_LEDDriver_Map",
     "file": "driver/drv_kp18058.c",
     "requires": "",
     "examples": ""
@@ -1065,7 +1065,7 @@
     "name": "KP18058_RGBCW",
     "args": "[HexColor]",
     "descr": "Don't use it. It's for direct access of KP18058 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-    "fn": "KP18058_RGBCW",
+    "fn": "CMD_LEDDriver_WriteRGBCW",
     "file": "driver/drv_kp18058.c",
     "requires": "",
     "examples": ""
@@ -1182,8 +1182,8 @@
     "name": "led_gammaCtrl",
     "args": "sub-cmd [par]",
     "descr": "control LED Gamma Correction and Calibration",
-    "fn": "rgb_gamma_control",
-    "file": "cmnds/cmd_rgbGamma.c",
+    "fn": "led_gamma_control",
+    "file": "cmnds/cmd_newLEDDriver.c",
     "requires": "",
     "examples": "led_gammaCtrl on"
   },
@@ -1255,7 +1255,7 @@
     "args": "[FileName][String]",
     "descr": "Appends a string to LFS file",
     "fn": "CMD_LFS_Append",
-    "file": "cmnds/cmd_main.c",
+    "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
   },
@@ -1264,7 +1264,7 @@
     "args": "[FileName][Float]",
     "descr": "Appends a float to LFS file",
     "fn": "CMD_LFS_AppendFloat",
-    "file": "cmnds/cmd_main.c",
+    "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
   },
@@ -1273,7 +1273,7 @@
     "args": "[FileName][Int]",
     "descr": "Appends a Int to LFS file",
     "fn": "CMD_LFS_AppendInt",
-    "file": "cmnds/cmd_main.c",
+    "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
   },
@@ -1282,7 +1282,7 @@
     "args": "[FileName][String]",
     "descr": "Appends a string to LFS file with a next line marker",
     "fn": "CMD_LFS_AppendLine",
-    "file": "cmnds/cmd_main.c",
+    "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
   },
@@ -1318,7 +1318,7 @@
     "args": "[FileName]",
     "descr": "Deletes a LittleFS file",
     "fn": "CMD_LFS_Remove",
-    "file": "cmnds/cmd_main.c",
+    "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
   },
@@ -1336,7 +1336,7 @@
     "args": "[FileName]",
     "descr": "Tests the LFS file reading feature.",
     "fn": "cmnd_lfs_test1",
-    "file": "cmnds/cmd_tasmota.c",
+    "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
@@ -1345,7 +1345,7 @@
     "args": "[FileName]",
     "descr": "Tests the LFS file reading feature.",
     "fn": "cmnd_lfs_test2",
-    "file": "cmnds/cmd_tasmota.c",
+    "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
@@ -1354,7 +1354,7 @@
     "args": "[FileName]",
     "descr": "Tests the LFS file reading feature.",
     "fn": "cmnd_lfs_test3",
-    "file": "cmnds/cmd_tasmota.c",
+    "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
@@ -1372,7 +1372,7 @@
     "args": "[FileName][String]",
     "descr": "Resets a LFS file and writes a new string to it",
     "fn": "CMD_LFS_Write",
-    "file": "cmnds/cmd_main.c",
+    "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
   },
@@ -1381,7 +1381,7 @@
     "args": "[FileName][String]",
     "descr": "Resets a LFS file and writes a new string to it with newline",
     "fn": "CMD_LFS_WriteLine",
-    "file": "cmnds/cmd_main.c",
+    "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
   },
@@ -1515,8 +1515,8 @@
     "name": "MAX72XX_Setup",
     "args": "[Value]",
     "descr": "Sets the maximum current for LED driver.",
-    "fn": "SM2135_Current",
-    "file": "driver/drv_sm2135.c",
+    "fn": "DRV_MAX72XX_Setup",
+    "file": "driver/drv_max72xx_single.c",
     "requires": "",
     "examples": ""
   },
@@ -1525,7 +1525,7 @@
     "args": "",
     "descr": "Maps port expander bit to OBK channel",
     "fn": "DRV_I2C_MCP23017_MapPinToChannel",
-    "file": "i2c/drv_i2c_main.c",
+    "file": "i2c/drv_i2c_mcp23017.c",
     "requires": "",
     "examples": ""
   },
@@ -1542,7 +1542,7 @@
     "name": "MCP9808_AlertMin",
     "args": "[MinT] [OptionalBActiveHigh]",
     "descr": "Setup MCP9809 temperature alert for min mode",
-    "fn": ");",
+    "fn": "MCP9808_AlertMin",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
@@ -1866,7 +1866,7 @@
     "name": "publishFloat",
     "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an float, so you can also use math expressions like $CH10*0.0, etc.",
-    "fn": "MQTT_PublishCommand",
+    "fn": "MQTT_PublishCommandFloat",
     "file": "mqtt/new_mqtt.c",
     "requires": "",
     "examples": ""
@@ -1875,7 +1875,7 @@
     "name": "publishInt",
     "args": "[Topic][Value][bOptionalSkipPrefixAndSuffix]",
     "descr": "Publishes data by MQTT. The final topic will be obk0696FB33/[Topic]/get, but you can also publish under raw topic, by adding third argument - '1'.. You can use argument expansion here, so $CH11 will change to value of the channel 11. This version of command publishes an integer, so you can also use math expressions like $CH10*10, etc.",
-    "fn": "MQTT_PublishCommand",
+    "fn": "MQTT_PublishCommandInteger",
     "file": "mqtt/new_mqtt.c",
     "requires": "",
     "examples": ""
@@ -1974,7 +1974,7 @@
     "name": "scanI2C",
     "args": "[Soft/I2C1/I2C2]",
     "descr": "Scans given I2C line for addresses. I2C driver must be started first.",
-    "fn": "DRV_I2C_MCP23017_MapPinToChannel",
+    "fn": "DRV_I2C_Scan",
     "file": "i2c/drv_i2c_main.c",
     "requires": "",
     "examples": ""
@@ -2254,7 +2254,7 @@
     "args": "[int]",
     "descr": "change cycle of measurement by default every 10 seconds 0 to deactivate",
     "fn": "SGP_cycle",
-    "file": "drv/drv_sgp.c",
+    "file": "driver/drv_sgp.c",
     "requires": "",
     "examples": "SGP_Cycle 60"
   },
@@ -2262,8 +2262,8 @@
     "name": "SGP_GetBaseline",
     "args": "",
     "descr": "SGP Get baseline",
-    "fn": "SGP_GetBaseline",
-    "file": "drv/drv_sgp.c",
+    "fn": "SGP_GetBaselinecmd",
+    "file": "driver/drv_sgp.c",
     "requires": "",
     "examples": "SGP_GetBaseline"
   },
@@ -2271,8 +2271,8 @@
     "name": "SGP_GetVersion",
     "args": "",
     "descr": "SGP : get version",
-    "fn": "SGP_GetVersion",
-    "file": "drv/drv_sgp.c",
+    "fn": "SGP_GetVersioncmd",
+    "file": "driver/drv_sgp.c",
     "requires": "",
     "examples": "SGP_GetVersion"
   },
@@ -2280,8 +2280,8 @@
     "name": "SGP_SoftReset",
     "args": "",
     "descr": "SGP i2C soft reset",
-    "fn": "SGP_SoftReset",
-    "file": "drv/drv_sgp.c",
+    "fn": "SGP_SoftResetcmd",
+    "file": "driver/drv_sgp.c",
     "requires": "",
     "examples": "SGP_SoftReset"
   },
@@ -2325,7 +2325,7 @@
     "name": "SHT_ClearStatus",
     "args": "",
     "descr": "Clear Sensor Status",
-    "fn": "SHT3X_ClearStatus",
+    "fn": "SHT3X_ClearStatusCmd",
     "file": "driver/drv_sht3x.c",
     "requires": "",
     "examples": "SHT_ClearStatusCmd"
@@ -2335,7 +2335,7 @@
     "args": "[int]",
     "descr": "This is the interval between measurements in seconds, by default 10. Max is 255.",
     "fn": "SHT_cycle",
-    "file": "drv/drv_sht3x.c",
+    "file": "driver/drv_sht3x.c",
     "requires": "",
     "examples": "SHT_Cycle 60"
   },
@@ -2343,7 +2343,7 @@
     "name": "SHT_GetStatus",
     "args": "",
     "descr": "Get Sensor Status",
-    "fn": "SHT3X_GetStatus",
+    "fn": "SHT3X_GetStatusCmd",
     "file": "driver/drv_sht3x.c",
     "requires": "",
     "examples": "SHT_GetStatusCmd"
@@ -2388,7 +2388,7 @@
     "name": "SHT_ReadAlert",
     "args": "",
     "descr": "Get Sensor alert configuration",
-    "fn": "SHT3X_ReadAlertcmd",
+    "fn": "SHT3X_ReadAlertCmd",
     "file": "driver/drv_sht3x.c",
     "requires": "",
     "examples": "SHT_ReadAlertCmd"
@@ -2397,7 +2397,7 @@
     "name": "SHT_SetAlert",
     "args": "[temp_high, temp_low, hum_high, hum_low]",
     "descr": "Set Sensor alert configuration",
-    "fn": "SHT3X_SetAlertcmd",
+    "fn": "SHT3X_SetAlertCmd",
     "file": "driver/drv_sht3x.c",
     "requires": "all",
     "examples": "SHT_SetAlertCmd"
@@ -2416,7 +2416,7 @@
     "args": "",
     "descr": "Simons Special Test",
     "fn": "CMD_SimonTest",
-    "file": "cmnds/cmd_main.c",
+    "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
@@ -2424,7 +2424,7 @@
     "name": "SimSaveArgs",
     "args": "",
     "descr": "Internal usage only. Command for OBK self-test in Simulator",
-    "fn": "0);",
+    "fn": "CMD_SelfTest_SaveArgs",
     "file": "selftest/selftest_cfg_via_http.c",
     "requires": "",
     "examples": ""
@@ -2434,7 +2434,7 @@
     "args": "[NumberOfLEDs][ColorOrder]",
     "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with can be any combination of R, G, B, C and W (e.g. RGBW or GRBWC, default is RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "SM16703P_InitForLEDCount",
-    "file": "driver/drv_sm16703P.c",
+    "file": "driver/drv_leds_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -2443,7 +2443,7 @@
     "args": "[index/all] [R] [G] [B]",
     "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "SM16703P_CMD_setPixel",
-    "file": "driver/drv_sm16703P.c",
+    "file": "driver/drv_leds_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -2452,7 +2452,7 @@
     "args": "[bUpdate] [byteOfs] [HexData]",
     "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "SM16703P_CMD_setRaw",
-    "file": "driver/drv_sm16703P.c",
+    "file": "driver/drv_leds_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -2461,7 +2461,7 @@
     "args": "",
     "descr": "This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
     "fn": "SM16703P_StartTX",
-    "file": "driver/drv_sm16703P.c",
+    "file": "driver/drv_leds_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -2478,7 +2478,7 @@
     "name": "SM2135_Map",
     "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "Maps the RGBCW values to given indices of SM2135 channels. This is because SM2135 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2135_Map 0 1 2 3 4",
-    "fn": "SM2135_Map",
+    "fn": "CMD_LEDDriver_Map",
     "file": "driver/drv_sm2135.c",
     "requires": "",
     "examples": ""
@@ -2487,7 +2487,7 @@
     "name": "SM2135_RGBCW",
     "args": "[HexColor]",
     "descr": "Don't use it. It's for direct access of SM2135 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-    "fn": "SM2135_RGBCW",
+    "fn": "CMD_LEDDriver_WriteRGBCW",
     "file": "driver/drv_sm2135.c",
     "requires": "",
     "examples": ""
@@ -2505,7 +2505,7 @@
     "name": "SM2235_Map",
     "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "Maps the RGBCW values to given indices of SM2235 channels. This is because SM2235 channels order is not the same for some devices. Some devices are using RGBCW order and some are using GBRCW, etc, etc. Example usage: SM2235_Map 0 1 2 3 4",
-    "fn": "SM2235_Map",
+    "fn": "CMD_LEDDriver_Map",
     "file": "driver/drv_sm2235.c",
     "requires": "",
     "examples": ""
@@ -2514,7 +2514,7 @@
     "name": "SM2235_RGBCW",
     "args": "[HexColor]",
     "descr": "Don't use it. It's for direct access of SM2235 driver. You don't need it because LED driver automatically calls it, so just use led_basecolor_rgb",
-    "fn": "SM2235_RGBCW",
+    "fn": "CMD_LEDDriver_WriteRGBCW",
     "file": "driver/drv_sm2235.c",
     "requires": "",
     "examples": ""
@@ -2542,7 +2542,7 @@
     "args": "CMD_SPITestFlash_ReadData",
     "descr": "",
     "fn": "CMD_SPITestFlash_ReadData",
-    "file": "cmnds/cmd_main.c",
+    "file": "driver/drv_spi_flash.c",
     "requires": "",
     "examples": ""
   },
@@ -2551,7 +2551,7 @@
     "args": "CMD_SPITestFlash_ReadID",
     "descr": "",
     "fn": "CMD_SPITestFlash_ReadID",
-    "file": "cmnds/cmd_main.c",
+    "file": "driver/drv_spi_flash.c",
     "requires": "",
     "examples": ""
   },
@@ -2587,7 +2587,7 @@
     "args": "",
     "descr": "Causes a stack overflow",
     "fn": "CMD_StackOverflow",
-    "file": "cmnds/cmd_main.c",
+    "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
@@ -2658,7 +2658,7 @@
     "name": "stopBerry",
     "args": "[Berry code]",
     "descr": "Stop Berry VM",
-    "fn": "CMD_StopBerry",
+    "fn": "CMD_StopBerryCommand",
     "file": "cmnds/cmd_berry.c",
     "requires": "",
     "examples": "stopBerry"
@@ -2730,7 +2730,7 @@
     "name": "testAtoi",
     "args": "",
     "descr": "Test atoi function",
-    "fn": "testArgs",
+    "fn": "testAtoi",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2919,8 +2919,8 @@
     "name": "testus",
     "args": "pin <pause in us> <testval 1 in us> [<testval n in us>...]",
     "descr": "tests usleep on given pin ",
-    "fn": "NULL);",
-    "file": "driver/drv_ds1820_simple.c",
+    "fn": "CMD_OW_testus",
+    "file": "driver/drv_ds1820_common.c",
     "requires": "",
     "examples": "testus 11 5 2 4 6 10 20 50 100 200 500"
   },
@@ -2929,7 +2929,7 @@
     "args": "",
     "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes",
     "fn": "CMD_TimeSize",
-    "file": "cmnds/cmd_main.c",
+    "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
@@ -2938,7 +2938,7 @@
     "args": "CMD_TM1650_Test",
     "descr": "",
     "fn": "CMD_TM1650_Test",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -2956,7 +2956,7 @@
     "args": "[CharIndex] [CharCode]",
     "descr": "This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display",
     "fn": "CMD_TMGN_Char",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -2992,7 +2992,7 @@
     "args": "",
     "descr": "Executes a single buttons read on TM/GN LED driver",
     "fn": "CMD_TMGN_Read",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -3001,7 +3001,7 @@
     "args": "[CharIndex] [BitIndex] [BitValue]",
     "descr": "Set given bit of given digit to 1 or 0.",
     "fn": "CMD_TMGN_SetBit",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -3010,7 +3010,7 @@
     "args": "[Interval]",
     "descr": "Setups periodic buttons read on TM/GN LED driver",
     "fn": "CMD_TMGN_SetupButtons",
-    "file": "driver/drv_tm1637.c",
+    "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
   },
@@ -3090,7 +3090,7 @@
     "name": "tuyaMcu_defWiFiState",
     "args": "",
     "descr": "Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899).",
-    "fn": "Cmd_TuyaMCU_Send_RSSI",
+    "fn": "Cmd_TuyaMCU_Set_DefaultWiFiState",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
     "examples": ""
@@ -3262,7 +3262,7 @@
     "args": "[HexString]",
     "descr": "Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself",
     "fn": "CMD_UART_Send_Hex",
-    "file": "driver/drv_tuyaMCU.c",
+    "file": "driver/drv_uart.c",
     "requires": "",
     "examples": ""
   },
