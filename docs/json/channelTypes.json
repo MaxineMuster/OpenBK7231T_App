@@ -371,7 +371,7 @@
     "name": "Pressure_div100",
     "title": "TODO",
     "descr": "Pressure in hPa, but divided by 100",
-    "enum": "Pressure_div100",
+    "enum": "ChType_Pressure_div100",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -403,7 +403,7 @@
     "name": "Motion",
     "title": "TODO",
     "descr": "Motion",
-    "enum": "Motion",
+    "enum": "ChType_Motion",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -459,7 +459,7 @@
     "name": "Motion_n",
     "title": "TODO",
     "descr": "Motion_n",
-    "enum": "Motion_n",
+    "enum": "ChType_Motion_n",
     "file": "new_pins.h",
     "driver": ""
   },
@@ -484,6 +484,14 @@
     "title": "Percent",
     "descr": "TODO",
     "enum": "ChType_Percent",
+    "file": "new_pins.h",
+    "driver": ""
+  },
+  {
+    "name": "StopUpDown",
+    "title": "StopUpDown",
+    "descr": "TODO",
+    "enum": "ChType_StopUpDown",
     "file": "new_pins.h",
     "driver": ""
   },

@@ -12,9 +12,27 @@
     "requires": ""
   },
   {
-    "name": "FREEZE",
+    "name": "TCA9554",
+    "title": "TODO",
+    "descr": "TCA9554.",
+    "requires": ""
+  },
+  {
+    "name": "DMX",
+    "title": "TODO",
+    "descr": "DMX.",
+    "requires": ""
+  },
+  {
+    "name": "Freeze",
     "title": "TODO",
     "descr": "Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
+    "requires": ""
+  },
+  {
+    "name": "TESTSPIFLASH",
+    "title": "TODO",
+    "descr": "TESTSPIFLASH",
     "requires": ""
   },
   {
@@ -42,9 +60,21 @@
     "requires": ""
   },
   {
+    "name": "PinMutex",
+    "title": "TODO",
+    "descr": "PinMutex.",
+    "requires": ""
+  },
+  {
+    "name": "GosundSW2",
+    "title": "TODO",
+    "descr": "GosundSW2",
+    "requires": ""
+  },
+  {
     "name": "TCL",
     "title": "TCL",
-    "descr": "TODO",
+    "descr": "Driver for TCL-based air conditioners",
     "requires": ""
   },
   {
@@ -152,7 +182,7 @@
   {
     "name": "CSE7761",
     "title": "CSE7761",
-    "descr": "TODO",
+    "descr": "Unfinished driver for CSE7761, a single-phase multi-purpose electric energy metering chip that incorporates three sigma delta ADCs, a power calculator, an energy frequency converter, one SPI interface, and one UART interface",
     "requires": ""
   },
   {
@@ -165,6 +195,12 @@
     "name": "MAX6675",
     "title": "TODO",
     "descr": "Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
+    "requires": ""
+  },
+  {
+    "name": "MAX31855",
+    "title": "TODO",
+    "descr": "T",
     "requires": ""
   },
   {
@@ -199,8 +235,14 @@
   },
   {
     "name": "IR2",
-    "title": "IR2",
-    "descr": "TODO",
+    "title": "TODO",
+    "descr": "simple IR2 driver for sending captures from flipper zero",
+    "requires": ""
+  },
+  {
+    "name": "DDPSend",
+    "title": "TODO",
+    "descr": "DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": ""
   },
   {
@@ -354,6 +396,12 @@
     "requires": ""
   },
   {
+    "name": "DS1820_FULL",
+    "title": "TODO",
+    "descr": "Driver for oneWire temperature sensor DS18(B)20.",
+    "requires": ""
+  },
+  {
     "name": "HT16K33",
     "title": "TODO",
     "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
@@ -396,9 +444,15 @@
     "requires": ""
   },
   {
-    "name": "UART to TCP bridge",
+    "name": "UartTCP",
     "title": "TODO",
-    "descr": "UART to TCP, mainly for WiFi Zigbee coordinators.",
+    "descr": "UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
+    "requires": ""
+  },
+  {
+    "name": "TXWCAM",
+    "title": "TODO",
+    "descr": "TXW81X Camera.",
     "requires": ""
   }
 ]

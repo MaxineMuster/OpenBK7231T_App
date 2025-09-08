@@ -66,4 +66,5 @@ Do not add anything here, as it will overwritten with next rebuild.
 | Frequency_div1000 |  For TuyaMCU power metering. Not used for BL09** and CSE** sensors. Divider is used by TuyaMCU, because TuyaMCU sends always values as integers so we have to divide them before displaying on UI |
 | OpenStopClose |  TODO |
 | Percent |  TODO |
+| StopUpDown |  TODO |
 | Max |  This is the current total number of available channel types. |

@@ -152,49 +152,49 @@
   {
     "name": "$mday",
     "title": "$mday",
-    "descr": "TODO",
+    "descr": "Current mday from NTP",
     "requires": ""
   },
   {
     "name": "$month",
     "title": "$month",
-    "descr": "TODO",
+    "descr": "Current month from NTP",
     "requires": ""
   },
   {
     "name": "$year",
     "title": "$year",
-    "descr": "TODO",
+    "descr": "Current Year from NTP",
     "requires": ""
   },
   {
     "name": "$yesterday",
     "title": "$yesterday",
-    "descr": "TODO",
+    "descr": "",
     "requires": ""
   },
   {
     "name": "$today",
     "title": "$today",
-    "descr": "TODO",
+    "descr": "",
     "requires": ""
   },
   {
     "name": "$isDST",
     "title": "$isDST",
-    "descr": "TODO",
+    "descr": "",
     "requires": ""
   },
   {
     "name": "$sunrise",
     "title": "$sunrise",
-    "descr": "TODO",
+    "descr": "Next sunrise as a TimerSeconds from midnight",
     "requires": ""
   },
   {
     "name": "$sunset",
     "title": "$sunset",
-    "descr": "TODO",
+    "descr": "Next sunset as a TimerSeconds from midnight",
     "requires": ""
   },
   {

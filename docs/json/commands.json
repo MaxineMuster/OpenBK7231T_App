@@ -12,7 +12,7 @@
     "name": "ACMode",
     "args": "CMD_ACMode",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_ACMode",
     "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
@@ -21,7 +21,7 @@
     "name": "ADCSmoother",
     "args": "[Pindex] [TotalSamples] [SampleIntervalMS] [TargetChannelADCValue] [MarginValue] [TargetChannel0or1]",
     "descr": "Starts the ADC smoother with given configuration",
-    "fn": "NULL);",
+    "fn": "Cmd_SetupADCSmoother",
     "file": "driver/drv_adcSmoother.c",
     "requires": "",
     "examples": ""
@@ -66,7 +66,7 @@
     "name": "addI2CDevice_ADS1115",
     "args": "",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "DRV_I2C_AddDevice_ADS1115",
     "file": "i2c/drv_i2c_ads1115.c",
     "requires": "",
     "examples": ""
@@ -124,6 +124,15 @@
     "file": "cmnds/cmd_repeatingEvents.c",
     "requires": "",
     "examples": "addRepeatingEventID 2 -1 123 Power0 Toggle"
+  },
+  {
+    "name": "addRepeatingEventUID",
+    "args": "[IntervalSeconds][RepeatsOr-1][UserID][CommandToRun]",
+    "descr": "as addRepeatingEventID, but also automatically cancels previous events with same ID.",
+    "fn": "RepeatingEvents_Cmd_AddRepeatingEvent",
+    "file": "cmnds/cmd_repeatingEvents.c",
+    "requires": "",
+    "examples": "addRepeatingEventUID 2 -1 123 Power0 Toggle"
   },
   {
     "name": "add_dimmer",
@@ -201,7 +210,7 @@
     "name": "Anim",
     "args": "[AnimationIndex]",
     "descr": "Starts given WS2812 animation by index.",
-    "fn": "NULL);",
+    "fn": "PA_Cmd_Anim",
     "file": "driver/drv_pixelAnim.c",
     "requires": "",
     "examples": ""
@@ -210,7 +219,7 @@
     "name": "AnimSpeed",
     "args": "[Interval]",
     "descr": "Sets WS2812 animation speed",
-    "fn": "NULL);",
+    "fn": "PA_Cmd_AnimSpeed",
     "file": "driver/drv_pixelAnim.c",
     "requires": "",
     "examples": ""
@@ -244,18 +253,18 @@
   },
   {
     "name": "berry",
-    "args": "CMD_Berry",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[Berry code]",
+    "descr": "Execute Berry code",
+    "fn": "CMD_Berry",
     "file": "cmnds/cmd_berry.c",
     "requires": "",
-    "examples": ""
+    "examples": "berry 1+2"
   },
   {
     "name": "BL0942opts",
     "args": "opts",
     "descr": "BL0942opts 0= default mode (as set in config Flag 26), 3= two BL0942 on both UARTs (bit0 BL0942 on UART1, bit1 BL0942 on UART2)",
-    "fn": "NULL);",
+    "fn": "CMD_BL0942opts",
     "file": "driver/drv_pwrCal.c",
     "requires": "",
     "examples": ""
@@ -354,10 +363,19 @@
     "name": "Buzzer",
     "args": "CMD_Buzzer",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_Buzzer",
     "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "CAM_Show_Timestamp",
+    "args": "CMD_ShowTimestamp",
+    "descr": "",
+    "fn": "CMD_ShowTimestamp",
+    "file": "driver/drv_txw81x_camera.c",
+    "requires": "NTP",
+    "examples": "CAM_Show_Timestamp 1"
   },
   {
     "name": "cancelRepeatingEvent",
@@ -381,7 +399,7 @@
     "name": "chart_add",
     "args": "[ntp_time][val1][val2]...[valN]",
     "descr": "Adds data to the chart with specified variables at a specific NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-    "fn": "NULL);",
+    "fn": "CMD_Chart_Add",
     "file": "driver/drv_charts.c",
     "requires": "",
     "examples": ""
@@ -390,7 +408,7 @@
     "name": "chart_addNow",
     "args": "[val1][val2]...[valN]",
     "descr": "Adds data to the chart using the current NTP time. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-    "fn": "NULL);",
+    "fn": "CMD_Chart_AddNow",
     "file": "driver/drv_charts.c",
     "requires": "",
     "examples": ""
@@ -399,7 +417,7 @@
     "name": "chart_create",
     "args": "[max_samples][num_vars][num_axes]",
     "descr": "Creates a chart with a specified number of samples, variables, and axes. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-    "fn": "NULL);",
+    "fn": "CMD_Chart_Create",
     "file": "driver/drv_charts.c",
     "requires": "",
     "examples": ""
@@ -408,7 +426,7 @@
     "name": "chart_setAxis",
     "args": "[axis_index][name][flags][label]",
     "descr": "Sets up an axis with a name, flags, and label. Currently flags can be 0 (left axis) or 1 (right axis). See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-    "fn": "NULL);",
+    "fn": "CMD_Chart_SetAxis",
     "file": "driver/drv_charts.c",
     "requires": "",
     "examples": ""
@@ -417,7 +435,7 @@
     "name": "chart_setVar",
     "args": "[var_index][title][axis]",
     "descr": "Associates a variable with a specific axis. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
-    "fn": "NULL);",
+    "fn": "CMD_Chart_SetVar",
     "file": "driver/drv_charts.c",
     "requires": "",
     "examples": ""
@@ -426,7 +444,7 @@
     "name": "Choice",
     "args": "[IndexToExecute][Option0][Option1][Option2][OptionN][etc]",
     "descr": "This will choose a given argument by index and execute it as a command. Index to execute can be a variable like $CH1.",
-    "fn": "NULL);",
+    "fn": "CMD_Choice",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -540,19 +558,10 @@
     "examples": ""
   },
   {
-    "name": "CLOCK_CalcDST",
+    "name": "clock_calcDST",
     "args": "[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
     "descr": "Checks, if actual time is during DST or not.",
     "fn": "CLOCK_CalcDST",
-    "file": "driver/drv_ntp.c",
-    "requires": "",
-    "examples": ""
-  },
-  {
-    "name": "clock_calcDST",
-    "args": "CLOCK_CalcDST",
-    "descr": "",
-    "fn": "NULL);",
     "file": "driver/drv_ntp.c",
     "requires": "",
     "examples": ""
@@ -606,8 +615,17 @@
     "name": "CurrentSet",
     "args": "Current",
     "descr": "Measure the real Current with an external, reliable power meter and enter this Current via this command to calibrate. The calibration is automatically saved in the flash memory.",
-    "fn": "NULL);",
+    "fn": "CalibrateCurrent",
     "file": "driver/drv_pwrCal.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "DDP_Send",
+    "args": "IP host pixelsize delay pData",
+    "descr": "",
+    "fn": "DDP_Send",
+    "file": "driver/drv_ddpSend.c",
     "requires": "",
     "examples": ""
   },
@@ -696,10 +714,37 @@
     "name": "Display",
     "args": "CMD_Display",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_Display",
     "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
+  },
+  {
+    "name": "DS1820_FULL_scansensors",
+    "args": "-",
+    "descr": "(Re-)Scan all GPIOs defined for DS1820 for sensors",
+    "fn": "CMD_DS18B20_scansensors",
+    "file": "driver/drv_ds1802_simple.c",
+    "requires": "",
+    "examples": "DS1820_FULL_scansensors"
+  },
+  {
+    "name": "DS1820_FULL_SetResolution",
+    "args": "[int]",
+    "descr": "Sets resolution for connected DS1820 sensor (9/10/11/12 bits)",
+    "fn": "Cmd_SetResolution",
+    "file": "drv/drv_ds1820_simple.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "DS1820_FULL_setsensor",
+    "args": "DS18B20-Addr name [channel]",
+    "descr": "Sets a name [and optional channel] to a DS18B20 sensor by sensors address",
+    "fn": "CMD_DS18B20_setsensor",
+    "file": "driver/drv_ds1802_simple.c",
+    "requires": "",
+    "examples": "DS1820_FULL_setsensor \"0x28 0x01 0x02 0x03 0x04 0x05 0x06 0x07\" \"kitchen\" 2"
   },
   {
     "name": "DS1820_SetResolution",
@@ -777,7 +822,7 @@
     "name": "FANMode",
     "args": "CMD_FANMode",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_FANMode",
     "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
@@ -876,7 +921,7 @@
     "name": "HT16K33_Blink",
     "args": "HT16K33_Blink",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "HT16K33_Blink",
     "file": "driver/drv_ht16k33.c",
     "requires": "",
     "examples": ""
@@ -885,7 +930,7 @@
     "name": "HT16K33_Brightness",
     "args": "HT16K33_Brightness",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "HT16K33_Brightness",
     "file": "driver/drv_ht16k33.c",
     "requires": "",
     "examples": ""
@@ -894,7 +939,7 @@
     "name": "HT16K33_Char",
     "args": "HT16K33_Char",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "HT16K33_Char",
     "file": "driver/drv_ht16k33.c",
     "requires": "",
     "examples": ""
@@ -903,7 +948,7 @@
     "name": "HT16K33_Print",
     "args": "HT16K33_Print",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "HT16K33_Print",
     "file": "driver/drv_ht16k33.c",
     "requires": "",
     "examples": ""
@@ -912,7 +957,7 @@
     "name": "HT16K33_Raw",
     "args": "HT16K33_Raw",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "HT16K33_Raw",
     "file": "driver/drv_ht16k33.c",
     "requires": "",
     "examples": ""
@@ -921,7 +966,7 @@
     "name": "HT16K33_Test",
     "args": "HT16K33_Test",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "HT16K33_Test",
     "file": "driver/drv_ht16k33.c",
     "requires": "",
     "examples": ""
@@ -939,7 +984,7 @@
     "name": "IndexRefreshInterval",
     "args": "[Interval]",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_IndexRefreshInterval",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -993,7 +1038,7 @@
     "name": "json_test",
     "args": "",
     "descr": "Developer-only command used to test CJSON library",
-    "fn": "NULL);",
+    "fn": "cmnd_json_test",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -1164,7 +1209,7 @@
     "name": "LED_Map",
     "args": "[Ch0][Ch1][Ch2][Ch3][Ch4]",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_LEDDriver_Map",
     "file": "driver/drv_sm15155e.c",
     "requires": "",
     "examples": ""
@@ -1254,7 +1299,7 @@
     "name": "lfs_mkdir",
     "args": "CMD_LFS_MakeDirectory",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_LFS_MakeDirectory",
     "file": "littlefs/our_lfs.c",
     "requires": "",
     "examples": ""
@@ -1452,7 +1497,7 @@
     "name": "MAX72XX_Print",
     "args": "DRV_MAX72XX_Print",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "DRV_MAX72XX_Print",
     "file": "driver/drv_max72xx_single.c",
     "requires": "",
     "examples": ""
@@ -1461,7 +1506,7 @@
     "name": "MAX72XX_Scroll",
     "args": "DRV_MAX72XX_Scroll",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "DRV_MAX72XX_Scroll",
     "file": "driver/drv_max72xx_single.c",
     "requires": "",
     "examples": ""
@@ -1488,7 +1533,7 @@
     "name": "MCP9808_Adr",
     "args": "[HexAdr]",
     "descr": "Sets the I2C address of MCP9808, like 0x30",
-    "fn": "NULL);",
+    "fn": "MCP9808_Adr",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
@@ -1506,7 +1551,7 @@
     "name": "MCP9808_AlertRange",
     "args": "[MinT] [MaxT] [OptionalBActiveHigh]",
     "descr": "Setup MCP9809 temperature alert for range mode",
-    "fn": "NULL);",
+    "fn": "MCP9808_AlertRange",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
@@ -1515,7 +1560,7 @@
     "name": "MCP9808_Calibrate",
     "args": "[DeltaTemperature]",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "MCP9808_Calibrate",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
@@ -1524,7 +1569,7 @@
     "name": "MCP9808_Cycle",
     "args": "[DelayInSeconds]",
     "descr": "Sets MCP9808 measurement interval",
-    "fn": "NULL);",
+    "fn": "MCP9808_cycle",
     "file": "driver/drv_mcp9808.c",
     "requires": "",
     "examples": ""
@@ -1659,7 +1704,7 @@
     "name": "owm_channels",
     "args": "[temperature][humidity][pressure]",
     "descr": "Sets channels that will be used to store OWM response results",
-    "fn": "NULL);",
+    "fn": "CMD_OWM_Channels",
     "file": "driver/drv_openWeatherMap.c",
     "requires": "",
     "examples": ""
@@ -1668,7 +1713,7 @@
     "name": "owm_request",
     "args": "",
     "descr": "Sends OWM request to the API. Do not use it too often, as API may have limits",
-    "fn": "NULL);",
+    "fn": "CMD_OWM_Request",
     "file": "driver/drv_openWeatherMap.c",
     "requires": "",
     "examples": ""
@@ -1677,7 +1722,7 @@
     "name": "owm_setup",
     "args": "[lat][lng][api_key]",
     "descr": "Setups OWM driver for your location and API key",
-    "fn": "NULL);",
+    "fn": "CMD_OWM_Setup",
     "file": "driver/drv_openWeatherMap.c",
     "requires": "",
     "examples": ""
@@ -1740,7 +1785,7 @@
     "name": "PowerMax",
     "args": "[MaxPowerInW]",
     "descr": "Sets the maximum power limit for BL measurement used to filter incorrect values",
-    "fn": "NULL);",
+    "fn": "BL0937_PowerMax",
     "file": "driver/drv_bl0937.c",
     "requires": "",
     "examples": ""
@@ -1748,7 +1793,7 @@
   {
     "name": "PowerSave",
     "args": "[Optional 1 or 0, by default 1 is assumed]",
-    "descr": "Enables dynamic power saving mode on Beken N/T, BL602, W600, W800 and LN882H. In the case of LN882H PowerSave will not work as a startup command, so use in autoexec. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
+    "descr": "Enables dynamic power saving mode on all platforms with the exception of TR6260. On LN882H PowerSave 1 = light sleep and Powersave >1 (eg PowerSave 2) = deeper sleep. On LN882H PowerSave 1 should be used if BL0937 metering is present. On all supported platforms PowerSave 0 can be used to disable power saving.",
     "fn": "CMD_PowerSave",
     "file": "cmnds/cmd_main.c",
     "requires": "",
@@ -1758,7 +1803,7 @@
     "name": "PowerSet",
     "args": "Power",
     "descr": "Measure the real Power with an external, reliable power meter and enter this Power via this command to calibrate. The calibration is automatically saved in the flash memory.",
-    "fn": "NULL);",
+    "fn": "CalibratePower",
     "file": "driver/drv_pwrCal.c",
     "requires": "",
     "examples": ""
@@ -1839,7 +1884,7 @@
     "name": "PWMFrequency",
     "args": "[FrequencyInHz]",
     "descr": "Sets the global PWM frequency.",
-    "fn": "NULL);",
+    "fn": "CMD_PWMFrequency",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -1848,7 +1893,7 @@
     "name": "PWMG_Raw",
     "args": "",
     "descr": "PWM grouping (synchronous PWM)",
-    "fn": "NULL);",
+    "fn": "CMD_PWMG_Raw",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
     "examples": ""
@@ -1857,7 +1902,7 @@
     "name": "PWMG_Set",
     "args": "Duty1Percent Duty2Percent DeadTimePercent Frequency PinA PinB",
     "descr": "PWM grouping (synchronous PWM)",
-    "fn": "NULL);",
+    "fn": "CMD_PWMG_Set",
     "file": "driver/drv_pwm_groups.c",
     "requires": "",
     "examples": ""
@@ -1874,7 +1919,7 @@
   {
     "name": "removeClockEvent",
     "args": "[ID]",
-    "descr": "Removes clock event wtih given ID",
+    "descr": "Removes clock event with given ID",
     "fn": "CMD_NTP_RemoveClockEvent",
     "file": "driver/drv_ntp_events.c",
     "requires": "",
@@ -1956,7 +2001,7 @@
     "name": "SendIR2",
     "args": "CMD_IR2_SendIR2",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_IR2_SendIR2",
     "file": "driver/drv_ir2.c",
     "requires": "",
     "examples": ""
@@ -2073,7 +2118,7 @@
     "name": "SetChannelPrivate",
     "args": "[ChannelIndex][bPrivate]",
     "descr": "Channels marked as private are NEVER published via MQTT and excluded from Home Assistant discovery",
-    "fn": "NULL);",
+    "fn": "CMD_SetChannelPrivate",
     "file": "cmnds/cmd_channels.c",
     "requires": "",
     "examples": ""
@@ -2118,8 +2163,17 @@
     "name": "setMovingAvg",
     "args": "MovingAvg",
     "descr": "Moving average value for power and current. <=1 disable, >=2 count of avg values. The setting is temporary and need to be set at startup.",
-    "fn": "NULL);",
+    "fn": "CMD_setMovingAvg",
     "file": "new_pins.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "setMutex",
+    "args": "CMD_setMutex",
+    "descr": "pinmutex driver (potentially for shutters)",
+    "fn": "CMD_setMutex",
+    "file": "driver/drv_pinMutex.c",
     "requires": "",
     "examples": ""
   },
@@ -2181,7 +2235,7 @@
     "name": "SetupIR2",
     "args": "[myPeriodUs] [dutyOnFrac] [dutyOffFrac] [txPin]",
     "descr": "Init IR2 pin and interrupt",
-    "fn": "NULL);",
+    "fn": "CMD_IR2_SetupIR2",
     "file": "driver/drv_ir2.c",
     "requires": "",
     "examples": ""
@@ -2378,8 +2432,8 @@
   {
     "name": "SM16703P_Init",
     "args": "[NumberOfLEDs][ColorOrder]",
-    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with either RGB, RBG, BRG, BGB, GRB or GBR (default RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-    "fn": "NULL);",
+    "descr": "This will setup LED driver for a strip with given number of LEDs. Please note that it also works for WS2812B and similiar LEDs. You can optionally set the color order with can be any combination of R, G, B, C and W (e.g. RGBW or GRBWC, default is RGB). See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
+    "fn": "SM16703P_InitForLEDCount",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
     "examples": ""
@@ -2388,7 +2442,7 @@
     "name": "SM16703P_SetPixel",
     "args": "[index/all] [R] [G] [B]",
     "descr": "Sets a pixel for LED strip. Index can be a number or 'all' keyword to set all. Then, 3 integer values for R, G and B. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-    "fn": "NULL);",
+    "fn": "SM16703P_CMD_setPixel",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
     "examples": ""
@@ -2397,7 +2451,7 @@
     "name": "SM16703P_SetRaw",
     "args": "[bUpdate] [byteOfs] [HexData]",
     "descr": "Sets the raw data bytes for SPI DMA LED driver at the given offset. Hex data should be as a hex string, for example, FF00AA, etc. The bUpdate, if set to 1, will run SM16703P_Start automatically after setting data. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-    "fn": "NULL);",
+    "fn": "SM16703P_CMD_setRaw",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
     "examples": ""
@@ -2406,7 +2460,7 @@
     "name": "SM16703P_Start",
     "args": "",
     "descr": "This will send the currently set data to the strip. Please note that it also works for WS2812B and similiar LEDs. See [tutorial](https://www.elektroda.com/rtvforum/topic4036716.html).",
-    "fn": "NULL);",
+    "fn": "SM16703P_StartTX",
     "file": "driver/drv_sm16703P.c",
     "requires": "",
     "examples": ""
@@ -2478,7 +2532,7 @@
     "name": "SPITestFlash_Erase",
     "args": "CMD_SPITestFlash_Erase",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_SPITestFlash_Erase",
     "file": "driver/drv_spi_flash.c",
     "requires": "",
     "examples": ""
@@ -2487,7 +2541,7 @@
     "name": "SPITestFlash_ReadData",
     "args": "CMD_SPITestFlash_ReadData",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_SPITestFlash_ReadData",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -2496,8 +2550,17 @@
     "name": "SPITestFlash_ReadID",
     "args": "CMD_SPITestFlash_ReadID",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_SPITestFlash_ReadID",
     "file": "cmnds/cmd_main.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
+    "name": "SPITestFlash_Test",
+    "args": "CMD_SPITestFlash_TestPages",
+    "descr": "TODO",
+    "fn": "CMD_SPITestFlash_TestPages",
+    "file": "driver/drv_spi_flash.c",
     "requires": "",
     "examples": ""
   },
@@ -2505,7 +2568,7 @@
     "name": "SPITestFlash_WriteStr",
     "args": "CMD_SPITestFlash_WriteStr",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_SPITestFlash_WriteStr",
     "file": "driver/drv_spi_flash.c",
     "requires": "",
     "examples": ""
@@ -2550,7 +2613,7 @@
     "name": "StartTest",
     "args": "Test_Cmd_Start",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "Test_Cmd_Start",
     "file": "driver/drv_test.c",
     "requires": "",
     "examples": ""
@@ -2593,12 +2656,12 @@
   },
   {
     "name": "stopBerry",
-    "args": "CMD_StopBerryCommand",
-    "descr": "",
-    "fn": "NULL);",
+    "args": "[Berry code]",
+    "descr": "Stop Berry VM",
+    "fn": "CMD_StopBerry",
     "file": "cmnds/cmd_berry.c",
     "requires": "",
-    "examples": ""
+    "examples": "stopBerry"
   },
   {
     "name": "stopDriver",
@@ -2622,7 +2685,7 @@
     "name": "SwingH",
     "args": "CMD_SwingH",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_SwingH",
     "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
@@ -2631,7 +2694,7 @@
     "name": "SwingV",
     "args": "CMD_SwingV",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_SwingV",
     "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
@@ -2640,7 +2703,7 @@
     "name": "TargetTemperature",
     "args": "CMD_TargetTemperature",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TargetTemperature",
     "file": "driver/drv_tclAC.c",
     "requires": "",
     "examples": ""
@@ -2676,7 +2739,7 @@
     "name": "TestChannelSetToExpression",
     "args": "CMD_TestChannelSetToExpression",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestChannelSetToExpression",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2694,7 +2757,7 @@
     "name": "TestIPtoStr",
     "args": "CMD_TestIPtoStr",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestIPtoStr",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2730,7 +2793,7 @@
     "name": "TestMemcmp",
     "args": "CMD_TestMemcmp",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestMemcmp",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2739,7 +2802,7 @@
     "name": "TestMemcpy",
     "args": "CMD_TestMemcpy",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestMemcpy",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2748,7 +2811,7 @@
     "name": "TestMemset",
     "args": "CMD_TestMemset",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestMemset",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2757,7 +2820,7 @@
     "name": "TestParseIP",
     "args": "CMD_TestParseIP",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestParseIP",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2775,7 +2838,7 @@
     "name": "TestSprintfForFloat",
     "args": "CMD_TestSprintfForFloat",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestSprintfForFloat",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2784,7 +2847,7 @@
     "name": "TestSprintfForHex",
     "args": "CMD_TestSprintfForHex",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestSprintfForHex",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2793,7 +2856,7 @@
     "name": "TestSprintfForInteger",
     "args": "CMD_TestSprintfForInteger",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestSprintfForInteger",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2802,7 +2865,7 @@
     "name": "TestStrcat",
     "args": "CMD_TestStrcat",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestStrcat",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2811,7 +2874,7 @@
     "name": "TestStrcmp",
     "args": "CMD_TestStrcmp",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestStrcmp",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2820,7 +2883,7 @@
     "name": "TestStrcpy",
     "args": "CMD_TestStrcpy",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestStrcpy",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2838,7 +2901,7 @@
     "name": "TestStrlen",
     "args": "CMD_TestStrlen",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestStrlen",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
@@ -2847,16 +2910,25 @@
     "name": "TestStrncpy",
     "args": "CMD_TestStrncpy",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TestStrncpy",
     "file": "cmnds/cmd_test.c",
     "requires": "",
     "examples": ""
   },
   {
+    "name": "testus",
+    "args": "pin <pause in us> <testval 1 in us> [<testval n in us>...]",
+    "descr": "tests usleep on given pin ",
+    "fn": "NULL);",
+    "file": "driver/drv_ds1820_simple.c",
+    "requires": "",
+    "examples": "testus 11 5 2 4 6 10 20 50 100 200 500"
+  },
+  {
     "name": "TimeSize",
     "args": "",
     "descr": "Prints the size of time_t on current platform - sizeof(time_t), only for testing purposes",
-    "fn": "NULL);",
+    "fn": "CMD_TimeSize",
     "file": "cmnds/cmd_main.c",
     "requires": "",
     "examples": ""
@@ -2865,7 +2937,7 @@
     "name": "TM1650_Test",
     "args": "CMD_TM1650_Test",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TM1650_Test",
     "file": "driver/drv_tm1637.c",
     "requires": "",
     "examples": ""
@@ -2874,7 +2946,7 @@
     "name": "TMGN_Brightness",
     "args": "[Brigthness0to7][bOn]",
     "descr": "This allows you to change brightness and state of  TM1637/GN932/etc display",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_Brightness",
     "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
@@ -2883,7 +2955,7 @@
     "name": "TMGN_Char",
     "args": "[CharIndex] [CharCode]",
     "descr": "This allows you to set binary code for given char, valid chars range is 0 to 15, because this is 7-seg display",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_Char",
     "file": "driver/drv_tm1637.c",
     "requires": "",
     "examples": ""
@@ -2892,7 +2964,7 @@
     "name": "TMGN_Clear",
     "args": "",
     "descr": "This clears the TM1637/GN932/etc display",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_Clear",
     "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
@@ -2901,7 +2973,7 @@
     "name": "TMGN_Map",
     "args": "[Map0][Map1, etc]",
     "descr": "This allows you to remap characters order for TM1637/GN932/etc. My TM1637 module from Aliexpress has a strange characters order.",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_Map",
     "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
@@ -2910,7 +2982,7 @@
     "name": "TMGN_Print",
     "args": "[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
     "descr": "This allows you to print string on TM1637/GN932/etc display, it supports variables expansion",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_Print",
     "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
@@ -2919,7 +2991,7 @@
     "name": "TMGN_Read",
     "args": "",
     "descr": "Executes a single buttons read on TM/GN LED driver",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_Read",
     "file": "driver/drv_tm1637.c",
     "requires": "",
     "examples": ""
@@ -2928,7 +3000,7 @@
     "name": "TMGN_SetBit",
     "args": "[CharIndex] [BitIndex] [BitValue]",
     "descr": "Set given bit of given digit to 1 or 0.",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_SetBit",
     "file": "driver/drv_tm1637.c",
     "requires": "",
     "examples": ""
@@ -2937,7 +3009,7 @@
     "name": "TMGN_SetupButtons",
     "args": "[Interval]",
     "descr": "Setups periodic buttons read on TM/GN LED driver",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_SetupButtons",
     "file": "driver/drv_tm1637.c",
     "requires": "",
     "examples": ""
@@ -2946,7 +3018,7 @@
     "name": "TMGN_Test",
     "args": "",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_TMGN_Test",
     "file": "driver/drv_tm_gn_display_shared.c",
     "requires": "",
     "examples": ""
@@ -3000,7 +3072,7 @@
     "name": "TS_Clear",
     "args": "",
     "descr": "Clears the text scroller buffer",
-    "fn": "NULL);",
+    "fn": "CMD_TS_Clear",
     "file": "driver/drv_textScroller.c",
     "requires": "",
     "examples": ""
@@ -3009,7 +3081,7 @@
     "name": "TS_Print",
     "args": "[StartOfs] [MaxLenOr0] [StringText] [optionalBClampWithZeroesForClock]",
     "descr": "Prints a text to the text scroller buffer",
-    "fn": "NULL);",
+    "fn": "CMD_TS_Print",
     "file": "driver/drv_textScroller.c",
     "requires": "",
     "examples": ""
@@ -3024,10 +3096,19 @@
     "examples": ""
   },
   {
+    "name": "tuyaMcu_enableAutoSend",
+    "args": "[0/1]",
+    "descr": "Enable or disable automatic sending of commands to TuyaMCU during boot/initialization. Use 0 to disable, 1 to enable.",
+    "fn": "Cmd_TuyaMCU_EnableAutoSend",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": "tuyaMcu_enableAutoSend 0"
+  },
+  {
     "name": "tuyaMcu_sendCmd",
     "args": "[CommandIndex] [HexPayloadNBytes]",
     "descr": "This will automatically calculate TuyaMCU checksum and length for given command ID and payload, then it will send a command. It's better to use it than uartSendHex",
-    "fn": "NULL);",
+    "fn": "TuyaMCU_SendUserCmd",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
     "examples": ""
@@ -3036,7 +3117,7 @@
     "name": "tuyaMcu_sendColor",
     "args": "[dpID] [red01] [green01] [blue01] [tuyaRGBformat]",
     "descr": "This sends a TuyaMCU color string of given format for given RGB values, where each value is in [0,1] range as float",
-    "fn": "NULL);",
+    "fn": "Cmd_TuyaMCU_SendColor",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
     "examples": ""
@@ -3105,6 +3186,15 @@
     "examples": ""
   },
   {
+    "name": "tuyaMcu_setBatteryAckDelay",
+    "args": "[ackDelay]",
+    "descr": "Defines the delay before the ACK is sent to TuyaMCU sending the device to sleep. Default value is 0 seconds.",
+    "fn": "Cmd_TuyaMCU_SetBatteryAckDelay",
+    "file": "driver/drv_tuyaMCU.c",
+    "requires": "",
+    "examples": ""
+  },
+  {
     "name": "tuyaMcu_setBaudRate",
     "args": "[BaudValue]",
     "descr": "Sets the baud rate used by TuyaMCU UART communication. Default value is 9600. Some other devices require 115200.",
@@ -3126,7 +3216,7 @@
     "name": "tuyaMcu_setupLED",
     "args": "[dpIDColor] [TasFormat] [dpIDPower]",
     "descr": "Setups the TuyaMCU LED driver for given color dpID and power dpID. Also allows you to choose color format.",
-    "fn": "NULL);",
+    "fn": "Cmd_TuyaMCU_SetupLED",
     "file": "driver/drv_tuyaMCU.c",
     "requires": "",
     "examples": ""
@@ -3216,7 +3306,7 @@
     "name": "VoltageSet",
     "args": "Voltage",
     "descr": "Measure the real voltage with an external, reliable power meter and enter this voltage via this command to calibrate. The calibration is automatically saved in the flash memory.",
-    "fn": "NULL);",
+    "fn": "CalibrateVoltage",
     "file": "driver/drv_pwrCal.c",
     "requires": "",
     "examples": ""
@@ -3243,7 +3333,7 @@
     "name": "widget_clearAll",
     "args": "",
     "descr": "Removes all registered widgets",
-    "fn": "NULL);",
+    "fn": "CMD_Widget_ClearAll",
     "file": "driver/drv_widget.c",
     "requires": "",
     "examples": ""
@@ -3252,7 +3342,7 @@
     "name": "widget_create",
     "args": "[LocationIndex][bAllowCache][FileName]",
     "descr": "",
-    "fn": "NULL);",
+    "fn": "CMD_Widget_Create",
     "file": "driver/drv_widget.c",
     "requires": "",
     "examples": ""

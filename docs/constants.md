@@ -31,14 +31,14 @@ Do not add anything here, as it will overwritten with next rebuild.
 | $hour |  Current hour from NTP |
 | $minute |  Current minute from NTP |
 | $second |  Current second from NTP |
-| $mday |  TODO |
-| $month |  TODO |
-| $year |  TODO |
-| $yesterday |  TODO |
-| $today |  TODO |
-| $isDST |  TODO |
-| $sunrise |  TODO |
-| $sunset |  TODO |
+| $mday |  Current mday from NTP |
+| $month |  Current month from NTP |
+| $year |  Current Year from NTP |
+| $yesterday |   |
+| $today |   |
+| $isDST |   |
+| $sunrise |  Next sunrise as a TimerSeconds from midnight |
+| $sunset |  Next sunset as a TimerSeconds from midnight |
 | $NTPOn |  Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0. |
 | $batteryVoltage |  Battery driver voltage |
 | $batteryLevel |  Battery driver level |
