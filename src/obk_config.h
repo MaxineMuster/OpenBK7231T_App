@@ -568,7 +568,8 @@
 // allow moving average energy calculation +180 bytes
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
-
+  
+#define ENABLE_DRIVER_DS3231						1
 
 // closing OBK_CONFIG_H
 #endif
