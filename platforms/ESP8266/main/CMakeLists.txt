@@ -14,7 +14,7 @@ set(PROJ_ALL_SRC
 	${OBK_SRCS}hal/espidf/hal_wifi_espidf.c
 	${OBK_SRCS}hal/espidf/hal_uart_espidf.c
 	${OBK_SRCS}hal/espidf/hal_ota_espidf.c
-	${OBK_SRCS}drv/drv_bmp280.c
+	${OBK_SRCS}driver/drv_bmp280.c
 	${OBKM_SRC}
 	${BERRY_SRC_C}
 	../../../libraries/mqtt_patched.c
