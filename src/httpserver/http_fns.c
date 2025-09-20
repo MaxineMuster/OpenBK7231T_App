@@ -442,8 +442,14 @@ int http_fn_index(http_request_t* request) {
 			poststr(request, "<tr><td>");
 			ch1 = PIN_GetPinChannelForPinIndex(i);
 			ch2 = PIN_GetPinChannel2ForPinIndex(i);
+			const char * pinalias=NULL;
+			char pinstr[15] = {0};
+			pinalias = HAL_PIN_GetPinNameAlias(i);
+			if (pinalias){
+				sprintf(pinstr," (%s) ",pinalias);
+			}				
 			iValue = CHANNEL_Get(ch1);
-			hprintf255(request, "Sensor %s on pin %i temperature %.2fC", PIN_RoleToString(role), i, (float)(iValue * 0.1f));
+			hprintf255(request, "Sensor %s on pin %i%s temperature %.2fC", PIN_RoleToString(role), i, pinstr, (float)(iValue * 0.1f));
 			iValue = CHANNEL_Get(ch2);
 			hprintf255(request, ", humidity %.1f%%<br>", (float)iValue);
 			if (ch1 == ch2) {
