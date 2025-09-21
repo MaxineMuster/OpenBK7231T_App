@@ -531,7 +531,7 @@
 #define ENABLE_DRIVER_DHT						  1
 #define ENABLE_DRIVER_BMP280					1
 #define ENABLE_DRIVER_BMPI2C					1
-
+#define ENABLE_DS1820_TEST_US         1
 // #define ENABLE_OBK_BERRY						1
 
 #elif PLATFORM_TXW81X
