@@ -127,8 +127,8 @@ void OWWriteByte(int Pin, int data)
 	// Loop to write each bit in the byte, LS-bit first
 	for(loop = 0; loop < 8; loop++)
 	{
+		HAL_Delay_us(1);	// call HAL_Delay_us before calling WriteBit - so next call for "short" delay is not the first call
 		OWWriteBit(Pin, data & 0x01);
-
 		// shift the data byte for the next bit
 		data >>= 1;
 	}
