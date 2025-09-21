@@ -65,6 +65,7 @@ void OWWriteBit(int Pin, int bit)
 		// Write '1' bit
 		HAL_PIN_Setup_Output(Pin);
 		noInterrupts();
+		HAL_Delay_us(1);	// call once so next call for "short" delay is not the first call
 		HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
 		HAL_Delay_us(OWtimeA);
 		HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
