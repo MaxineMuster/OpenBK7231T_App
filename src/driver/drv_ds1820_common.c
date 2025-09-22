@@ -163,15 +163,24 @@ void OWWriteByte(int Pin, int data)
 //-----------------------------------------------------------------------------
 int OWReadByte(int Pin)
 {
-	int loop, result = 0;
+	int loop, result = 0, r=0;
 
 	for(loop = 0; loop < 8; loop++)
 	{
 		// shift the result to get it ready for the next bit
 		result >>= 1;
-
-		// if result is one, then set MS bit
-		if(OWReadBit(Pin))
+		HAL_Delay_us(1);                 // "preload" code
+		noInterrupts();
+		HAL_PIN_Setup_Output(Pin);
+		HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
+		HAL_Delay_us(1);                 // give sensor time to react on start pulse
+		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
+		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
+		r = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
+		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
+		HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
+		// if result is one, then set MS bit, but outside time w/o interrupts
+		if(r)
 			result |= 0x80;
 	}
 	return result;
