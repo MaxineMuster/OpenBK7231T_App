@@ -206,6 +206,7 @@ uint8_t Crc8CQuick(uint8_t* Buffer, uint8_t Size)
 
 
 #if ENABLE_DS1820_TEST_US && ! WINDOWS
+#define MAXUSTESTS 10
 // will allow testus <pin> <us between tests> <us val 1> <us val 2> .... 
 commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *args, int cmdFlags) {
    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
@@ -213,7 +214,6 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
    if(Tokenizer_GetArgsCount()<=3) {
       return CMD_RES_NOT_ENOUGH_ARGUMENTS;
    }
-#define MAXUSTESTS 10
    int testvals[MAXUSTESTS];
    int pin = Tokenizer_GetArgInteger(0);
    int pause = Tokenizer_GetArgInteger(1);
@@ -252,7 +252,7 @@ commandResult_t CMD_OW_testOWwrite(const void *context, const char *cmd, const c
    if(Tokenizer_GetArgsCount()<=1) { // first arg is pin, second byte to send
       return CMD_RES_NOT_ENOUGH_ARGUMENTS;
    }
-#define MAXUSTESTS 10
+
    int testvals[MAXUSTESTS];
    int pin = Tokenizer_GetArgInteger(0);
    int tests=Tokenizer_GetArgsCount()-1;   // first is pin
@@ -263,7 +263,7 @@ commandResult_t CMD_OW_testOWwrite(const void *context, const char *cmd, const c
    ADDLOG_DEBUG(LOG_FEATURE_CMD, "testOWwrite - doing %i tests \r\n",tests);
    char *endptr; // Pointer to track the end of the conversion
    for (int i=0; i<tests; i++){
-      testvals[i]=(int)strtol(Tokenizer_GetArgInteger(1+i), &endptr, 16);
+      testvals[i]=(int)strtol(Tokenizer_GetArg(1+i), &endptr, 16);
       ADDLOG_DEBUG(LOG_FEATURE_CMD, "testOWwrite - Byte %i is %i \r\n",i,testvals[i]);
    }
    vTaskDelay(200);
