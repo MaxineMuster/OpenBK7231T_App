@@ -67,7 +67,8 @@ void OWWriteBit(int Pin, int bit)
 		noInterrupts();
 		HAL_Delay_us(1);	// call once so next call for "short" delay is not the first call
 		HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
-		HAL_Delay_us(OWtimeA);
+//		HAL_Delay_us(OWtimeA);
+		HAL_Delay_us(6);
 		HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 		HAL_Delay_us(OWtimeB); // Complete the time slot and 10us recovery
@@ -270,7 +271,7 @@ commandResult_t CMD_OW_testOWwrite(const void *context, const char *cmd, const c
    for (int i=0; i<tests; i++){
       ADDLOG_DEBUG(LOG_FEATURE_CMD, "testOWwrite - Writing Byte %i: %i \r\n",i,testvals[i]);
       OWWriteByte(pin, testvals[i]);
-      vTaskDelay(50);
+      vTaskDelay(5);
    }
    ADDLOG_DEBUG(LOG_FEATURE_CMD, "... tests done\r\n");
    return CMD_RES_OK;   
