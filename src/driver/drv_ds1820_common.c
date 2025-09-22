@@ -169,9 +169,9 @@ int OWReadByte(int Pin)
 	{
 		// shift the result to get it ready for the next bit
 		result >>= 1;
+		HAL_PIN_Setup_Output(Pin);
 		HAL_Delay_us(1);                 // "preload" code
 		noInterrupts();
-		HAL_PIN_Setup_Output(Pin);
 		HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
 		HAL_Delay_us(1);                 // give sensor time to react on start pulse
 		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
