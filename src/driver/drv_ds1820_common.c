@@ -129,7 +129,30 @@ void OWWriteByte(int Pin, int data)
 	for(loop = 0; loop < 8; loop++)
 	{
 		HAL_Delay_us(1);	// call HAL_Delay_us before calling WriteBit - so next call for "short" delay is not the first call
-		OWWriteBit(Pin, data & 0x01);
+//		OWWriteBit(Pin, data & 0x01);
+
+		if(data & 0x01)
+		{
+			// Write '1' bit
+			HAL_PIN_Setup_Output(Pin);
+			noInterrupts();
+			HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
+			HAL_Delay_us(OWtimeA);
+			HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
+			interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
+			HAL_Delay_us(OWtimeB); // Complete the time slot and 10us recovery
+		}
+		else
+		{
+			// Write '0' bit
+			HAL_PIN_Setup_Output(Pin);
+			noInterrupts();
+			HAL_PIN_SetOutputValue(Pin, 0); // Drives DQ low
+			HAL_Delay_us(OWtimeC);
+			HAL_PIN_SetOutputValue(Pin, 1); // Releases the bus
+			interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
+			HAL_Delay_us(OWtimeD);
+		}
 		// shift the data byte for the next bit
 		data >>= 1;
 	}
