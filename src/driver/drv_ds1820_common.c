@@ -247,6 +247,32 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
    ADDLOG_DEBUG(LOG_FEATURE_CMD, "... tests done\r\n");
    return CMD_RES_OK;
 }
+commandResult_t CMD_OW_testOWwrite(const void *context, const char *cmd, const char *args, int cmdFlags) {
+   Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
+   if(Tokenizer_GetArgsCount()<=2) { // first arg is pin, second byte to send
+      return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+   }
+#define MAXUSTESTS 10
+   int testvals[MAXUSTESTS];
+   int pin = Tokenizer_GetArgInteger(0);
+   int tests=Tokenizer_GetArgsCount()-1;   // first is pin
+   if (tests > MAXUSTESTS){
+      tests = MAXUSTESTS;
+      ADDLOG_ERROR(LOG_FEATURE_CMD, "testus -  Warning, will only do the first %i tests!\r\n",tests);
+   } 
+   char *endptr; // Pointer to track the end of the conversion
+   for (int i=0; i<tests; i++){
+      testvals[i]=(int)strtol(Tokenizer_GetArgInteger(1+i), &endptr, 16);
+   }
+   vTaskDelay(200);
+   for (int i=0; i<tests; i++){
+      OWWriteByte(pin, testvals[i]);
+      vTaskDelay(50);
+   }
+   ADDLOG_DEBUG(LOG_FEATURE_CMD, "... tests done\r\n");
+   return CMD_RES_OK;   
+}   
+
 #endif
 
 void init_TEST_US(){
@@ -255,7 +281,10 @@ void init_TEST_US(){
 	//cmddetail:"descr":"tests usleep on given pin ",
 	//cmddetail:"fn":"CMD_OW_testus","file":"driver/drv_ds1820_common.c","requires":"",
 	//cmddetail:"examples":"testus 11 5 2 4 6 10 20 50 100 200 500"}
-	if (! testus_initialized) CMD_RegisterCommand("testus", CMD_OW_testus, NULL);
+	if (! testus_initialized){
+		CMD_RegisterCommand("testus", CMD_OW_testus, NULL);
+		CMD_RegisterCommand("testOWwrite", CMD_OW_testOWwrite, NULL);
+	}
 	testus_initialized = true;
 #endif
 }
