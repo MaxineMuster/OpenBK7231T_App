@@ -173,7 +173,9 @@ int OWReadByte(int Pin)
 		HAL_Delay_us(1);                 // "preload" code
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
+#if !(PLATFORM_ESP8266)
 		HAL_Delay_us(1);                 // give sensor time to react on start pulse
+#endif
 		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
 		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
 		r = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
