@@ -249,7 +249,7 @@ commandResult_t CMD_OW_testus(const void *context, const char *cmd, const char *
 }
 commandResult_t CMD_OW_testOWwrite(const void *context, const char *cmd, const char *args, int cmdFlags) {
    Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-   if(Tokenizer_GetArgsCount()<=2) { // first arg is pin, second byte to send
+   if(Tokenizer_GetArgsCount()<=1) { // first arg is pin, second byte to send
       return CMD_RES_NOT_ENOUGH_ARGUMENTS;
    }
 #define MAXUSTESTS 10
@@ -258,14 +258,17 @@ commandResult_t CMD_OW_testOWwrite(const void *context, const char *cmd, const c
    int tests=Tokenizer_GetArgsCount()-1;   // first is pin
    if (tests > MAXUSTESTS){
       tests = MAXUSTESTS;
-      ADDLOG_ERROR(LOG_FEATURE_CMD, "testus -  Warning, will only do the first %i tests!\r\n",tests);
+      ADDLOG_ERROR(LOG_FEATURE_CMD, "testOWwrite -  Warning, will only do the first %i tests!\r\n",tests);
    } 
+   ADDLOG_DEBUG(LOG_FEATURE_CMD, "testOWwrite - doing %i tests \r\n",tests);
    char *endptr; // Pointer to track the end of the conversion
    for (int i=0; i<tests; i++){
       testvals[i]=(int)strtol(Tokenizer_GetArgInteger(1+i), &endptr, 16);
+      ADDLOG_DEBUG(LOG_FEATURE_CMD, "testOWwrite - Byte %i is %i \r\n",i,testvals[i]);
    }
    vTaskDelay(200);
    for (int i=0; i<tests; i++){
+      ADDLOG_DEBUG(LOG_FEATURE_CMD, "testOWwrite - Writing Byte %i: %i \r\n",i,testvals[i]);
       OWWriteByte(pin, testvals[i]);
       vTaskDelay(50);
    }
