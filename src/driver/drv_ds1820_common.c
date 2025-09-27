@@ -169,11 +169,12 @@ int OWReadByte(int Pin)
 	{
 		// shift the result to get it ready for the next bit
 		result >>= 1;
-		HAL_PIN_Setup_Output(Pin);
 		HAL_Delay_us(1);                 // "preload" code
+		HAL_PIN_Setup_Output(Pin);
 		HAL_Delay_us(1);                 // "preload" code
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
+		HAL_PIN_SetOutputValue(Pin, 1);  // Drives DQ low
 #if (PLATFORM_ESP8266)
 		HAL_PIN_Setup_Input(Pin); // Release the bus
 		HAL_Delay_us(3);                 // As in ds1820 OW-Arduino library
