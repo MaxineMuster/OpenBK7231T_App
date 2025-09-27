@@ -200,7 +200,7 @@ int OWReadByte(int Pin)
 		noInterrupts();
 		// we are in output mod, so just set level 0
 		gpio_set_level(pin->pin, 0);
-		HAL_Delay_us(1);                 // give sensor time to react on start pulse
+//		HAL_Delay_us(1);                 // give sensor time to react on start pulse
 		gpio_set_level(pin->pin, 1);
 		gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
 		gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);

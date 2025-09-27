@@ -193,6 +193,12 @@ void DS1820_OnEverySecond()
 			
 			return;
 		}
+		else
+		{
+			DS1820_LOG(DEBUG, "Scratchpad CRC OK --  Data Read:\n\t%x %x %x %x %x %x %x %x %x",
+				scratchpad[0], scratchpad[1], scratchpad[2], scratchpad[3], scratchpad[4],
+				scratchpad[5], scratchpad[6], scratchpad[7], scratchpad[8]);
+		}
 
 		raw = (scratchpad[1] << 8) | scratchpad[0];
 
