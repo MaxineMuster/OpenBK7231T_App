@@ -33,7 +33,21 @@
 int OWReset(int Pin)
 {
 	int result;
-
+// try including all HAL pin settings here to avoid long context switches
+// from src/hal/espidf/hal_pins_espidf.c
+#if (PLATFORM_ESP8266)
+	espPinMapping_t* pin = g_pins + Pin;
+	if(pin->pin == GPIO_NUM_NC) return 0;
+	if(!pin->isConfigured)
+	{
+		pin->isConfigured = true;
+		ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, true, false, GPIO_INTR_DISABLE);
+		return 0;
+	}
+	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+	gpio_set_level(pin->pin, 1);
+#endif
 // ESP32 will crash if interrupts are disabled for > 480us
 #ifndef CONFIG_IDF_TARGET_ESP32
 	noInterrupts();
@@ -164,7 +178,49 @@ void OWWriteByte(int Pin, int data)
 int OWReadByte(int Pin)
 {
 	int loop, result = 0, r=0;
+/*
+// we initialized HAL pin prior in OWReset, so we can skip some tests here
+#if (PLATFORM_ESP8266)
+	espPinMapping_t* pin = g_pins + Pin;
+	if(pin->pin == GPIO_NUM_NC) return 0;
+	if(!pin->isConfigured)
+	{
+		pin->isConfigured = true;
+		ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, true, false, GPIO_INTR_DISABLE);
+		return 0;
+	}
+	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
+	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+	gpio_set_level(pin->pin, 1);
+#endif
 
+*/
+
+#if (PLATFORM_ESP8266)
+	for(loop = 0; loop < 8; loop++)
+	{
+		// shift the result to get it ready for the next bit
+		result >>= 1;
+		HAL_Delay_us(1);                 // "preload" code
+		gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
+		gpio_set_level(pin->pin, 1);
+		HAL_Delay_us(1);                 // "preload" code
+		noInterrupts();
+		gpio_set_level(pin->pin, 0);
+		HAL_Delay_us(3);                 // as in https://github.com/PaulStoffregen/OneWire/OneWire.cpp
+//		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
+		gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
+		gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
+//		r = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
+		r = gpio_get_level(pin->pin);
+		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
+		HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
+		// if result is one, then set MS bit, but outside time w/o interrupts
+		if(r)
+			result |= 0x80;
+	}
+#else
 	for(loop = 0; loop < 8; loop++)
 	{
 		// shift the result to get it ready for the next bit
@@ -175,14 +231,9 @@ int OWReadByte(int Pin)
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
 		HAL_PIN_SetOutputValue(Pin, 1);  // Drives DQ low
-#if (PLATFORM_ESP8266)
-		HAL_PIN_Setup_Input(Pin); // Release the bus
-		HAL_Delay_us(3);                 // As in ds1820 OW-Arduino library
-#else
 		HAL_Delay_us(1);                 // give sensor time to react on start pulse
 		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
 		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
-#endif
 		r = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 		HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
@@ -190,6 +241,7 @@ int OWReadByte(int Pin)
 		if(r)
 			result |= 0x80;
 	}
+#endif
 	return result;
 }
 /*
