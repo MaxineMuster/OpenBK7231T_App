@@ -32,6 +32,7 @@
 
 #if (PLATFORM_ESP8266)
 #include "../hal/espidf/hal_pinmap_espidf.h"
+	espPinMapping_t* pin;
 #endif
 
 int OWReset(int Pin)
@@ -40,7 +41,7 @@ int OWReset(int Pin)
 // try including all HAL pin settings here to avoid long context switches
 // from src/hal/espidf/hal_pins_espidf.c
 #if (PLATFORM_ESP8266)
-	espPinMapping_t* pin = g_pins + Pin;
+	pin = g_pins + Pin;
 	if(pin->pin == GPIO_NUM_NC) return 0;
 	if(!pin->isConfigured)
 	{
