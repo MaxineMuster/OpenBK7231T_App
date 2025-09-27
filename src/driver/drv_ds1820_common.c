@@ -171,15 +171,17 @@ int OWReadByte(int Pin)
 		result >>= 1;
 		HAL_PIN_Setup_Output(Pin);
 		HAL_Delay_us(1);                 // "preload" code
+		HAL_Delay_us(1);                 // "preload" code
 		noInterrupts();
 		HAL_PIN_SetOutputValue(Pin, 0);  // Drives DQ low
 #if (PLATFORM_ESP8266)
 		HAL_PIN_Setup_Input(Pin); // Release the bus
+		HAL_Delay_us(3);                 // As in ds1820 OW-Arduino library
 #else
 		HAL_Delay_us(1);                 // give sensor time to react on start pulse
 		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
-#endif
 		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
+#endif
 		r = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 		HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
