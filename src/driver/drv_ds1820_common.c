@@ -215,7 +215,7 @@ int OWReadByte(int Pin)
 		gpio_set_level(pin->pin, 0);
 		HAL_Delay_us(1);                 // give sensor time to react on start pulse
 //		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
-		switch to INPUT with pullup
+//		switch to INPUT with pullup
 		gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
 		gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
 		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
