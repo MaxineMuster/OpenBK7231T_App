@@ -183,49 +183,35 @@ void OWWriteByte(int Pin, int data)
 int OWReadByte(int Pin)
 {
 	int loop, result = 0, r=0;
-/*
-// we initialized HAL pin prior in OWReset, so we can skip some tests here
-#if (PLATFORM_ESP8266)
-	espPinMapping_t* pin = g_pins + Pin;
-	if(pin->pin == GPIO_NUM_NC) return 0;
-	if(!pin->isConfigured)
-	{
-		pin->isConfigured = true;
-		ESP_ConfigurePin(pin->pin, GPIO_MODE_OUTPUT, true, false, GPIO_INTR_DISABLE);
-		return 0;
-	}
-	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
-	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
-	gpio_set_level(pin->pin, 1);
-#endif
-
-*/
 
 #if (PLATFORM_ESP8266)
+// since we initialized HAL pin prior in OWReset, so we can skip some tests here
+
 	// set output mode level 1 prior to reading a byte
-	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
 	gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
 	gpio_set_level(pin->pin, 1);
-	HAL_Delay_us(1);                 // "preload" code
+	HAL_Delay_us(1);                 // "preload" delay code code
 	for(loop = 0; loop < 8; loop++)
 	{
 		// shift the result to get it ready for the next bit
 		result >>= 1;
+		HAL_Delay_us(1);
 		noInterrupts();
 		// we are in output mod, so just set level 0
 		gpio_set_level(pin->pin, 0);
-		HAL_Delay_us(3);                 // give sensor time to react on start pulse
-//		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
-//		switch to INPUT with pullup
+		HAL_Delay_us(1);                 // give sensor time to react on start pulse
+		gpio_set_level(pin->pin, 1);
 		gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
-		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
+		gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
+
+// we won't use any delay here, it will result in only reading at high-level :-(
+// so just switch to input and read - this will at least work from time to time
 //		r = HAL_PIN_ReadDigitalInput(Pin); // Sample for presence pulse from slave
 		r = gpio_get_level(pin->pin);
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
-		gpio_set_level(pin->pin, 1);
-		HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
 		gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
-		gpio_set_level(pin->pin, 1);
+		HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
 		// if result is one, then set MS bit, but outside time w/o interrupts
 		if(r)
 			result |= 0x80;
