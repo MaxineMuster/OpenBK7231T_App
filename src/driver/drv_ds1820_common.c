@@ -202,18 +202,20 @@ int OWReadByte(int Pin)
 */
 
 #if (PLATFORM_ESP8266)
+	// set output mode level 1 prior to reading a byte
+	gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
+	gpio_set_level(pin->pin, 1);
+	HAL_Delay_us(1);                 // "preload" code
 	for(loop = 0; loop < 8; loop++)
 	{
 		// shift the result to get it ready for the next bit
 		result >>= 1;
-		HAL_Delay_us(1);                 // "preload" code
-		gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
-		gpio_set_level(pin->pin, 1);
-		HAL_Delay_us(1);                 // "preload" code
 		noInterrupts();
+		// we are in output mod, so just set level 0
 		gpio_set_level(pin->pin, 0);
-		HAL_Delay_us(3);                 // as in https://github.com/PaulStoffregen/OneWire/OneWire.cpp
+		HAL_Delay_us(1);                 // give sensor time to react on start pulse
 //		HAL_PIN_Setup_Input_Pullup(Pin); // Release the bus
+		switch to INPUT with pullup
 		gpio_set_direction(pin->pin, GPIO_MODE_INPUT);
 		gpio_set_pull_mode(pin->pin, GPIO_PULLUP_ONLY);
 		HAL_Delay_us(OWtimeE);           // give time for bus rise, if not pulled
@@ -221,6 +223,8 @@ int OWReadByte(int Pin)
 		r = gpio_get_level(pin->pin);
 		interrupts();	// hope for the best for the following timer and keep CRITICAL as short as possible
 		HAL_Delay_us(OWtimeF); // Complete the time slot and 10us recovery
+		gpio_set_direction(pin->pin, GPIO_MODE_OUTPUT);
+		gpio_set_level(pin->pin, 1);
 		// if result is one, then set MS bit, but outside time w/o interrupts
 		if(r)
 			result |= 0x80;
