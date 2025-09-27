@@ -30,6 +30,10 @@
 	static bool testus_initialized = false;
 #endif
 
+#if (PLATFORM_ESP8266)
+#include "../hal/espidf/hal_pinmap_espidf.h"
+#endif
+
 int OWReset(int Pin)
 {
 	int result;
