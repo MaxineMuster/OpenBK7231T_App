@@ -17,6 +17,7 @@
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
 #include "drv_hlw8112.h"
+#include "drv_DCF77.h"
 
 
 typedef struct driver_s {
