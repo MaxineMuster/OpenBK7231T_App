@@ -83,6 +83,7 @@
 #define ENABLE_LITTLEFS							1
 //#define ENABLE_DRIVER_TUYAMCU					1
 #undef ENABLE_HTTP_MAC
+#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_W800
 
@@ -107,6 +108,7 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
+#define ENABLE_DRIVER_DCF77					1
 
 #elif WINDOWS
 
@@ -226,6 +228,8 @@
 //#undef ENABLE_DRIVER_BL0942
 #define ENABLE_DRIVER_IRREMOTEESP				1
 //#endif
+#define ENABLE_DRIVER_DCF77					1
+
 
 #elif PLATFORM_BEKEN
 
@@ -346,6 +350,7 @@
 #define ENABLE_DRIVER_SHT3X						1
 #define ENABLE_DRIVER_DS1820_FULL				1
 #endif
+#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_LN882H
 
@@ -374,6 +379,7 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_IRREMOTEESP				1
+#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_ESPIDF
 
@@ -416,6 +422,7 @@
 #define ENABLE_DRIVER_TCA9554					1
 #define ENABLE_DRIVER_DMX						1
 #endif
+#define ENABLE_DRIVER_DCF77					1
 
 #elif PLATFORM_TR6260
 
