@@ -214,6 +214,8 @@
 #if (OBK_VARIANT == OBK_VARIANT_BERRY)
 #define ENABLE_OBK_BERRY 1
 #endif
+#define ENABLE_DRIVER_DCF77						1
+
 
 #elif PLATFORM_BEKEN
 
@@ -329,6 +331,10 @@
 #define ENABLE_DRIVER_SHT3X						1
 #define ENABLE_DRIVER_DS1820_FULL				1
 #endif
+
+
+#define ENABLE_DRIVER_DCF77					1
+
 
 #elif PLATFORM_LN882H
 

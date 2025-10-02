@@ -1,7 +1,7 @@
 #include "drv_DCF77.h"
 #include "../obk_config.h"
 
-#if ENABLE_DRIVER_DCF77
+#if (ENABLE_DRIVER_DCF77)
 
 #include <string.h>
 #include <stdio.h>
@@ -46,8 +46,11 @@ espPinMapping_t* esp_dcf77;
 #define IRQ_raise_and_fall 1
 #endif
 
+static uint32_t lastset; // secondsElapsed on last successfull reading of time
+
 static uint8_t settime=0;	// use to signal state outside ISR: 0: still collecting bits, 1: 59 bits collected (but not decoded), 2: time successfull decoded, 3: decoding failed, 4: bits for summer-/winter-time not valid
 
+static bool httpstat = false;	// per default don't add status to main page - only use "clock" output. can be set during driver start	
 
 int GPIO_DCF77 = -1;
 #if PLATFORM_W600 || PLATFORM_W800
@@ -56,7 +59,27 @@ unsigned int GPIO_DCF77_pin;
 
 #define DCF77_SYNC_THRESHOLD_MS 1500 // missing pulse threshold (between bits ~1000ms, missing pulse ~2000ms)
 #define DCF77_MIN_PULSE_MS 20
-#define DCF77_MAX_PULSE_MS 300
+#define DCF77_MAX_PULSE_MS 400
+
+typedef enum {
+	RISING = 0,
+	FALLING = 1
+} IRQ_level;
+
+// Default, might be changed by adding "fall" to startDriver DCF77 if falling edge indicates start of bit (e.g. if signal is inverted by optocoupler)  
+uint8_t STARTEDGE = RISING;
+
+static uint8_t next_IRQ;
+// define max duration for "0" bit and min duration of "1" bit - might be overridden by command line 
+static uint8_t end0=180;
+static uint8_t start1=180;
+
+#if PLATFORM_BEKEN || PLATFORM_BL602
+// will be used to "toggle" between the edges
+uint8_t TRIGGER_START, TRIGGER_END;
+#else
+#endif
+
 
 static volatile uint32_t dcf77_last_edge_tick = 0;
 static volatile uint32_t dcf77_pulse_length_ms = 0;
@@ -80,6 +103,12 @@ static uint32_t get_ms_tick() {
     return xTaskGetTickCount() * portTICK_PERIOD_MS;
 #endif
 }
+
+#if PLATFORM_BL602 || PLATFORM_BEKEN
+static void DCF77_Interrupt(void* arg);
+#endif
+
+
 
 // Helper: convert BCD bits to int
 static int bits_to_bcd(const uint8_t* bits, int count) {
@@ -173,62 +202,6 @@ static int dcf77_finish_decode(const uint8_t* bits, time_t* epoch_out) {
 }
 
 
-/*
-
-
-// DCF77 epoch calculation
-static int dcf77_decode(const uint8_t* bits, time_t* epoch_out) {
-    // Minute: bits 21-27 (7), parity 28
-    int minute = bits_to_bcd(bits+21, 7);
-    int minute_parity = bits[28];
-    // Hour: bits 29-34 (6), parity 35
-    int hour = bits_to_bcd(bits+29, 6);
-    int hour_parity = bits[35];
-    // Day: bits 36-41 (6)
-    int day = bits_to_bcd(bits+36, 6);
-    // Weekday: bits 42-44 (3)
-    int weekday = bits_to_bcd(bits+42, 3);
-    // Month: bits 45-49 (5)
-    int month = bits_to_bcd(bits+45, 5);
-    // Year: bits 50-57 (8)
-    int year = bits_to_bcd(bits+50, 8);
-    int date_parity = bits[58];
-    
-    // Parity checks  
-    if (bits_parity(bits+21,7) != minute_parity){ 
-    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error minute - wanted %d got %d",bits_parity(bits+21,7), minute_parity);
-    	return 0;
-    }
-    if (bits_parity(bits+29,6) != hour_parity){
-    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error hour - wanted %d got %d",bits_parity(bits+29,6), hour_parity);
-    	return 0;
-    }
-    if (bits_parity(bits+36,22) != date_parity){
-    	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error date - wanted %d got %d",bits_parity(bits+36,22), date_parity);
-    	return 0;
-    }
-
-    // just to be sure: a range check
-    if (minute > 59 || hour > 23 || day < 1 || day > 31 || month < 1 || month > 12 || year > 99) return 0;
-
-    struct tm t;
-    t.tm_sec = 0;
-    t.tm_min = minute;
-    t.tm_hour = hour;
-    t.tm_mday = day;
-    t.tm_mon = month-1;
-    t.tm_year = year+100; // DCF77 gives 2-digit year; assume 2000+
-    t.tm_isdst = -1;
-    time_t epoch = mktime(&t);
-//    const char *wdays[] = {"Sun","Mon", "Tue", "Wed", "Thu", "Fri", "Sat" }; 
-//    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %s %d.%d.%d %d:%d:00",wdays[weekday],day,month,year+2000,hour,minute);
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: dcf77_decode %d.%d.%d %d:%d:00",day,month,year+2000,hour,minute);
-
-    if (epoch_out) *epoch_out = epoch;
-    return 1;
-}
-
-*/
 
 // Helper: convert BCD bits to int
 // we have bits in 64 bit uint
@@ -275,24 +248,35 @@ static int u64_to_parity(const uint64_t bits, int pos, int count) {
 
 
 // DCF77 epoch calculation
-static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
-    // Minute: bits 21-27 (7), parity 28
-    int minute = u64_to_bcd(bits,21, 7);
-    int minute_parity = (bits & (1ULL <<28)) >> 28;
+static void raw_dcf77_decode_u64(const uint64_t bits, int *minute, int *hour, int *day, int *weekday, int *month, int *year) {
+    // Minute: bits 21-27 (7)
+    *minute = u64_to_bcd(bits,21, 7);
     // Hour: bits 29-34 (6), parity 35
-    int hour = u64_to_bcd(bits,29, 6);
-    int hour_parity = (bits & (1ULL <<35)) >>35;
+    *hour = u64_to_bcd(bits,29, 6);
     // Day: bits 36-41 (6)
-    int day = u64_to_bcd(bits,36, 6);
+    *day = u64_to_bcd(bits,36, 6);
     // Weekday: bits 42-44 (3)
-    int weekday = u64_to_bcd(bits,42, 3);
+    *weekday = u64_to_bcd(bits,42, 3);
     // Month: bits 45-49 (5)
-    int month = u64_to_bcd(bits,45, 5);
+    *month = u64_to_bcd(bits,45, 5);
     // Year: bits 50-57 (8)
-    int year = u64_to_bcd(bits,50, 8);
+   *year = u64_to_bcd(bits,50, 8);
+    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check)  dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",*day,*month,*year+2000,*hour,*minute, *weekday);    
+}
+
+static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
+    int minute, hour, day, weekday, month, year;
+    
+    raw_dcf77_decode_u64(bits, &minute, &hour, &day, &weekday, &month, &year);
+
+
+    // Minute: parity 28
+    int minute_parity = (bits & (1ULL <<28)) >> 28;
+    // Hour: parity 35
+    int hour_parity = (bits & (1ULL <<35)) >>35;
+    // Date: parity 58
     int date_parity = (bits & (1ULL <<58)) >>58;
 
-    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check)  dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",day,month,year+2000,hour,minute, weekday);    
     // Parity checks  
     if (u64_to_parity(bits,21,7) != minute_parity){ 
     	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Parity Error minute - wanted %d got %d",u64_to_parity(bits,21,7), minute_parity);
@@ -327,102 +311,17 @@ static int dcf77_decode_u64(const uint64_t bits, time_t* epoch_out) {
     return 1;
 }
 
+static uint64_t dcfbits=0;	// we are storing our bits here 
+static uint64_t dcfbits_last=0;	// backup to show on main page if requested 
+
 /*
-// DCF77 interrupt handler for all platforms
-static void DCF77_ISR_Common() {
-    uint32_t now = get_ms_tick();
-    if (dcf77_last_edge_tick == 0) dcf77_last_edge_tick = now;		// start is no detected sync ;-)
-    
-    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: gap to prev. interrupt  %i", now - dcf77_last_edge_tick );
-    
-
-    // handle detection of "long gap" == start of sync
-    if (now - dcf77_last_edge_tick > DCF77_SYNC_THRESHOLD_MS){
-           addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: detected sync pulse > %i", now - dcf77_last_edge_tick );
-           dcf77_pulse_count = 0;
-           partdecoded=0;
-            dcf77_synced = true;
-
-            // If previous buffer is valid, set time here
-            if (dcf77_has_valid_epoch) {
-                CLOCK_setDeviceTime((uint32_t)dcf77_next_minute_epoch);
-//                addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: setDeviceTime %lu", (unsigned long)dcf77_next_minute_epoch);
-                dcf77_has_valid_epoch = false;
-            }
-            else{
-//                addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: no setDeviceTime (invalid) %lu", (unsigned long)dcf77_next_minute_epoch);
-
-            }
-
-            DCF77_Reset();
-            dcf77_synced = true;
-        }
-     
-#ifdef IRQ_raise_and_fall
-	 // this is for both rising and falling
-    if (HAL_PIN_ReadDigitalInput(GPIO_DCF77) ==1){		// start of high pulse = start of "bit"
-    	dcf77_last_edge_tick = now;
-    	return;
-    }
-#else 
-// not working -- WDT
-#if 0
-    dcf77_last_edge_tick = now;
-    int count=0;
-    vTaskDelay(50);
-    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: HALInput_Level= %i", HAL_PIN_ReadDigitalInput(GPIO_DCF77));
-    while(HAL_PIN_ReadDigitalInput(GPIO_DCF77)==1 && count++ < 30) vTaskDelay(10);
-    if (count > 29) return;	// bailing out, we didn't find end of signal in 300 ms !
-    addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: End of pulse - count= %i", count);
-#endif
-#endif
-    // so we knwo we are after falling edge now
-    uint32_t pulse_length = now - dcf77_last_edge_tick;
-    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: actual pulse length %i (count=%i)", pulse_length, dcf77_pulse_count);
-    // Synchronization: detect missing pulse (long gap)
-    if (!dcf77_synced) {
-        // Not synced yet, do nothing
-//        addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: Not synced!");
-        return;
-    }
-
-    // If synced, collect bits
-    if (dcf77_pulse_count < 59) {
-        if (pulse_length < DCF77_MIN_PULSE_MS || pulse_length > DCF77_MAX_PULSE_MS) {
-            // Invalid pulse, lose sync
-            dcf77_synced = false;
-            dcf77_pulse_count = 0;
-            addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: bit illegal pulse length %i", pulse_length );
-            return;
-        }
-        dcf77_minute_bits[dcf77_pulse_count] = (pulse_length < 150) ? 0 : 1;
-        addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: bit %i is %i", dcf77_pulse_count, dcf77_minute_bits[dcf77_pulse_count] );
-        dcf77_pulse_count++;
-    } if (dcf77_pulse_count == 59) {
-        // Buffer full, decode for next minute
-//        addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: got 59 bits!");
-        time_t epoch = 0;
-//        int valid = dcf77_decode(dcf77_minute_bits, &epoch);
-
-        int valid = dcf77_finish_decode(dcf77_minute_bits, &epoch);
-        if (valid && epoch > 1609459200) { // sanity check for 2021+
-            dcf77_next_minute_epoch = epoch;
-            dcf77_has_valid_epoch = true;
-        } else {
-            dcf77_has_valid_epoch = false;
-        }
-        dcf77_pulse_count++; // Don't record more until re-synced
-    }
-}
+// START for DEBUG 
+static uint64_t dcfbits150=0;	// we are storing our bits here 
+static uint64_t dcfbits180=0;	// we are storing our bits here 
+// END for DEBUG 
 */
 
-static uint64_t dcfbits=0;	// we are storing our bits here 
-//static uint64_t decodebits=0;	// we copy our bits there, so it can be converted outside ISR 
-
-//static uint64_t actbit=1;	// helper, "1" (only) at bit position we actually handle; after storing result well left shift it 1 position. to save 1, just OR it with dcfbits
-
 // new DCF77 interrupt handler
-//static void DCF77_ISR() {
 static void DCF77_ISR_Common() {
     static uint64_t actbit=1;
     
@@ -435,30 +334,90 @@ static void DCF77_ISR_Common() {
     if (now - dcf77_last_edge_tick > DCF77_SYNC_THRESHOLD_MS){
 //           addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: detected sync pulse > %i", now - dcf77_last_edge_tick );
            dcf77_pulse_count = 0;
-//           decodebits=0;
            dcfbits=0;
+/*
+// START for DEBUG 
+dcfbits150=0;
+dcfbits180=0;
+// END for DEBUG 
+*/
            actbit=1;
            dcf77_synced = true;
            settime=0;
     }
+    
+    
+    /*
+	// We started by defining "STARTEDGE" to see wich edge "starts" the bit
+	//
+	// and to toggle between RISING and FALLING we define TRIGGER_START and TRIGGER_END
+	// to change the edge after we found one     
+    
+#if PLATFORM_BEKEN
+    if (STARTEDGE == RISING){
+    	uint8_t TRIGGER_START = IRQ_TRIGGER_RISING_EDGE, TRIGGER_END = IRQ_TRIGGER_FALLING_EDGE; 
+    }
+    else {
+    	uint8_t TRIGGER_START = IRQ_TRIGGER_FALLING_EDGE, TRIGGER_END = IRQ_TRIGGER_RISING_EDGE; 
+    }
+#elif PLATFORM_BL602
+    if (STARTEDGE == RISING){
+    	uint8_t TRIGGER_START = GPIO_INT_TRIG_POS_PULSE, TRIGGER_END = GPIO_INT_TRIG_NEG_PULSE; 
+    }
+    else {
+    	uint8_t TRIGGER_START = GPIO_INT_TRIG_NEG_PULSE, TRIGGER_END = GPIO_INT_TRIG_POS_PULSE; 
+    }
+#else
+#endif
 
-    // this ISR is for both rising and falling, start pulse with rising edge
-    if (HAL_PIN_ReadDigitalInput(GPIO_DCF77) ==1){		// start of high pulse = start of "bit"
+
+    
+    */
+#if PLATFORM_BEKEN
+    next_IRQ ^= 1;	// toggle IRQ between 0 and 1
+
+    if (next_IRQ != STARTEDGE){		// caution, we already toggled the value
+    	gpio_int_enable(GPIO_DCF77, TRIGGER_END , DCF77_Interrupt);
+    	dcf77_last_edge_tick = now;
+    	return;
+    } else {
+    	gpio_int_enable(GPIO_DCF77, TRIGGER_START , DCF77_Interrupt);
+    }
+#elif PLATFORM_BL602
+    next_IRQ ^= 1;	// toggle IRQ between 0 and 1
+
+    if (next_IRQ != STARTEDGE){		// caution, we already toggled the value
+	hal_gpio_register_handler(DCF77_Interrupt, GPIO_DCF77, GPIO_INT_CONTROL_ASYNC, TRIGGER_END, (void*)NULL);
+    	dcf77_last_edge_tick = now;
+    	return;
+    } else {
+	hal_gpio_register_handler(DCF77_Interrupt, GPIO_DCF77, GPIO_INT_CONTROL_ASYNC, TRIGGER_START, (void*)NULL);
+    }
+#else
+
+    // this ISR is for both rising and falling, 
+    // if STARTEDGE == RISING (RISING = 0) pulse starts with rising edge  --> check, if pin is 1 after interrupt
+    // if STARTEDGE == FALLING (FALLING = 1) pulse starts with falling edge  --> check, if pin is 0 after interrupt
+    // --> check for !=  STARTEDGE 
+    if (HAL_PIN_ReadDigitalInput(GPIO_DCF77) != STARTEDGE){		// start of "bit"
     	dcf77_last_edge_tick = now;
     	return;
     }
-
+#endif
     // wait for sync
     if (!dcf77_synced) {
         // Not synced yet, do nothing
                return;
     }
 
-    // so we are synced and after falling edge now 
+    // if we reached this point
+    //		we are synced and 
+    //		we just had the edge "ending" the bit 
     uint32_t pulse_length = now - dcf77_last_edge_tick;
 //    addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: DEBUG: actual pulse length %i (count=%i)", pulse_length, dcf77_pulse_count);
     if (dcf77_pulse_count < 59) {
-        if (pulse_length < DCF77_MIN_PULSE_MS || pulse_length > DCF77_MAX_PULSE_MS) {
+        if ( dcf77_pulse_count > 20 && // ignore "lenght" errors outside of time information (starts at bit 21)
+        	(pulse_length < DCF77_MIN_PULSE_MS || pulse_length > DCF77_MAX_PULSE_MS || (pulse_length > end0 && pulse_length < start1))) {
             // Invalid pulse, lose sync
             dcf77_synced = false;
             dcf77_pulse_count = 0;
@@ -466,9 +425,15 @@ static void DCF77_ISR_Common() {
             addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: bit illegal pulse length %i", pulse_length );
             return;
         }
-
         // pulse is of valid length. All bits are 0, so only on a long pulse we need to set this position to 1
-        if (pulse_length > 150) dcfbits |= actbit;
+        if (pulse_length > start1) dcfbits |= actbit;
+/*
+// START for DEBUG 
+        if (pulse_length > 150) dcfbits150 |= actbit;
+        if (pulse_length > 180) dcfbits180 |= actbit;
+// END for DEBUG 
+*/
+
 //        addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: bit %i is %i", dcf77_pulse_count,  (pulse_length > 150));
         dcf77_pulse_count++;
         actbit <<= 1;
@@ -555,7 +520,7 @@ void DCF77_Init_Pin() {
     NVIC_SetPriority(GPIO_DCF77 < 16 ? GPIOA_IRQn : GPIOB_IRQn, 1);
     NVIC_EnableIRQ(GPIO_DCF77 < 16 ? GPIOA_IRQn : GPIOB_IRQn);
 #elif PLATFORM_BEKEN
-    gpio_int_enable(GPIO_DCF77, IRQ_TRIGGER_FALLING_EDGE, DCF77_Interrupt);
+    gpio_int_enable(GPIO_DCF77, IRQ_TRIGGER_RISING_EDGE, DCF77_Interrupt);
 #elif PLATFORM_REALTEK
     rtl_dcf77 = g_pins + GPIO_DCF77;
     rtl_dcf77->irq = os_malloc(sizeof(gpio_irq_t));
@@ -621,9 +586,16 @@ void DCF77_OnEverySecond() {
     if (settime != 0){
     	if (settime == 1){
 		uint8_t ST = (uint8_t)((dcfbits >> 17) & 3);	// bits 17 and 18 are Z1 and Z2   - 01 = CEST / 10 = CET  (everything else: illegal) 
+/*
+// START for DEBUG 
+    		dcf77_decode_u64(dcfbits150, &act_epoch) ? 2 : 3;
+    		dcf77_decode_u64(dcfbits180, &act_epoch) ? 2 : 3;
+// END for DEBUG 
+*/
     		settime = dcf77_decode_u64(dcfbits, &act_epoch) ? 2 : 3;
+    		dcfbits_last = dcfbits;
     		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: Summer time bits Z1 and Z2: %d (%s)\n",ST, ST==1? "summer time": ST==2 ? "winter time" : "illegal");
-    		// DCF77 will allways broadcast local time in Germany. So to get UTC: if ST==1 (summer time) sub 2h, if ST==2 (winter time) sub 1h to get
+    		// DCF77 will allways broadcast local time in Germany. So to get UTC: if ST==1 (summer time) sub 2h, if ST==2 (winter time) sub 1h
     		act_epoch -=  3600 * (3-ST);
 //    		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %llu (previous: %llu - diff=%llu seconds)\n",act_epoch, last_epoch, (act_epoch - last_epoch));
 		if (ST < 1 || ST > 2){
@@ -636,8 +608,10 @@ void DCF77_OnEverySecond() {
     		if (settime==2){
     			// as an additonal sanity check: last time decoded must be one exactly minute (60 seconds) before! 
     			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW, "DCF77: UTC calculated: %u (previous: %u - diff=%u seconds)\n",(uint32_t)act_epoch, (uint32_t)last_epoch, (uint32_t)(act_epoch - last_epoch));
-    			if ( (act_epoch - 60) == last_epoch ) CLOCK_setDeviceTime((uint32_t)act_epoch);
+//    			if ( (act_epoch - 60) == last_epoch ) CLOCK_setDeviceTime((uint32_t)act_epoch);
+    			CLOCK_setDeviceTime((uint32_t)act_epoch);
     			last_epoch = act_epoch;
+    			lastset = g_secondsElapsed;
     		}
     	}
     }
@@ -655,11 +629,87 @@ void DCF77_OnEverySecond() {
     	    	
 }
 
+
+void DCF77_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
+{
+	if (bPreState || ! httpstat){
+		return;
+	}
+	int minute, hour, day, weekday, month, year;
+	raw_dcf77_decode_u64(dcfbits_last, &minute, &hour, &day, &weekday, &month, &year);
+	
+//	    addLogAdv(LOG_EXTRADEBUG, LOG_FEATURE_RAW, "DCF77: (raw - no parity check)  dcf77_decode_u64 %02d.%02d.%02d %02d:%02d:00 (weekday=%d)",day,month,year+2000,hour,minute, weekday);    
+
+	
+	hprintf255(request, "<h5>DCF77: last raw info:  %02d.%02d.%02d %02d:%02d:00 (weekday=%d) - last time set %i secs ago</h5>",day,month,year+2000,hour,minute, weekday, g_secondsElapsed - lastset);
+}
+
 void DCF77_Init(void) {
+	// look for arguments
+	uint8_t temp=Tokenizer_GetArgsCount()-1;
+	const char* arg;
+	const char* fake=NULL;	
+	for (int i=1; i<=temp; i++) {
+		arg = Tokenizer_GetArg(i);
+		
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW,"DCF77: argument %i/%i is %s",i,temp,arg);		
+
+		if ( arg && !stricmp(arg,"fall")) {
+			 STARTEDGE = FALLING;
+
+		} 
+		if ( arg && !stricmp(arg,"httpstat")) {
+			 httpstat = true;
+
+		} 
+		fake=strstr(arg, "end0=");
+		if ( arg && fake ) {
+			int i=0;
+			fake += 5;
+			end0 = atoi(fake);
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW,"DCF77: set max duration of 0 bit to %ims",end0);		
+		} 
+		fake=NULL;
+		fake=strstr(arg, "start1=");
+		if ( arg && fake ) {
+			int i=0;
+			fake += 7;
+			start1 = atoi(fake);
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW,"DCF77: set min duration of 1 bit to %ims",start1);		
+		} 
+		if (Tokenizer_IsArgInteger(i)){
+			uint8_t XXX = Tokenizer_GetArgInteger(i);
+			addLogAdv(LOG_DEBUG, LOG_FEATURE_RAW,"DCF77: set XXX to %i",XXX);
+		}
+	}			
+
+
     addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "DCF77: DCF77_Init_Pin()\n");
     DCF77_Init_Pin();
     dcf77_pulse_count = 0;
     dcf77_synced = false;
+    next_IRQ = STARTEDGE;
+#if PLATFORM_BEKEN
+    if (STARTEDGE == RISING){
+    	TRIGGER_START = IRQ_TRIGGER_RISING_EDGE;
+    	TRIGGER_END = IRQ_TRIGGER_FALLING_EDGE; 
+    }
+    else {
+    	TRIGGER_START = IRQ_TRIGGER_FALLING_EDGE;
+    	TRIGGER_END = IRQ_TRIGGER_RISING_EDGE; 
+    }
+#elif PLATFORM_BL602
+    if (STARTEDGE == RISING){
+    	TRIGGER_START = GPIO_INT_TRIG_POS_PULSE;
+    	TRIGGER_END = GPIO_INT_TRIG_NEG_PULSE; 
+    }
+    else {
+    	TRIGGER_START = GPIO_INT_TRIG_NEG_PULSE;
+    	TRIGGER_END = GPIO_INT_TRIG_POS_PULSE; 
+    }
+#else
+#endif
+
 }
 void DCF77_Stop(){
     DCF77_Shutdown_Pin();
