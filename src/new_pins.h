@@ -616,6 +616,13 @@ typedef enum ioRole_e {
 	//iodetail:"file":"new_pins.h",
 	//iodetail:"driver":"HLW8112SPI"}
 	IOR_HLW8112_SCSN,
+	//iodetail:{"name":"DCF77",
+	//iodetail:"title":"TODO",
+	//iodetail:"descr":"",
+	//iodetail:"enum":"DCF77",
+	//iodetail:"file":"new_pins.h",
+	//iodetail:"driver":""}
+	IOR_DCF77,
 	//iodetail:{"name":"Total_Options",
 	//iodetail:"title":"TODO",
 	//iodetail:"descr":"Current total number of available IOR roles",
