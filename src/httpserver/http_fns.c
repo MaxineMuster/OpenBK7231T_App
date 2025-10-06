@@ -1600,6 +1600,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		bChanged |= CFG_SetWiFiPass("");
 		poststr(request, "WiFi mode set: open access point.");
 	}
+#if ENABLE_WPA_AP
 	else if (http_getArg(request->url, "WPA-AP", tmpA, sizeof(tmpA))) {
 		if (http_getArg(request->url, "SSIDAP", tmpA, sizeof(tmpA))) {
 			strcpy(ssid,tmpA);
@@ -1612,6 +1613,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		poststr(request, "WiFi mode set to access point.");
 		if (ssid[0] !=0 && pw[0] != 0 && strlen(pw) >7 ) HAL_SetupWiFiAccessPoint(ssid, pw);
 	}
+#endif
 	else {
 		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {
 			bChanged |= CFG_SetWiFiSSID(tmpA);
