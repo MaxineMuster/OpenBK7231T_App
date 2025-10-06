@@ -84,6 +84,10 @@
 #define ENABLE_LITTLEFS							1
 //#define ENABLE_DRIVER_TUYAMCU					1
 #undef ENABLE_HTTP_MAC
+// allow usage as an WPA2 AP ans define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
+
 
 #elif PLATFORM_W800
 
@@ -108,6 +112,9 @@
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
 #define NEW_TCP_SERVER							1
+// allow usage as an WPA2 AP ans define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif WINDOWS
 
@@ -227,6 +234,9 @@
 //#undef ENABLE_DRIVER_BL0942
 #define ENABLE_DRIVER_IRREMOTEESP				1
 //#endif
+// allow usage as an WPA2 AP ans define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_BEKEN
 
@@ -352,6 +362,9 @@
 #undef ENABLE_DRIVER_BL0942SPI
 #undef ENABLE_DRIVER_CSE7766
 #endif
+// allow usage as an WPA2 AP ans define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_LN882H
 
@@ -380,6 +393,9 @@
 #define ENABLE_DRIVER_SM16703P					1
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_IRREMOTEESP				1
+// allow usage as an WPA2 AP ans define number of clients to connect
+#define ENABLE_WPA_AP						1
+#define WPA_AP_STA_CLIENTS					3
 
 #elif PLATFORM_ESPIDF
 

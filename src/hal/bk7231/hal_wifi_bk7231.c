@@ -457,13 +457,15 @@ void HAL_DisconnectFromWifi()
     bk_wlan_stop(STATION);
 }
 
-int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+//int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
+int HAL_SetupWiFiAP(const char* ssid, const char* key)
 {
 #define APP_DRONE_DEF_NET_IP        "192.168.4.1"
 #define APP_DRONE_DEF_NET_MASK      "255.255.255.0"
 #define APP_DRONE_DEF_NET_GW        "192.168.4.1"
 #define APP_DRONE_DEF_CHANNEL       1
 
+	if (sta_ip_is_start()) HAL_DisconnectFromWifi();
 	general_param_t general;
 	ap_param_t ap_info;
 	network_InitTypeDef_st wNetConfig;
@@ -487,11 +489,11 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	// see wifi_get_mac_address source
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
 	ap_info.chann = APP_DRONE_DEF_CHANNEL;
-	ap_info.cipher_suite = 0;
+	ap_info.cipher_suite = (! key || key[0] == 0) ? 0 : SECURITY_TYPE_WPA2_AES;
 	//memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, strlen(APP_DRONE_DEF_SSID));
 	memcpy(ap_info.ssid.array, ssid, strlen(ssid));
 
-	ap_info.key_len = 0;
+	ap_info.key_len = (! key || key[0] == 0) ? 0 : os_strlen(key);
 	memset(&ap_info.key, 0, 65);
 
 
@@ -534,11 +536,34 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	//}
 	bk_wlan_start(&wNetConfig);
-	g_bOpenAccessPointMode = 1;
+	g_bOpenAccessPointMode = (! key || key[0] == 0) ? 1 : 0;
 
 	//dhcp_server_start(0);
 	//dhcp_server_stop(void);
 
 	return 0;
+}
+int HAL_SetupWiFiOpenAccessPoint(const char* ssid){
+	g_bOpenAccessPointMode = 1;
+	return HAL_SetupWiFiAP(ssid, NULL);
+}
+
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	if ( ssid[0] == 0 ){
+		ADDLOGF_INFO("ERROR: empty SSID!!\r\n");
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	} 
+	if ( key && os_strlen(key) < 8){
+		ADDLOGF_INFO("ERROR! key(%s) needs to be at least 8 characters!\r\n",key);
+		if (g_wifiStatusCallback != 0) {
+			g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	} 
+	return HAL_SetupWiFiAP(ssid,key);
 }
 

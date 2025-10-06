@@ -39,6 +39,7 @@ typedef struct
 } obkFastConnectData_t;
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid);
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key);
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip);
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip);
 void HAL_DisableEnhancedFastConnect();
