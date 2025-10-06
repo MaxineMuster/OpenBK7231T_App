@@ -898,14 +898,14 @@ void Main_OnEverySecond()
 		//ADDLOGF_INFO("mqtt req %i/%i, free mem %i\n", mqtt_cur,mqtt_max,mqtt_mem);
 #if ENABLE_MQTT
 #if ENABLE_WPA_AP
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i, g_openAP %i, g_connectToWiFi %i, g_bHasWiFiConnected %i, %s\n",
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i, g_openAP %i, g_connectToWiFi %i, g_bHasWiFiConnected %i %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
 			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_openAP, g_connectToWiFi, g_bHasWiFiConnected,
 			g_powersave ? "POWERSAVE" : "");
 
 #else
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i, g_openAP %i, g_connectToWiFi %i, g_bHasWiFiConnected %i, %s\n",
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d, MQTT %i(%i), bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(), bMQTTconnected,
 			MQTT_GetConnectEvents(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_powersave ? "POWERSAVE" : "");
@@ -917,7 +917,7 @@ void Main_OnEverySecond()
 			g_openAP, g_connectToWiFi, g_bHasWiFiConnected,
 			g_powersave ? "POWERSAVE" : "");
 #else
-		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i %s\n",
+		ADDLOGF_INFO("%sTime %i, idle %i/s, free %d,  bWifi %i, secondsWithNoPing %i, socks %i/%i , g_openAP %i, g_connectToWiFi %i, g_bHasWiFiConnected %i %s\n",
 			safe, g_secondsElapsed, idleCount, xPortGetFreeHeapSize(),g_bHasWiFiConnected, g_timeSinceLastPingReply, LWIP_GetActiveSockets(), LWIP_GetMaxSockets(),
 			g_powersave ? "POWERSAVE" : "");
 #endif //#if ENABLE_WPA_AP
