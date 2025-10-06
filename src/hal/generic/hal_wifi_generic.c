@@ -87,7 +87,7 @@ int __attribute__((weak)) HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	return 0;
 }
 
-int __attribute__((weak)) HAL_SetupWiFiAccessPoint(const char* ssid, const char* key);
+int __attribute__((weak)) HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 	ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Generic %s called", __func__);
 	return 0;
