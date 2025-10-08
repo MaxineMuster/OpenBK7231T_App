@@ -35,7 +35,7 @@ static void (*g_wifiStatusCallback)(int code);
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
-static int g_bOpenAccessPointMode = 0;
+static int g_AccessPointMode = 0;
 char *get_security_type(int type);
 bool g_bStaticIP = false, g_needFastConnectSave = false;
 
@@ -45,7 +45,7 @@ IPStatusTypedef ipStatus;
 const char* HAL_GetMyIPString() {
 
 	memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
-	if (g_bOpenAccessPointMode) {
+	if (g_AccessPointMode) {
 		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
 	}
 	else {
@@ -371,7 +371,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-	g_bOpenAccessPointMode = 0;
+	g_AccessPointMode = 0;
 
 	network_InitTypeDef_st network_cfg;
 
@@ -467,12 +467,12 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 
 	if (sta_ip_is_start()) HAL_DisconnectFromWifi();
 	general_param_t general;
-	ap_param_t ap_info;
+//	ap_param_t ap_info;
 	network_InitTypeDef_st wNetConfig;
 	unsigned char* mac;
 
 	memset(&general, 0, sizeof(general_param_t));
-	memset(&ap_info, 0, sizeof(ap_param_t));
+//	memset(&ap_info, 0, sizeof(ap_param_t));
 	memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
 
 	general.role = 1,
@@ -484,10 +484,12 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 
 
 	ADDLOGF_INFO("no flash configuration, use default\r\n");
-	mac = (unsigned char*)&ap_info.bssid.array;
+//	mac = (unsigned char*)&ap_info.bssid.array;
 	// this is MAC for Access Point, it's different than Client one
 	// see wifi_get_mac_address source
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
+
+/*
 	ap_info.chann = APP_DRONE_DEF_CHANNEL;
 	ap_info.cipher_suite = (! key || key[0] == 0) ? 0 : SECURITY_TYPE_WPA2_AES;
 	//memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, strlen(APP_DRONE_DEF_SSID));
@@ -503,6 +505,11 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 
 	os_strncpy((char*)wNetConfig.wifi_ssid, (char*)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
 	os_strncpy((char*)wNetConfig.wifi_key, (char*)ap_info.key, sizeof(wNetConfig.wifi_key));
+*/
+	bk_wlan_ap_set_default_channel(APP_DRONE_DEF_CHANNEL);
+	os_strncpy((char*)wNetConfig.wifi_ssid, ssid, sizeof(wNetConfig.wifi_ssid));
+	os_strncpy((char*)wNetConfig.wifi_key, key, sizeof(wNetConfig.wifi_key));
+
 
 	wNetConfig.wifi_mode = SOFT_AP;
 	wNetConfig.dhcp_mode = DHCP_SERVER;
@@ -536,7 +543,7 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 
 	//}
 	bk_wlan_start(&wNetConfig);
-	g_bOpenAccessPointMode = (! key || key[0] == 0) ? 1 : 0;
+	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 0;
 
 	//dhcp_server_start(0);
 	//dhcp_server_stop(void);
@@ -544,7 +551,7 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 	return 0;
 }
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid){
-	g_bOpenAccessPointMode = 1;
+	g_AccessPointMode = 1;
 	return HAL_SetupWiFiAP(ssid, NULL);
 }
 

@@ -75,7 +75,7 @@ static int g_reset = 0;
 // is connected to WiFi?
 static int g_bHasWiFiConnected = 0;
 // is Open Access point or a client?
-static int g_bOpenAccessPointMode = 0;
+static int g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 // in safe mode, user can press a button to enter the unsafe one
 static int g_doUnsafeInitIn = 0;
 int g_bootFailures = 0;
@@ -651,7 +651,7 @@ void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 void Main_ConnectToWiFiNow() {
 	const char* wifi_ssid, * wifi_pass;
 
-	g_bOpenAccessPointMode = 0;
+	g_AccessPointMode = 0;
 	CheckForSSID12_Switch();
 	wifi_ssid = CFG_GetWiFiSSIDX();
 	wifi_pass = CFG_GetWiFiPassX();
@@ -986,7 +986,7 @@ void Main_OnEverySecond()
 		if (0 == g_openAP)
 		{
 			HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
-			g_bOpenAccessPointMode = 1;
+			g_AccessPointMode = 1;
 		}
 	}
 
@@ -1236,7 +1236,7 @@ void app_on_generic_dbl_click(int btnIndex)
 
 int Main_IsOpenAccessPointMode()
 {
-	return g_bOpenAccessPointMode;
+	return g_AccessPointMode;
 }
 
 int Main_IsConnectedToWiFi()

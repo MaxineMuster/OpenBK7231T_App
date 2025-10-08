@@ -15,7 +15,7 @@
 #include "lib/net/dhcpd/dhcpd.h"
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
-static int g_bOpenAccessPointMode = 0;
+static int g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 struct system_status sys_status;
 extern u8_t netif_num;
 
@@ -60,7 +60,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -72,7 +72,7 @@ void HAL_PrintNetworkInfo()
 int HAL_GetWifiStrength()
 {
 	struct ieee80211_stainfo stainfo;
-	if(!g_bOpenAccessPointMode) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
+	if(!g_AccessPointMode) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
 	return stainfo.rssi;
 }
 
@@ -374,7 +374,7 @@ void HAL_DisconnectFromWifi()
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	int32 ret;
-	g_bOpenAccessPointMode = 1;
+	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 
 	os_sprintf(sys_cfgs.ssid, "%s", ssid);
 	void* ops;

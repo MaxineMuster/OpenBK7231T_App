@@ -15,7 +15,7 @@ extern system_event_cb_t s_event_handler_cb;
 bool g_bStaticIP = 0;
 
 static struct ip_info if_ip;
-static int g_bOpenAccessPointMode = 0;
+static int g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 
 const char* HAL_GetMyIPString()
 {
@@ -62,7 +62,7 @@ void HAL_PrintNetworkInfo()
 	uint8_t mac[6];
 	WiFI_GetMacAddress(mac);
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_bOpenAccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -167,7 +167,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_bOpenAccessPointMode = 0;
+	g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	unsigned int sta_ip = 0, count = 0;
 	while(!wifi_is_ready_full())
 	{

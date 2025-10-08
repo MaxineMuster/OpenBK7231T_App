@@ -14,7 +14,7 @@ static void (*g_wifiStatusCallback)(int code);
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
-static int g_bOpenAccessPointMode = 0;
+static int g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 
 const char* security_names[] = {
 	"OPEN",
@@ -259,7 +259,7 @@ static int connect_wifi_demo(char* ssid, char* pwd, obkStaticIP_t *ip)
 }
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-	g_bOpenAccessPointMode = 0;
+	g_AccessPointMode = 2;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	connect_wifi_demo(oob_ssid, connect_key, ip);
 }
 
