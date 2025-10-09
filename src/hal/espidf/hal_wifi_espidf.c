@@ -253,6 +253,16 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	cfg.nvs_enable = false;
 	esp_wifi_init(&cfg);
 
+	if(handlers_registered)
+	{
+		esp_event_handler_instance_unregister(IP_EVENT,
+			IP_EVENT_STA_GOT_IP,
+			instance_got_ip);
+		esp_event_handler_instance_unregister(WIFI_EVENT,
+			ESP_EVENT_ANY_ID,
+			instance_any_id);
+		handlers_registered = false;
+	}
 	if(!handlers_registered)
 	{
 		esp_event_handler_instance_register(WIFI_EVENT,
@@ -260,6 +270,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 			&event_handler,
 			NULL,
 			&instance_any_id);
+		handlers_registered = true;
 	}
 	wifi_config_t wifi_ap_config =
 	{
