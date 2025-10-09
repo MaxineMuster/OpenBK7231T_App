@@ -27,6 +27,7 @@ static esp_netif_t* ap_netif = NULL;
 #define esp_netif_ip_info_t tcpip_adapter_ip_info_t
 #define esp_event_handler_instance_t esp_event_handler_t
 #define esp_event_handler_instance_register(a,b,c,d,e) esp_event_handler_register(a,b,c,e)
+#define esp_event_handler_instance_unregister(a,b,c) esp_event_handler_unregister(a,b,c)
 #define esp_netif_t tcpip_adapter_if_t
 #define esp_netif_set_hostname tcpip_adapter_set_hostname
 #define esp_netif_get_ip_info tcpip_adapter_get_ip_info

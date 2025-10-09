@@ -486,13 +486,15 @@ void Main_OnWiFiStatusChange(int code)
 		//{
 		//	HAL_DisconnectFromWifi();
 		//}
-		if(g_secondsElapsed < 30)
-		{
-			g_connectToWiFi = 5;
+		if (g_AccessPointMode == 0){	// if changing from STA to AP, we will disconnect STA, but don't want it to reconnect !
+			if(g_secondsElapsed < 30)
+			{
+				g_connectToWiFi = 5;
+			}
+			else
+			{
+				g_connectToWiFi = 15;
 		}
-		else
-		{
-			g_connectToWiFi = 15;
 		}
 		g_bHasWiFiConnected = 0;
 		g_timeSinceLastPingReply = -1;
@@ -1539,6 +1541,7 @@ void Main_Init_After_Delay()
 		{
 			g_openAP = 5;
 		}
+//		else if(g_AccessPointMode == 2){ }
 		else {
 			if (Main_HasFastConnect()) {
 #if ENABLE_MQTT
