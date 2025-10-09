@@ -138,7 +138,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 void event_handler(void* arg, esp_event_base_t event_base,
 	int32_t event_id, void* event_data)
 {
-	if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START && !g_AccessPointMode)
+	if(event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START && g_AccessPointMode==0)
 	{
 		if(g_wifiStatusCallback != NULL)
 		{
