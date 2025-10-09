@@ -254,7 +254,10 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		{
 			.ssid_len = strlen(ssid),
 			.channel = 1,
-			.max_connection = 1,
+#ifndef WPA_AP_STA_CLIENTS
+#define WPA_AP_STA_CLIENTS 1
+#endif
+			.max_connection = WPA_AP_STA_CLIENTS,
 			.authmode = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA_PSK,
 //			.authmode =  WIFI_AUTH_OPEN,
 #if !PLATFORM_ESP8266
@@ -291,7 +294,6 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-/*
 	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
@@ -340,9 +342,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	esp_netif_get_ip_info(ap_netif, &g_ip_info);
 
 	return 1;
-*/
 
-	return HAL_SetupWiFiAccessPoint(ssid, NULL);
+//	return HAL_SetupWiFiAccessPoint(ssid, NULL);
 }
 
 #endif // PLATFORM_ESPIDF
