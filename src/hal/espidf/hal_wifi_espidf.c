@@ -248,7 +248,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		esp_wifi_deinit();
 		delay_ms(50);
 	}
-	g_connectToWiFi = 0;
+	extern int g_connectToWiFi = 0;
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
