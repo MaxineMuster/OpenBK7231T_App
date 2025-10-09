@@ -269,7 +269,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		.sta = { },
 	};
 	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
-	if ( key && key[0] != 0 ) strncpy((char*)wifi_ap_config.ap.password, (char*)key, 64);
+	if ( key && key[0] != 0 ) strncpy((char*)wifi_ap_config.ap.password, (char*)key, 32);
 	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
 
 	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
