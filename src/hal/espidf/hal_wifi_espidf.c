@@ -234,7 +234,8 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
+	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
