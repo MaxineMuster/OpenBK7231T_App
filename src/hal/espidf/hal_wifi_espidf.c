@@ -235,6 +235,7 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
+	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
 	esp_wifi_disconnect();
 #if PLATFORM_ESPIDF
 	if(sta_netif != NULL)
@@ -247,7 +248,6 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		esp_wifi_deinit();
 		delay_ms(50);
 	}
-	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
