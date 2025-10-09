@@ -140,7 +140,10 @@ void OTA_SetTotalBytes(int value)
 }
 
 
-
+void Main_SetAccessPointMode(int value)
+{
+	g_AccessPointMode = value;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+}
 
 #if PLATFORM_XR806 || PLATFORM_XR872
 

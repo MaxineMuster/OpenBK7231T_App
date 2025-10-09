@@ -1612,7 +1612,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		}
 		poststr(request, "WiFi mode set to access point.");
 		if (ssid[0] !=0 && pw[0] != 0 && strlen(pw) >7 ){ 
-			g_AccessPointMode = 2;
+			Main_SetAccessPointMode(2);
 			HAL_DisconnectFromWifi();
 			HAL_SetupWiFiAccessPoint(ssid, pw);
 		}

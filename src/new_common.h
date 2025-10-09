@@ -1027,6 +1027,8 @@ void Main_OnEverySecond();
 int Main_HasMQTTConnected();
 int Main_HasWiFiConnected();
 void Main_OnPingCheckerReply(int ms);
+void Main_SetAccessPointMode(int value);
+
 
 // new_ping.c
 #if ENABLE_PING_WATCHDOG
