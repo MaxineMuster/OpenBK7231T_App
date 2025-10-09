@@ -302,7 +302,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	wifi_softap_set_dhcps_lease(&dhcp_cfg_info);
 	return 0;
 */
-	return HAL_SetupWiFiAccessPoint(ssid, key);
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
 	
 }
 
