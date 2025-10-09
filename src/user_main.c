@@ -1021,6 +1021,9 @@ void Main_OnEverySecond()
 		}
 
 	}
+	if (g_connectToWiFi && g_AccessPointMode != 0){
+		g_connectToWiFi = 0;	// if changing from STA to AP, we will disconnect STA, but don't want it to reconnect !
+	}
 	if (g_connectToWiFi)
 	{
 		g_connectToWiFi--;
