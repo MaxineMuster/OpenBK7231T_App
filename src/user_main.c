@@ -498,7 +498,7 @@ void Main_OnWiFiStatusChange(int code)
 		}
 		g_bHasWiFiConnected = 0;
 		g_timeSinceLastPingReply = -1;
-		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i\r\n", __func__, code);
+		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i (g_AccessPointMode = %i)\r\n", __func__, code, g_AccessPointMode);
 		break;
 	case WIFI_STA_AUTH_FAILED:
 		// try to connect again in few seconds
