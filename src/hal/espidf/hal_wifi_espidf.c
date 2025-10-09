@@ -234,8 +234,8 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
-	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+	esp_wifi_disconnect();
+	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -255,8 +255,8 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 			.ssid_len = strlen(ssid),
 			.channel = 1,
 			.max_connection = 1,
-//			.authmode = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA_PSK,
-			.authmode =  WIFI_AUTH_OPEN,
+			.authmode = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA_PSK,
+//			.authmode =  WIFI_AUTH_OPEN,
 #if !PLATFORM_ESP8266
 			.pmf_cfg =
 			{
@@ -272,6 +272,8 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	};
 	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
 //	if ( key && key[0] != 0 ) strncpy((char*)wifi_ap_config.ap.password, (char*)key, 32);
+//	memcpy(wifi_config.sta.password, evt->password, sizeof(wifi_config.sta.password));
+	if ( key && key[0] != 0 ) memcpy(wifi_ap_config.ap.password, (uint8_t*)key, sizeof(wifi_ap_config.ap.password));
 	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
 
 	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
