@@ -253,12 +253,14 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	cfg.nvs_enable = false;
 	esp_wifi_init(&cfg);
 
-	esp_event_handler_instance_register(WIFI_EVENT,
-		ESP_EVENT_ANY_ID,
-		&event_handler,
-		NULL,
-		&instance_any_id);
-
+	if(!handlers_registered)
+	{
+		esp_event_handler_instance_register(WIFI_EVENT,
+			ESP_EVENT_ANY_ID,
+			&event_handler,
+			NULL,
+			&instance_any_id);
+	}
 	wifi_config_t wifi_ap_config =
 	{
 		.ap =
