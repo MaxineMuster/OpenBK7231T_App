@@ -1604,14 +1604,18 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	else if (http_getArg(request->url, "WPA-AP", tmpA, sizeof(tmpA))) {
 		if (http_getArg(request->url, "SSIDAP", tmpA, sizeof(tmpA))) {
 			strcpy(ssid,tmpA);
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "APA-AP: ssid=%s \r\n",ssid);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "WPA-AP: ssid=%s \r\n",ssid);
 		}
 		if (http_getArg(request->url, "PWAP", tmpA, sizeof(tmpA))) {
 			strcpy(pw,tmpA);
-	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "APA-AP: PW=%s \r\n",pw);
+	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "WPA-AP: PW=%s \r\n",pw);
 		}
 		poststr(request, "WiFi mode set to access point.");
-		if (ssid[0] !=0 && pw[0] != 0 && strlen(pw) >7 ) HAL_SetupWiFiAccessPoint(ssid, pw);
+		if (ssid[0] !=0 && pw[0] != 0 && strlen(pw) >7 ){ 
+			g_AccessPointMode = 2;
+			HAL_DisconnectFromWifi();
+			HAL_SetupWiFiAccessPoint(ssid, pw);
+		}
 	}
 #endif
 	else {
