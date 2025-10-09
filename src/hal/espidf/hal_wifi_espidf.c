@@ -234,7 +234,7 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-
+	esp_wifi_disconnect();
 #if PLATFORM_ESPIDF
 	if(sta_netif != NULL)
 #else
@@ -287,14 +287,15 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		.sta = { },
 	};
 	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
-//	if ( key && key[0] != 0 ) strncpy((char*)wifi_ap_config.ap.password, (char*)key, 32);
+	if ( key && key[0] != 0 ) strncpy((char*)wifi_ap_config.ap.password, (char*)key, 64);
 //	memcpy(wifi_config.sta.password, evt->password, sizeof(wifi_config.sta.password));
-	if ( key && key[0] != 0 ) memcpy(wifi_ap_config.ap.password, (uint8_t*)key, sizeof(wifi_ap_config.ap.password));
+//	if ( key && key[0] != 0 ) memcpy(wifi_ap_config.ap.password, (uint8_t*)key, sizeof(wifi_ap_config.ap.password));
 	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
 
 	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
 	esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config);
-	esp_wifi_set_mode(WIFI_MODE_APSTA);
+//	esp_wifi_set_mode(WIFI_MODE_APSTA);
+	esp_wifi_set_mode(WIFI_MODE_AP);
 	esp_wifi_set_max_tx_power(10 * 4);
 	esp_wifi_start();
 
