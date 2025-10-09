@@ -224,7 +224,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	memset(&config, 0, sizeof(config));
 	strlcpy((char*)config.ap.ssid, ssid, sizeof(config.ap.ssid));
 	config.ap.channel = channel;
-	config.ap.authmode = (! key || key[0] == 0) ? AUTH_OPEN : WPS_AUTH_WPA2PSK;
+	config.ap.authmode = (! key || key[0] == 0) ? AUTH_OPEN : AUTH_WPA2_PSK;
 	if ( key && key[0] != 0) {
 		strlcpy((char*)config.ap.password, key, sizeof(config.ap.password));
 	}
