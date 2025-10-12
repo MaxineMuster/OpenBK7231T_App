@@ -510,7 +510,7 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 	os_strncpy((char*)wNetConfig.wifi_ssid, (char*)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
 	os_strncpy((char*)wNetConfig.wifi_key, (char*)ap_info.key, sizeof(wNetConfig.wifi_key));
 */
-	bk_wlan_ap_set_default_channel(APP_DRONE_DEF_CHANNEL);
+	bk_wlan_ap_set_default_channel(HAL_AP_Wifi_Channel);
 	os_strncpy((char*)wNetConfig.wifi_ssid, ssid, sizeof(wNetConfig.wifi_ssid));
 	os_strncpy((char*)wNetConfig.wifi_key, key, sizeof(wNetConfig.wifi_key));
 

@@ -2,6 +2,8 @@
 #include "../../new_common.h"
 #include "../../logging/logging.h"
 
+uint8_t HAL_AP_Wifi_Channel = 1;	// use channel 1 as default 
+
 const char* __attribute__((weak)) HAL_GetMyIPString()
 {
 	return "error";

@@ -474,7 +474,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		return 0;
 	}
 
-	if(wifi_start_ap((char*)ssid, (! key || key[0] == 0) ? RTW_SECURITY_OPEN : RTW_SECURITY_WPA2_MIXED_PSK, (! key || key[0] == 0) ? NULL : key, strlen(ssid), key ? strlen(key) : 0, 1) < 0)
+	if(wifi_start_ap((char*)ssid, (! key || key[0] == 0) ? RTW_SECURITY_OPEN : RTW_SECURITY_WPA2_MIXED_PSK, (! key || key[0] == 0) ? NULL : key, strlen(ssid), key ? strlen(key) : 0, HAL_AP_Wifi_Channel) < 0)
 	{
 		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to start AP");
 		return 0;

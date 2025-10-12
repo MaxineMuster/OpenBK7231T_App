@@ -386,7 +386,7 @@ int demo_create_softap(u8* ssid, u8* key, int chan, int encrypt, int format)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	demo_create_softap(ssid, "", 15, 0, 1);
+	demo_create_softap(ssid, "", 15, 0, HAL_AP_Wifi_Channel);
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);
@@ -406,7 +406,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	}
 
 
-	demo_create_softap(ssid, key, 1, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
+	demo_create_softap(ssid, key, 1, IEEE80211_ENCRYT_CCMP_WPA2, HAL_AP_Wifi_Channel);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);

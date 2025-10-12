@@ -350,7 +350,10 @@ void wifi_init_ap(const char* ssid, const char* key)
     server_config.renew         = 2880;
     server_config.ip_start.addr = ipaddr_addr((const char *)"192.168.4.100");
     server_config.ip_end.addr   = ipaddr_addr((const char *)"192.168.4.150");
-    server_config.client_max    = 3;
+#ifndef WPA_AP_STA_CLIENTS
+#define WPA_AP_STA_CLIENTS 3
+#endif
+    server_config.client_max    = WPA_AP_STA_CLIENTS;
     dhcpd_curr_config_set(&server_config);
 
     // fix to generate unique AP MAC, mirrors STA code
@@ -376,7 +379,7 @@ void wifi_init_ap(const char* ssid, const char* key)
 		.pwd             = (! key || key[0] == 0) ? "" : key,
 		.bssid           = mac_addr,
 		.ext_cfg = {
-			.channel         = 6,
+			.channel         = HAL_AP_Wifi_Channel,
 			.authmode        = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK,
 			.ssid_hidden     = 0,
 			.beacon_interval = 100,

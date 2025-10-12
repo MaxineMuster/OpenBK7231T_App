@@ -283,7 +283,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		.ap =
 		{
 			.ssid_len = strlen(ssid),
-			.channel = 1,
+			.channel = HAL_AP_Wifi_Channel,
 #ifndef WPA_AP_STA_CLIENTS
 #define WPA_AP_STA_CLIENTS 1
 #endif

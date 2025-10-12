@@ -131,12 +131,26 @@ void HAL_DisconnectFromWifi()
 	wifi.disconnect();
 }
 
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char *key)
+{
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1;
+	char dhcpend[16]={0};	//4 * up to 3 digits (=12) + 3 "." (=15) + "\0" --> 16
+#ifndef WPA_AP_STA_CLIENTS
+#define WPA_AP_STA_CLIENTS 1
+#endif
+	sprintf(dhcpend,"192.168.4.%i",2 + WPA_AP_STA_CLIENTS);
+	
+	wifi.set_network_ap("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.2", "192.168.4.254");
+	wifi.start_ap(ssid, key, HAL_AP_Wifi_Channel);
+	return 0;
+}
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 // set in user_main - included as "extern"
 //	g_AccessPointMode = 1;
 	wifi.set_network_ap("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.2", "192.168.4.254");
-	wifi.start_ap(ssid, "", 1);
+	wifi.start_ap(ssid, "", HAL_AP_Wifi_Channel);
 	return 0;
 }
 

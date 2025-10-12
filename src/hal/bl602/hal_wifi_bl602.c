@@ -72,7 +72,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
     wifi_interface = wifi_mgmr_ap_enable();
     /*no password when only one param*/
-    wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, NULL, 1);
+    wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, NULL, HAL_AP_Wifi_Channel);
 
 // set in user_main - included as "extern"
 //	g_AccessPointMode = 1;
@@ -94,7 +94,7 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	wifi_interface_t wifi_interface;
 	//struct netif *net;
 	wifi_interface = wifi_mgmr_ap_enable();
-	wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, key, 1);
+	wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, key, HAL_AP_Wifi_Channel);
 // set in user_main - included as "extern"
 //	g_AccessPointMode = 0;
 
