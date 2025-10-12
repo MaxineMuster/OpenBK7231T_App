@@ -256,7 +256,7 @@ const char *HAL_GetMyIPString() {
 	uint32_t gw;
 	uint32_t mask;
 
-	if(g_AccessPointMode == 1) {
+	if(g_AccessPointMode != 0) {
 		wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
 	} else {
 		wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
@@ -283,7 +283,7 @@ void WiFI_GetMacAddress(char *mac) {
 }
 const char *HAL_GetMACStr(char *macstr) {
 	uint8_t mac[6];
-	if(g_AccessPointMode == 1) {
+	if(g_AccessPointMode != 0) {
 		wifi_mgmr_ap_mac_get(mac);
 	} else {
 		wifi_mgmr_sta_mac_get(mac);

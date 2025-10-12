@@ -7,6 +7,7 @@
 #ifndef MACSTR
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 #endif
+#include <stdint.h>
 extern uint8_t HAL_AP_Wifi_Channel; 	// defined and inintialized in hal_wifi_generic.c
 typedef enum HALWifiStatus {
 	WIFI_UNDEFINED,

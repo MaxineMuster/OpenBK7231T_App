@@ -111,7 +111,9 @@ void HAL_PrintNetworkInfo()
 				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",
 				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
 				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
-				 ip, gw, netmask, macstr, dns );
+//				 ip, gw, netmask, macstr, dns );
+				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_AccessPointMode == 0? dns :"-" );
+				 				 
 	bk_printf(buffer);
 	// do we need this in web Log?
 	// disable for now
@@ -386,7 +388,7 @@ int demo_create_softap(u8* ssid, u8* key, int chan, int encrypt, int format)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	demo_create_softap(ssid, "", 15, 0, HAL_AP_Wifi_Channel);
+	demo_create_softap(ssid, "", HAL_AP_Wifi_Channel, 0, 1);
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);
@@ -406,7 +408,8 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	}
 
 
-	demo_create_softap(ssid, key, 1, IEEE80211_ENCRYT_CCMP_WPA2, HAL_AP_Wifi_Channel);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
+	// int demo_create_softap(u8 *ssid, u8 *key, int chan, int encrypt, int format)  		format: key's format: 0-HEX, 1-ASCII
+	demo_create_softap(ssid, key, HAL_AP_Wifi_Channel, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);
