@@ -39,7 +39,10 @@ static tcpip_adapter_if_t ap_netif = TCPIP_ADAPTER_IF_AP;
 #endif
 
 static void (*g_wifiStatusCallback)(int code);
-static int g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static esp_netif_ip_info_t g_ip_info;
 esp_event_handler_instance_t instance_any_id, instance_got_ip;
 bool handlers_registered = false;
@@ -235,7 +238,8 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
+// set in user_main - included as "extern"
+//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
 #if PLATFORM_ESPIDF
 	if(sta_netif != NULL)
 #else

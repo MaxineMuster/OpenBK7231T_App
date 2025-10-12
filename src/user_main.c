@@ -74,8 +74,12 @@ static int g_connectToWiFi = 0;
 static int g_reset = 0;
 // is connected to WiFi?
 static int g_bHasWiFiConnected = 0;
-// is Open Access point or a client?
-static int g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// is (Open-) Access point or a client? 
+// included as "external int g_AccessPointMode;" from new_common.h in other 
+// code like hal_wifi or http_fns.c
+// in order to change when moving e.g. from sta to access-point.
+// otherwise user_main.c will try to connect as client if this is not changed!
+uint8_t g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 // in safe mode, user can press a button to enter the unsafe one
 static int g_doUnsafeInitIn = 0;
 int g_bootFailures = 0;
@@ -137,12 +141,6 @@ int OTA_GetTotalBytes()
 void OTA_SetTotalBytes(int value)
 {
 	total_bytes = value;
-}
-
-
-void Main_SetAccessPointMode(int value)
-{
-	g_AccessPointMode = value;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 }
 
 #if PLATFORM_XR806 || PLATFORM_XR872

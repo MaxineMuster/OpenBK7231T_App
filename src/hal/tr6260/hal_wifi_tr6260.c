@@ -15,7 +15,10 @@ extern system_event_cb_t s_event_handler_cb;
 bool g_bStaticIP = 0;
 
 static struct ip_info if_ip;
-static int g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 const char* HAL_GetMyIPString()
 {
@@ -167,7 +170,8 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	unsigned int sta_ip = 0, count = 0;
 	while(!wifi_is_ready_full())
 	{

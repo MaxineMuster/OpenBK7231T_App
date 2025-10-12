@@ -1612,7 +1612,11 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		}
 		poststr(request, "WiFi mode set to access point.");
 		if (ssid[0] !=0 && pw[0] != 0 && strlen(pw) >7 ){ 
-			Main_SetAccessPointMode(2);
+			// is (Open-) Access point or a client?
+			// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+			// initilized in user_main.c
+			// values:     0 = STA 1 = OpenAP      2 = WAP-AP
+			g_AccessPointMode = 2;	// make sure, we don't try to connect as STA client!
 			HAL_DisconnectFromWifi();
 			HAL_SetupWiFiAccessPoint(ssid, pw);
 		}

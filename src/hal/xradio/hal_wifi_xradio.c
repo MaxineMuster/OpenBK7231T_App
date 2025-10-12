@@ -28,7 +28,10 @@
 
 static void(*g_wifiStatusCallback)(int code);
 
-int g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
@@ -66,7 +69,8 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	char ap_psk[8] = { 0 };
-	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)ap_psk);
@@ -84,7 +88,8 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 		}
 		return -1;
 	}
-	g_AccessPointMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();

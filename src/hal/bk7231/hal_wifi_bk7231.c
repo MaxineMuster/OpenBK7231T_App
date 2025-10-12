@@ -35,7 +35,10 @@ static void (*g_wifiStatusCallback)(int code);
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
-static int g_AccessPointMode = 0;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 char *get_security_type(int type);
 bool g_bStaticIP = false, g_needFastConnectSave = false;
 
@@ -45,7 +48,7 @@ IPStatusTypedef ipStatus;
 const char* HAL_GetMyIPString() {
 
 	memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
-	if (g_AccessPointMode) {
+	if (g_AccessPointMode>0) {
 		bk_wlan_get_ip_status(&ipStatus, SOFT_AP);
 	}
 	else {
@@ -371,7 +374,8 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
-	g_AccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 
 	network_InitTypeDef_st network_cfg;
 
@@ -543,7 +547,8 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 
 	//}
 	bk_wlan_start(&wNetConfig);
-	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 0;
 
 	//dhcp_server_start(0);
 	//dhcp_server_stop(void);
@@ -551,7 +556,8 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 	return 0;
 }
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid){
-	g_AccessPointMode = 1;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1;
 	return HAL_SetupWiFiAP(ssid, NULL);
 }
 

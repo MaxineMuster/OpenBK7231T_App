@@ -15,7 +15,10 @@
 #include "lib/net/dhcpd/dhcpd.h"
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
-static int g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 struct system_status sys_status;
 extern u8_t netif_num;
 
@@ -72,7 +75,7 @@ void HAL_PrintNetworkInfo()
 int HAL_GetWifiStrength()
 {
 	struct ieee80211_stainfo stainfo;
-	if(!g_AccessPointMode) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
+	if(g_AccessPointMode==0) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
 	return stainfo.rssi;
 }
 
@@ -374,8 +377,6 @@ void HAL_DisconnectFromWifi()
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	int32 ret;
-	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-
 	os_sprintf(sys_cfgs.ssid, "%s", ssid);
 	void* ops;
 	struct lmac_init_param lparam;

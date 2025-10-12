@@ -17,7 +17,10 @@
 
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_ipStr[32] = "unknown";
-static int g_bAccessPointMode = 1;
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static void (*g_wifiStatusCallback)(int code);
 extern bool g_powersave;
 
@@ -37,7 +40,8 @@ void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 	// connection is unstable, mqtt disconnects every few minutes
     wifi_mgmr_sta_connect_mid(wifi_interface, ssid, psk, NULL, NULL, 0, 0, ip->localIPAddr[0] == 0 ?1:0, WIFI_CONNECT_PMF_CAPABLE);
 
-	g_bAccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 }
 
 // BL_Err_Type EF_Ctrl_Write_MAC_Address_Opt(uint8_t slot,uint8_t mac[6],uint8_t program)
@@ -70,7 +74,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
     /*no password when only one param*/
     wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, NULL, 1);
 
-	g_bAccessPointMode = 1;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 1;
 
 	return 0;
 }
@@ -90,7 +95,8 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	//struct netif *net;
 	wifi_interface = wifi_mgmr_ap_enable();
 	wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, key, 1);
-	g_bAccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 
 	return 0;
 }
@@ -250,7 +256,7 @@ const char *HAL_GetMyIPString() {
 	uint32_t gw;
 	uint32_t mask;
 
-	if(g_bAccessPointMode == 1) {
+	if(g_AccessPointMode == 1) {
 		wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
 	} else {
 		wifi_mgmr_sta_ip_get(&ip, &gw, &mask);
@@ -277,7 +283,7 @@ void WiFI_GetMacAddress(char *mac) {
 }
 const char *HAL_GetMACStr(char *macstr) {
 	uint8_t mac[6];
-	if(g_bAccessPointMode == 1) {
+	if(g_AccessPointMode == 1) {
 		wifi_mgmr_ap_mac_get(mac);
 	} else {
 		wifi_mgmr_sta_mac_get(mac);

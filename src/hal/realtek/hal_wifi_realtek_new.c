@@ -32,7 +32,10 @@ extern int (*p_store_fast_connect_info)(unsigned int data1, unsigned int data2);
 bool g_STA_static_IP = 0;
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
-static int g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// is (Open-) Access point or a client?
+// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// initilized in user_main.c
+// values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static wifi_data_t wdata = { 0 };
 static int g_bStaticIP = 0;
 obkFastConnectData_t fcdata = { 0 };
@@ -204,7 +207,8 @@ void ConfigureSTA(obkStaticIP_t* ip)
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strncpy((char*)&wdata.pwd, connect_key, 64);
 	
@@ -226,7 +230,8 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP  
+// set in user_main - included as "extern"
+//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP  
 	rtw_mode_t mode = RTW_MODE_STA_AP;
 	struct ip_addr ipaddr;
 	struct ip_addr netmask;
@@ -319,7 +324,8 @@ exit:
 
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	g_AccessPointMode = 0;
+// set in user_main - included as "extern"
+//	g_AccessPointMode = 0;
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strncpy((char*)&wdata.pwd, connect_key, 64);
 
