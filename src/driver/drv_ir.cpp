@@ -860,6 +860,9 @@ extern "C" void DRV_IR_RunFrame(){
                     uint32_t counter_in = ir_counter;
 					// 2025.08.09 - include repeats, this should work also
 					// with older scripts 
+					ADDLOG_INFO(LOG_FEATURE_IR, (char *)"DEBUG: Calling 'EventHandlers_FireEvent3(%i, 0%X, 0%X, %i)'",
+						tgType, ourReceiver->decodedIRData.address,
+						ourReceiver->decodedIRData.command, repeat);
 					EventHandlers_FireEvent3(tgType, ourReceiver->decodedIRData.address,
 						ourReceiver->decodedIRData.command, repeat);
                     uint32_t counter_dur = ((ir_counter - counter_in)*50)/1000;
