@@ -591,7 +591,7 @@ static commandResult_t CMD_ListEventHandlers(const void *context, const char *cm
 
 	while(ev) {
 
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "Event %i has code %i and command %s",c,ev->eventCode,ev->command);
+		ADDLOG_INFO(LOG_FEATURE_EVENT, "Event %i has code %i and command %s. Required arguments: %i, %i, %i",c,ev->eventCode,ev->command, ev->requiredArgument, ev->requiredArgument2, ev->requiredArgument3);
 		ev = ev->next;
 		c++;
 	}
