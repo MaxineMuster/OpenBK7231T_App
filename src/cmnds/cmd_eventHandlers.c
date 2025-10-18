@@ -366,14 +366,19 @@ void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int a
 
 	ev = g_eventHandlers;
 	if (eventCode == CMD_EVENT_IR_NEC){
-		ADDLOG_INFO(LOG_FEATURE_EVENT, "DEBUG EventHandlers_FireEvent3: called with eventCode %i address 0%X command 0%X repeat %i", eventCode, argument, argument2, argument3);
+		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "DEBUG EventHandlers_FireEvent3: called with eventCode %i address 0x%X command 0x%X repeat %i", eventCode, argument, argument2, argument3);
 	}
 	while (ev) {
 		if (eventCode == ev->eventCode) {
 			if (eventCode == CMD_EVENT_IR_NEC){
-				ADDLOG_INFO(LOG_FEATURE_EVENT, "DEBUG EventHandlers_FireEvent3: checking event for match address 0%X command 0%X",ev->requiredArgument , ev->requiredArgument2 );
+				ADDLOG_EXTRADEBUG(LOG_FEATURE_EVENT, "DEBUG EventHandlers_FireEvent3: checking event for match: address 0x%X command 0x%X repeat %i",
+					ev->requiredArgument , ev->requiredArgument2, ev->requiredArgument3);
 			}
 			if (argument == ev->requiredArgument && argument2 == ev->requiredArgument2 && argument3 == ev->requiredArgument3) {
+				if (eventCode == CMD_EVENT_IR_NEC){
+					ADDLOG_DEBUG(LOG_FEATURE_EVENT, "DEBUG EventHandlers_FireEvent3: found event match: address 0x%X command 0x%X repeat %i",
+						ev->requiredArgument , ev->requiredArgument2, ev->requiredArgument3);
+				}
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent3: executing command %s", ev->command);
 				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
 			}
