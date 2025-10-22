@@ -603,7 +603,7 @@
 #define NO_CHIP_TEMPERATURE						1
 #define ENABLE_DRIVER_AHT2X						1
 #define ENABLE_I2C								1
-#undef ENABLE_HTTP_MAC
+#define ENABLE_LITTLEFS							1
 // allow usage as an WPA2 AP ans define number of clients to connect
 #define ENABLE_WPA_AP						1
 #define WPA_AP_STA_CLIENTS					3
