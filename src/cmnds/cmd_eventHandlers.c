@@ -361,10 +361,11 @@ void EventHandlers_AddEventHandler_String(byte eventCode, int type, const char *
 	ev->requiredArgument = 0;
 	ev->requiredArgument2 = 0;
 }
-void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
+int EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int argument3) {
 	struct eventHandler_s *ev;
 
 	ev = g_eventHandlers;
+	int ran = 0;
 	if (eventCode == CMD_EVENT_IR_NEC){
 		ADDLOG_DEBUG(LOG_FEATURE_EVENT, "DEBUG EventHandlers_FireEvent3: called with eventCode %i address 0x%X command 0x%X repeat %i", eventCode, argument, argument2, argument3);
 	}
@@ -381,10 +382,12 @@ void EventHandlers_FireEvent3(byte eventCode, int argument, int argument2, int a
 				}
 				ADDLOG_INFO(LOG_FEATURE_EVENT, "EventHandlers_FireEvent3: executing command %s", ev->command);
 				CMD_ExecuteCommand(ev->command, COMMAND_FLAG_SOURCE_SCRIPT);
+				ran++;
 			}
 		}
 		ev = ev->next;
 	}
+	return ran;
 }
 int EventHandlers_FireEvent2(byte eventCode, int argument, int argument2) {
 	struct eventHandler_s *ev;
