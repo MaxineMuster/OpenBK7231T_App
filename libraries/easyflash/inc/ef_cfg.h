@@ -139,14 +139,20 @@
 
 #elif PLATFORM_RDA5981
 
-#define EF_START_ADDR             0xF7000
-#define ENV_AREA_SIZE             0x4000
+#define EF_START_ADDR             0xF4000
+#define ENV_AREA_SIZE             0xA000
 
 #elif WINDOWS
 
 #define EF_START_ADDR             0
 extern uint32_t ENV_AREA_SIZE;
 #define DllExport __declspec(dllexport)
+
+#elif LINUX
+
+#define EF_START_ADDR             0
+extern uint32_t ENV_AREA_SIZE;
+#define DllExport __attribute__((dllexport))
 
 #endif
 /* print debug information of flash */
