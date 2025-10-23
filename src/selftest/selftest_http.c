@@ -250,6 +250,19 @@ const char *Test_GetJSONValue_StrFromArray(int index, const char *key) {
 		return "";
 	return tmp->valuestring;
 }
+const char *Test_GetJSONValue_StrFromNestedArray(const char *par, const char *key, int index) {
+        cJSON *tmp;
+        cJSON *parent;
+
+        parent = Test_GetJSONValue_Generic(key, par);
+        if (parent == 0)
+                return "";
+        tmp = cJSON_GetArrayItem(parent, index);
+        if (tmp == 0)
+                return "";
+        printf("Test_GetJSONValue_StrFromNestedArray DEBUG will return %s for %s[%i]\n", tmp->valuestring, key, index);
+        return tmp->valuestring;
+}
 
 const char *Test_GetJSONValue_String(const char *keyword, const char *obj) {
 	cJSON *tmp;
@@ -266,6 +279,10 @@ const char *Test_GetJSONValue_String(const char *keyword, const char *obj) {
 }
 const char *Test_GetLastHTMLReply() {
 	return replyAt;
+}
+const char *Test_QueryHTMLReply(const char *url) {
+	Test_FakeHTTPClientPacket_GET(url);
+	return Test_GetLastHTMLReply();
 }
 void Test_Http_SingleRelayOnChannel1() {
 

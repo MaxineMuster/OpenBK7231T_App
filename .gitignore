@@ -38,3 +38,5 @@ configMemory.bin
 enc_temp_folder/**
 
 *.su
+/.idea/**
+*.so

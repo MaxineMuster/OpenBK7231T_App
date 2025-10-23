@@ -14,6 +14,7 @@
     <ClCompile Include="src\bitmessage\bitmessage_write.c" />
     <ClCompile Include="src\cJSON\cJSON.c" />
     <ClCompile Include="src\cmnds\cmd_channels.c" />
+    <ClCompile Include="src\selftest\selftest_enums.c" />
     <ClCompile Include="src\cmnds\cmd_eventHandlers.c" />
     <ClCompile Include="src\cmnds\cmd_if.c" />
     <ClCompile Include="src\cmnds\cmd_main.c" />
@@ -407,6 +408,10 @@
     <ClCompile Include="src\driver\drv_soft_spi.c" />
     <ClCompile Include="src\driver\drv_spi_flash.c" />
     <ClCompile Include="src\hal\win32\hal_ota_win32.c" />
+    <ClCompile Include="src\driver\drv_tca9554.c" />
+    <ClCompile Include="src\driver\drv_leds_shared.c" />
+    <ClCompile Include="src\driver\drv_dmx512.c" />
+    <ClCompile Include="src\driver\drv_ddpSend.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\base64\base64.h" />

@@ -179,6 +179,7 @@
     <ClCompile Include="src\cJSON\cJSON.c" />
     <ClCompile Include="src\cmnds\cmd_berry.c" />
     <ClCompile Include="src\cmnds\cmd_channels.c" />
+    <ClCompile Include="src\cmnds\cmd_enums.c" />
     <ClCompile Include="src\cmnds\cmd_eventHandlers.c" />
     <ClCompile Include="src\cmnds\cmd_if.c" />
     <ClCompile Include="src\cmnds\cmd_main.c" />
@@ -214,9 +215,11 @@
     <ClCompile Include="src\driver\drv_cse7761.c" />
     <ClCompile Include="src\driver\drv_cse7766.c" />
     <ClCompile Include="src\driver\drv_ddp.c" />
+    <ClCompile Include="src\driver\drv_ddpSend.c" />
     <ClCompile Include="src\driver\drv_debouncer.c" />
     <ClCompile Include="src\driver\drv_dht.c" />
     <ClCompile Include="src\driver\drv_dht_internal.c" />
+    <ClCompile Include="src\driver\drv_dmx512.c" />
     <ClCompile Include="src\driver\drv_ds1820_full.c" />
     <ClCompile Include="src\driver\drv_ds1820_common.c" />
     <ClCompile Include="src\driver\drv_doorSensorWithDeepSleep.c" />
@@ -231,6 +234,7 @@
     <ClCompile Include="src\driver\drv_ir.cpp" />
     <ClCompile Include="src\driver\drv_kp18058.c" />
     <ClCompile Include="src\driver\drv_kp18068.c" />
+    <ClCompile Include="src\driver\drv_leds_shared.c" />
     <ClCompile Include="src\driver\drv_main.c" />
     <ClCompile Include="src\driver\drv_max6675.c" />
     <ClCompile Include="src\driver\drv_max72xx_clock.c" />
@@ -262,6 +266,7 @@
     <ClCompile Include="src\driver\drv_spi_flash.c" />
     <ClCompile Include="src\driver\drv_ssdp.c" />
     <ClCompile Include="src\driver\drv_tasmotaDeviceGroups.c" />
+    <ClCompile Include="src\driver\drv_tca9554.c" />
     <ClCompile Include="src\driver\drv_tclAC.c" />
     <ClCompile Include="src\driver\drv_test.c" />
     <ClCompile Include="src\driver\drv_test_charts.c" />
@@ -780,6 +785,7 @@
     <ClCompile Include="src\selftest\selftest_demo_signAndValue.c" />
     <ClCompile Include="src\selftest\selftest_doorSensor.c" />
     <ClCompile Include="src\selftest\selftest_flashSearch.c" />
+    <ClCompile Include="src\selftest\selftest_enums.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_base.c" />
     <ClCompile Include="src\selftest\selftest_hass_discovery_ext.c" />
     <ClCompile Include="src\selftest\selftest_http_led.c" />

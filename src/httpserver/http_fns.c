@@ -5,6 +5,7 @@
 #include "../hal/hal_ota.h"
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
+#include "../cmnds/cmd_enums.h"
 #include "../driver/drv_tuyaMCU.h"
 #include "../driver/drv_public.h"
 #include "../driver/drv_bl_shared.h"
@@ -232,14 +233,8 @@ int http_fn_index(http_request_t* request) {
 		if (DRV_IsRunning("SM16703P")) {
 			bForceShowRGB = true;
 		}
-		else 
-#endif
-#if ENABLE_LED_BASIC
-		if (LED_IsLedDriverChipRunning()) {
-			bForceShowRGBCW = true;
-		}
-#else
-		{
+		if (DRV_IsRunning("DMX")) {
+			bForceShowRGB = true;
 		}
 #endif
 	}
@@ -503,6 +498,56 @@ int http_fn_index(http_request_t* request) {
 				hprintf255(request, "Channel %s = %i", CHANNEL_GetLabel(i), iValue);
 			}
 			poststr(request, "</td></tr>");
+		} else if (channelType == ChType_Enum) {
+			iValue = CHANNEL_Get(i);
+			channelEnum_t *en;
+
+
+			// if setChannelEnum has not been defined, treat ChType_Enum as a textfield
+			if (g_enums == NULL || g_enums[i]->numOptions == 0 ) {
+				//en = g_enums[i];
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<p>Change channel %s enum:</p><form action=\"index\">", CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<input type=\"number\" name=\"set\" value=\"%i\" onblur=\"this.form.submit()\">", iValue);
+				hprintf255(request, "<input type=\"submit\" value=\"Set!\"/></form>");
+				hprintf255(request, "</form>");
+				poststr(request, "</td></tr>");
+			} else {
+				en = g_enums[i];
+
+				poststr(request, "<tr><td>");
+				hprintf255(request, "<form action=\"index\"><label for=\"select%i\">Channel %s Enum:</label>", i, CHANNEL_GetLabel(i));
+				hprintf255(request, "<input type=\"hidden\" name=\"setIndex\" value=\"%i\">", i);
+				hprintf255(request, "<select id=\"select%i\" name=\"set\" onchange=\"this.form.submit()\">", i);
+
+				bool found = false;
+				for (int o = 0; o < en->numOptions; o++) {
+					const char* selected;
+					if (en->options[o].value == iValue) {
+						selected = "selected";
+						found = true;
+					} else
+						selected = "";
+					hprintf255(request, "<option value=\"%i\" %s>%s [%i]</option>", en->options[o].value, selected, en->options[o].label,en->options[o].value);
+				}
+				if (!found) // create an item if no label is found
+					hprintf255(request, "<option value=\"%i\" selected>undefined enum [%i]</option>", iValue,iValue);
+				hprintf255(request, "</select></form>");
+				poststr(request, "</td></tr>");
+			}
+		}
+		else if (channelType == ChType_ReadOnlyEnum) {
+			iValue = CHANNEL_Get(i);
+			const char* oLabel;
+			if (g_enums == NULL || g_enums[i]->numOptions == 0)
+				oLabel = CHANNEL_GetLabel(i);
+			else
+				oLabel = CMD_FindChannelEnumLabel(g_enums[i], iValue);
+
+			poststr(request, "<tr><td>");
+			hprintf255(request, "Channel %s = %s [%i]", CHANNEL_GetLabel(i), oLabel, iValue);
+			poststr(request, "</td></tr>");
 		}
 		else if ((types = Channel_GetOptionsForChannelType(channelType, &numTypes)) != 0) {
 			const char *what;
@@ -672,7 +717,8 @@ int http_fn_index(http_request_t* request) {
 	}
 #endif
 #if ENABLE_LED_BASIC
-	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB || bForceShowSingleDimmer) {
+	if (bRawPWMs == 0 || bForceShowRGBCW || bForceShowRGB
+		|| bForceShowSingleDimmer || LED_IsLedDriverChipRunning()) {
 		int c_pwms;
 		int lm;
 		int c_realPwms = 0;
@@ -685,6 +731,9 @@ int http_fn_index(http_request_t* request) {
 		// into high power 3-outputs single colors LED controller
 		PIN_get_Relay_PWM_Count(0, &c_pwms, 0);
 		c_realPwms = c_pwms;
+		if (LED_IsLedDriverChipRunning()) {
+			c_pwms = CFG_CountLEDRemapChannels();
+		}
 		if (bForceShowSingleDimmer) {
 			c_pwms = 1;
 		} 
@@ -1004,7 +1053,7 @@ typedef enum {
 	/* Format current PINS input state for all unused pins */
 	if (CFG_HasFlag(OBK_FLAG_HTTP_PINMONITOR))
 	{
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) == IOR_None) && (i != 0) && (i != 1))
 			{
@@ -1013,7 +1062,7 @@ typedef enum {
 		}
 
 		hprintf255(request, "<h5> PIN States<br>");
-		for (i = 0; i < 29; i++)
+		for (i = 0; i < PLATFORM_GPIO_MAX; i++)
 		{
 			if ((PIN_GetPinRoleForPinIndex(i) != IOR_None) || (i == 0) || (i == 1))
 			{
@@ -1789,6 +1838,50 @@ int http_fn_startup_command(http_request_t* request) {
 #endif
 
 #if ENABLE_HA_DISCOVERY
+HassDeviceInfo *hass_createEnumChannelInfo(int i) {
+	HassDeviceInfo *dev_info = 0;
+	channelEnum_t *en;
+	if (g_enums != NULL && g_enums[i]->numOptions != 0) {
+		en = g_enums[i];
+	}
+	else {
+		// revert to textfield if no enums are defined
+		dev_info = hass_init_textField_info(i);
+		return dev_info;;
+	}
+
+	char **options = (char**)malloc(en->numOptions * sizeof(char *));
+	for (int o = 0; o < en->numOptions; o++) {
+		options[o] = en->options[o].label;
+	}
+
+	if (en->options != NULL && en->numOptions > 0) {
+		// backlog setChannelType 1 Enum; setChannelEnum 0:red 2:blue 3:green; scheduleHADiscovery 1
+		char stateTopic[32];
+		char cmdTopic[32];
+		char title[64];
+		char value_tmp[1024];
+		char command_tmp[1024];
+
+		CMD_GenEnumValueTemplate(en, value_tmp, sizeof(value_tmp));
+		CMD_GenEnumCommandTemplate(en, command_tmp, sizeof(command_tmp));
+
+		strcpy(title, CHANNEL_GetLabel(i));
+		sprintf(stateTopic, "~/%i/get", i);
+		sprintf(cmdTopic, "~/%i/set", i);
+		dev_info = hass_createSelectEntityIndexedCustom(
+			stateTopic,
+			cmdTopic,
+			en->numOptions,
+			(const char**)options,
+			title,
+			value_tmp,
+			command_tmp
+		);
+	}
+	os_free(options);
+	return dev_info;
+}
 void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	int i;
 	int relayCount;
@@ -1823,8 +1916,8 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 #ifdef ENABLE_DRIVER_BL0937
 	measuringPower = DRV_IsMeasuringPower();
-	measuringBattery = DRV_IsMeasuringBattery();
 #endif
+	measuringBattery = DRV_IsMeasuringBattery();
 
 	PIN_get_Relay_PWM_Count(&relayCount, &pwmCount, &dInputCount);
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HASS counts: %i rels, %i pwms, %i inps, %i excluded", relayCount, pwmCount, dInputCount, excludedCount);
@@ -1835,8 +1928,13 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 	ledDriverChipRunning = 0;
 #endif
 
+#if PLATFORM_TXW81X
+	hooks.malloc_fn = _os_malloc;
+	hooks.free_fn = _os_free;
+#else
 	hooks.malloc_fn = os_malloc;
 	hooks.free_fn = os_free;
+#endif
 	cJSON_InitHooks(&hooks);
 
 	DRV_OnHassDiscovery(topic);
@@ -1898,7 +1996,10 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 
 
 #if ENABLE_LED_BASIC
-	if (pwmCount == 5 || ledDriverChipRunning || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
+	if (ledDriverChipRunning) {
+		pwmCount = CFG_CountLEDRemapChannels();
+	}
+	if (pwmCount == 5 || (pwmCount == 4 && CFG_HasFlag(OBK_FLAG_LED_EMULATE_COOL_WITH_RGB))) {
 		if (dev_info == NULL) {
 			dev_info = hass_init_light_device_info(LIGHT_RGBCW);
 		}
@@ -2197,6 +2298,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 2, 1);
 			}
 			break;
+			case ChType_EnergyExport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
+			case ChType_EnergyImport_kWh_div1000:
+			{
+				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
+			}
+			break;
 			case ChType_EnergyTotal_kWh_div1000:
 			{
 				dev_info = hass_init_sensor_device_info(ENERGY_SENSOR, i, 3, 3, 1);
@@ -2222,6 +2333,16 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				dev_info = hass_init_textField_info(i);
 			}
 			break;
+			case ChType_ReadOnlyEnum:
+			{
+				dev_info = hass_init_sensor_device_info(HASS_READONLYENUM, i, -1, -1, -1);
+			}
+			break;
+			case ChType_Enum:
+			{			
+				dev_info = hass_createEnumChannelInfo(i);
+			}
+			break;
 			default:
 			{
 				int numOptions;
@@ -2229,11 +2350,9 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 				if (options && numOptions) {
 					// backlog setChannelType 2 LowMidHigh; scheduleHADiscovery 1
 					// backlog setChannelType 3 OpenStopClose; scheduleHADiscovery 1
-					char stateTopic[32];
-					char cmdTopic[32];
-					char title[64];
+					char stateTopic[16];
+					char cmdTopic[16];
 					// TODO: lengths
-					strcpy(title, CHANNEL_GetLabel(i));
 					sprintf(stateTopic, "~/%i/get", i);
 					sprintf(cmdTopic, "~/%i/set", i);
 					dev_info = hass_createSelectEntityIndexed(
@@ -2241,7 +2360,7 @@ void doHomeAssistantDiscovery(const char* topic, http_request_t* request) {
 						cmdTopic,
 						numOptions,
 						options,
-						title
+						CHANNEL_GetLabel(i)
 					);
 				}
 			}
@@ -3312,7 +3431,7 @@ int http_fn_ota(http_request_t* request) {
 #ifdef OBK_OTA_NAME_EXTENSION
 	OBK_OTA_NAME_EXTENSION
 #endif
-	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match reqired format '+SR+'!'}))</script>";
+	OBK_OTA_EXTENSION "/,SR=R.source,mr=(e)=>e.name.match(R);doota=()=>{f=o.files[0];if(f&&(f)){d.showModal();var t=30;setTimeout(()=>{d.close(),location.href='/'},1e3*t),setInterval(()=>d.innerHTML=D+t--+' secs',1e3),fetch('/api/ota',{method:'POST',body:f}).then((e)=>{e.ok&&fetch('/index?restart=1')})}else alert(f?'filename invalid':'no file selected')};d.innerHTML=D,o.addEventListener('change',((e)=>{const t=e.target.files[0];if(!t)return;h.innerHTML=mr(t)?'':'Selected file does <b>not</b> match required format '+SR+'!'}))</script>";
 
 	poststr(request, "<br><br><br>Expert feature: Upload firmware OTA file.<br>If unsure, please use Web App!<br><span id='hint' style='color: yellow;'></span><br><br>");
 	poststr(request, "<input id='otafile' type='file' accept='" OBK_OTA_EXTENSION "'>");

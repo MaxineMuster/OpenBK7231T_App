@@ -67,7 +67,8 @@ static byte g_tuyaMCUConfirmationsToSend_0x08 = 0;
 static byte g_tuyaMCUConfirmationsToSend_0x05 = 0;
 static byte g_resetWiFiEvents = 0;
 
-
+#define OBKTM_FLAG_DPCACHE 1
+#define OBKTM_FLAG_NOREAD 2
 
 //=============================================================================
 //dp data point type
@@ -161,7 +162,7 @@ typedef struct tuyaMCUMapping_s {
 	// data point type (one of the DP_TYPE_xxx defines)
 	byte dpType;
 	// true if it's supposed to be sent in dp cache
-	byte bDPCache;
+	byte obkFlags;
 	// could be renamed to flags later?
 	byte inv;
 	// target channel
@@ -336,7 +337,7 @@ tuyaMCUMapping_t* TuyaMCU_FindDefForChannel(int channel) {
 	return 0;
 }
 
-tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int bDPCache, float mul, int inv, float delta, float delta2, float delta3) {
+tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int obkFlags, float mul, int inv, float delta, float delta2, float delta3) {
 	tuyaMCUMapping_t* cur;
 
 	cur = TuyaMCU_FindDefForID(dpId);
@@ -351,7 +352,7 @@ tuyaMCUMapping_t* TuyaMCU_MapIDToChannel(int dpId, int dpType, int channel, int 
 	}
 	cur->dpId = dpId;
 	cur->dpType = dpType;
-	cur->bDPCache = bDPCache;
+	cur->obkFlags = obkFlags;
 	cur->mult = mul;
 	cur->delta = delta;
 	cur->delta2 = delta2;
@@ -874,11 +875,11 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	byte dpType;
 	int channelID;
 	byte argsCount;
-	byte bDPCache;
+	byte obkFlags;
 	float mult, delta, delta2, delta3;
 	byte inv;
 
-	// linkTuyaMCUOutputToChannel [dpId] [varType] [channelID] [bDPCache] [mult] [inv] [delta]
+	// linkTuyaMCUOutputToChannel [dpId] [varType] [channelID] [obkFlags] [mult] [inv] [delta]
 	// linkTuyaMCUOutputToChannel 1 val 1
 	Tokenizer_TokenizeString(args, 0);
 
@@ -898,14 +899,14 @@ commandResult_t TuyaMCU_LinkTuyaMCUOutputToChannel(const void* context, const ch
 	else {
 		channelID = Tokenizer_GetArgInteger(2);
 	}
-	bDPCache = Tokenizer_GetArgInteger(3);
+	obkFlags = Tokenizer_GetArgInteger(3);
 	mult = Tokenizer_GetArgFloatDefault(4, 1.0f);
 	inv = Tokenizer_GetArgInteger(5);
 	delta = Tokenizer_GetArgFloatDefault(6, 0.0f);
 	delta2 = Tokenizer_GetArgFloatDefault(7, 0.0f);
 	delta3 = Tokenizer_GetArgFloatDefault(8, 0.0f);
 
-	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, bDPCache, mult, inv, delta, delta2, delta3);
+	TuyaMCU_MapIDToChannel(dpId, dpType, channelID, obkFlags, mult, inv, delta, delta2, delta3);
 
 	return CMD_RES_OK;
 }
@@ -1142,6 +1143,10 @@ void TuyaMCU_ApplyMapping(tuyaMCUMapping_t* mapping, int dpID, int value) {
 	if (mapping->channel < 0) {
 		return;
 	}
+	if (mapping->obkFlags & OBKTM_FLAG_NOREAD) {
+		// ignore
+		return;
+	}
 
 	// map value depending on channel type
 	switch (CHANNEL_GetType(mapping->channel))
@@ -1207,7 +1212,7 @@ void TuyaMCU_OnChannelChanged(int channel, int iVal) {
 	}
 
 	// dpCaches are sent when requested - TODO - is it correct?
-	if (mapping->bDPCache) {
+	if (mapping->obkFlags & OBKTM_FLAG_DPCACHE) {
 		return;
 	}
 
@@ -1855,7 +1860,7 @@ void TuyaMCU_V0_SendDPCacheReply() {
 	// dpId = 18 Len = 0004 Val V = 1	
 	// 
 	while (map) {
-		if (map->bDPCache) {
+		if (map->obkFlags & OBKTM_FLAG_DPCACHE) {
 			writtenCount++;
 			// dpID
 			*p = map->dpId;
@@ -2645,8 +2650,8 @@ void TuyaMCU_Init()
 	//cmddetail:"fn":"TuyaMCU_Send_SetTime_Current","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCurTime", TuyaMCU_Send_SetTime_Current, NULL);
-	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][bDPCache-Optional][mult-optional][bInverse-Optional][delta-Optional][delta2][delta3]",
-	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Mult, inverse and delta are for calibration, they are optional. bDPCache is also optional, you can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
+	//cmddetail:{"name":"linkTuyaMCUOutputToChannel","args":"[dpId][varType][channelID][obkFlags-Optional][mult-optional][bInverse-Optional][delta-Optional][delta2][delta3]",
+	//cmddetail:"descr":"Used to map between TuyaMCU dpIDs and our internal channels. Mult, inverse and delta are for calibration, they are optional. obkFlags is also optional, you can set it to 1 for battery powered devices, so a variable is set with DPCache, for example a sampling interval for humidity/temperature sensor. Mapping works both ways. DpIDs are per-device, you can get them by sniffing UART communication. Vartypes can also be sniffed from Tuya. VarTypes can be following: 0-raw, 1-bool, 2-value, 3-string, 4-enum, 5-bitmap. Please see [Tuya Docs](https://developer.tuya.com/en/docs/iot/tuya-cloud-universal-serial-port-access-protocol?id=K9hhi0xxtn9cb) for info about TuyaMCU. You can also see our [TuyaMCU Analyzer Tool](https://www.elektroda.com/rtvforum/viewtopic.php?p=20528459#20528459)",
 	//cmddetail:"fn":"TuyaMCU_LinkTuyaMCUOutputToChannel","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("linkTuyaMCUOutputToChannel", TuyaMCU_LinkTuyaMCUOutputToChannel, NULL);
@@ -2682,7 +2687,7 @@ void TuyaMCU_Init()
 	CMD_RegisterCommand("tuyaMcu_sendMCUConf", TuyaMCU_SendMCUConf, NULL);
 	//cmddetail:{"name":"tuyaMcu_sendCmd","args":"[CommandIndex] [HexPayloadNBytes]",
 	//cmddetail:"descr":"This will automatically calculate TuyaMCU checksum and length for given command ID and payload, then it will send a command. It's better to use it than uartSendHex",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"TuyaMCU_SendUserCmd","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendCmd", TuyaMCU_SendUserCmd, NULL);
 	//cmddetail:{"name":"fakeTuyaPacket","args":"[HexString]",
@@ -2702,25 +2707,25 @@ void TuyaMCU_Init()
 	CMD_RegisterCommand("tuyaMcu_sendRSSI", Cmd_TuyaMCU_Send_RSSI, NULL);
 	//cmddetail:{"name":"tuyaMcu_defWiFiState","args":"",
 	//cmddetail:"descr":"Command sets the default WiFi state for TuyaMCU when device is not online. It may be required for some devices to work, because Tuya designs them to ignore touch buttons or beep when not paired. Please see [values table and description here](https://www.elektroda.com/rtvforum/viewtopic.php?p=20483899#20483899).",
-	//cmddetail:"fn":"Cmd_TuyaMCU_Send_RSSI","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"Cmd_TuyaMCU_Set_DefaultWiFiState","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_defWiFiState", Cmd_TuyaMCU_Set_DefaultWiFiState, NULL);
 
 	//cmddetail:{"name":"tuyaMcu_sendColor","args":"[dpID] [red01] [green01] [blue01] [tuyaRGBformat]",
 	//cmddetail:"descr":"This sends a TuyaMCU color string of given format for given RGB values, where each value is in [0,1] range as float",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"Cmd_TuyaMCU_SendColor","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_sendColor", Cmd_TuyaMCU_SendColor, NULL);
 
 	//cmddetail:{"name":"tuyaMcu_setupLED","args":"[dpIDColor] [TasFormat] [dpIDPower]",
 	//cmddetail:"descr":"Setups the TuyaMCU LED driver for given color dpID and power dpID. Also allows you to choose color format.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"Cmd_TuyaMCU_SetupLED","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_setupLED", Cmd_TuyaMCU_SetupLED, NULL);
 
-	//cmddetail:{"name":"Cmd_TuyaMCU_SetBatteryAckDelay","args":"[ackDelay]",
+	//cmddetail:{"name":"tuyaMcu_setBatteryAckDelay","args":"[ackDelay]",
 	//cmddetail:"descr":"Defines the delay before the ACK is sent to TuyaMCU sending the device to sleep. Default value is 0 seconds.",
-	//cmddetail:"fn":"NULL);","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"Cmd_TuyaMCU_SetBatteryAckDelay","file":"driver/drv_tuyaMCU.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("tuyaMcu_setBatteryAckDelay", Cmd_TuyaMCU_SetBatteryAckDelay, NULL);
 	

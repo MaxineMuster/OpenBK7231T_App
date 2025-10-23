@@ -277,6 +277,7 @@ float getFailedBoots(const char *s) {
 float getUpTime(const char *s) {
 	return g_secondsElapsed;
 }
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 float getWeekDay(const char *s) {
 	return CLOCK_GetWeekDay();
 }
@@ -298,7 +299,7 @@ float getMonth(const char *s) {
 float getMDay(const char *s) {
 	return CLOCK_GetMDay();
 }
-
+#endif
 #ifdef ENABLE_NTP
 
 float getNTPOn(const char *s) {
@@ -444,70 +445,70 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Current value of energy counter from energy metering chip",
 	//cnstdetail:"requires":""}
 	{"$energy", &getEnergy},
-	////cnstdetail:{"name":"$yesterday",
-	////cnstdetail:"title":"$yesterday",
-	////cnstdetail:"descr":"Yesterdays energy consuption",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$yesterday",
+	//cnstdetail:"title":"$yesterday",
+	//cnstdetail:"descr":"Yesterdays energy consuption",
+	//cnstdetail:"requires":""}
 	{ "$yesterday", &getYesterday },
-	////cnstdetail:{"name":"$today",
-	////cnstdetail:"title":"$today",
-	////cnstdetail:"descr":"Todays energy consuption",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$today",
+	//cnstdetail:"title":"$today",
+	//cnstdetail:"descr":"Todays energy consuption",
+	//cnstdetail:"requires":""}
 	{ "$today", &getToday },
 #endif	//ENABLE_DRIVER_BL0937
-#ifdef ENABLE_NTP
+#if ENABLE_LOCAL_CLOCK || ENABLE_NTP
 	//cnstdetail:{"name":"$day",
 	//cnstdetail:"title":"$day",
-	//cnstdetail:"descr":"Current weekday from NTP",
+	//cnstdetail:"descr":"Current weekday from device clock",
 	//cnstdetail:"requires":""}
 	{"$day", &getWeekDay},
 	//cnstdetail:{"name":"$hour",
 	//cnstdetail:"title":"$hour",
-	//cnstdetail:"descr":"Current hour from NTP",
+	//cnstdetail:"descr":"Current hour from device clock",
 	//cnstdetail:"requires":""}
 	{"$hour", &getHour},
 	//cnstdetail:{"name":"$minute",
 	//cnstdetail:"title":"$minute",
-	//cnstdetail:"descr":"Current minute from NTP",
+	//cnstdetail:"descr":"Current minute from device clock",
 	//cnstdetail:"requires":""}
 	{ "$minute", &getMinute },
 	//cnstdetail:{"name":"$second",
 	//cnstdetail:"title":"$second",
-	//cnstdetail:"descr":"Current second from NTP",
+	//cnstdetail:"descr":"Current second from device clock",
 	//cnstdetail:"requires":""}
 	{ "$second", &getSecond },
-	////cnstdetail:{"name":"$mday",
-	////cnstdetail:"title":"$mday",
-	////cnstdetail:"descr":"Current mday from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$mday",
+	//cnstdetail:"title":"$mday",
+	//cnstdetail:"descr":"Current mday from device clock",
+	//cnstdetail:"requires":""}
 	{ "$mday", &getMDay },
-	////cnstdetail:{"name":"$month",
-	////cnstdetail:"title":"$month",
-	////cnstdetail:"descr":"Current month from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$month",
+	//cnstdetail:"title":"$month",
+	//cnstdetail:"descr":"Current month from device clock",
+	//cnstdetail:"requires":""}
 	{ "$month", &getMonth },
-	////cnstdetail:{"name":"$year",
-	////cnstdetail:"title":"$year",
-	////cnstdetail:"descr":"Current Year from NTP",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$year",
+	//cnstdetail:"title":"$year",
+	//cnstdetail:"descr":"Current Year from device clock",
+	//cnstdetail:"requires":""}
 	{ "$year", &getYear },
 #if ENABLE_CLOCK_DST
-	////cnstdetail:{"name":"$isDST",
-	////cnstdetail:"title":"$isDST",
-	////cnstdetail:"descr":"",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$isDST",
+	//cnstdetail:"title":"$isDST",
+	//cnstdetail:"descr":"Returns 1 if DST (daylight saving time) is active, otherwise 0",
+	//cnstdetail:"requires":""}
 	{ "$isDST", &isDST },
 #endif
 #if ENABLE_CLOCK_SUNRISE_SUNSET
-	////cnstdetail:{"name":"$sunrise",
-	////cnstdetail:"title":"$sunrise",
-	////cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$sunrise",
+	//cnstdetail:"title":"$sunrise",
+	//cnstdetail:"descr":"Next sunrise as a TimerSeconds from midnight - will also print time to log",
+	//cnstdetail:"requires":""}
 	{ "$sunrise", &getSunrise },
-	////cnstdetail:{"name":"$sunset",
-	////cnstdetail:"title":"$sunset",
-	////cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight",
-	////cnstdetail:"requires":""}
+	//cnstdetail:{"name":"$sunset",
+	//cnstdetail:"title":"$sunset",
+	//cnstdetail:"descr":"Next sunset as a TimerSeconds from midnight - will also print time to log",
+	//cnstdetail:"requires":""}
 	{ "$sunset", &getSunset },
 #endif
 	//cnstdetail:{"name":"$NTPOn",
@@ -515,7 +516,7 @@ const constant_t g_constants[] = {
 	//cnstdetail:"descr":"Returns 1 if NTP is on and already synced (so device has correct time), otherwise 0.",
 	//cnstdetail:"requires":""}
 	{ "$NTPOn", &getNTPOn },
-#endif	//ENABLE_NTP
+#endif	// ENABLE_LOCAL_CLOCK || ENABLE_NTP
 #ifdef ENABLE_DRIVER_BATTERY
 	//cnstdetail:{"name":"$batteryVoltage",
 	//cnstdetail:"title":"$batteryVoltage",

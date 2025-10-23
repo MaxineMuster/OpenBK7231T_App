@@ -252,9 +252,9 @@ int UART_InitUARTEx(int auartindex, int baud, int parity, bool hwflowc)
   uartbuf_t* fuartbuf = UART_GetBufFromPort(auartindex);
   fuartbuf->g_uart_init_counter++;
 #ifdef UART_2_UARTS_CONCURRENT
-    HAL_UART_InitEx(auartindex, baud, parity, hwflowc);
+    HAL_UART_InitEx(auartindex, baud, parity, hwflowc, -1, -1);
 #else
-    HAL_UART_Init(baud, parity, hwflowc);
+    HAL_UART_Init(baud, parity, hwflowc, -1, -1);
 #endif
   return fuartbuf->g_uart_init_counter;
 }
@@ -276,6 +276,7 @@ void UART_DebugTool_Run(int auartindex) {
     char tmp[128];
     char *p = tmp;
     int i;
+	int bytes = 0;
 
     for (i = 0; i < sizeof(tmp) - 4; i++) {
 		if (UART_GetDataSizeEx(auartindex)==0) {
@@ -286,12 +287,16 @@ void UART_DebugTool_Run(int auartindex) {
             *p = ' ';
             p++;
         }
+		bytes++;
         sprintf(p, "%02X", b);
         p += 2;
         UART_ConsumeBytesEx(auartindex,1);
     }
     *p = 0;
-    addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received: %s\n", auartindex, tmp);
+	if (bytes) {
+		addLogAdv(LOG_INFO, LOG_FEATURE_CMD, "UART %i received %i bytes: %s\n",
+			auartindex, bytes, tmp);
+	}
 }
 
 void UART_RunEverySecond() {
@@ -301,7 +306,7 @@ void UART_RunEverySecond() {
     }
   }
 }
-
+// uartInit 115200
 commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *args, int cmdFlags) {
     int baud;
 
@@ -329,7 +334,7 @@ commandResult_t CMD_UART_Init(const void *context, const char *cmd, const char *
 void UART_AddCommands() {
 	//cmddetail:{"name":"uartSendHex","args":"[HexString]",
 	//cmddetail:"descr":"Sends raw data by UART, can be used to send TuyaMCU data, but you must write whole packet with checksum yourself",
-	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_tuyaMCU.c","requires":"",
+	//cmddetail:"fn":"CMD_UART_Send_Hex","file":"driver/drv_uart.c","requires":"",
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("uartSendHex", CMD_UART_Send_Hex, NULL);
 	//cmddetail:{"name":"uartSendASCII","args":"[AsciiString]",

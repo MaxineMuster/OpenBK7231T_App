@@ -184,7 +184,18 @@ void NTP_Init() {
 	//cmddetail:"examples":""}
     CMD_RegisterCommand("ntp_info", NTP_Info, NULL);
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s", CFG_GetNTPServer());
+#if ENABLE_CALENDAR_EVENTS
+	NTP_Init_Events();
+#endif
+#if ENABLE_CLOCK_DST
+	//cmddetail:{"name":"clock_calcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
+	//cmddetail:"descr":"Checks, if actual time is during DST or not.",
+	//cmddetail:"fn":"CLOCK_CalcDST","file":"driver/drv_ntp.c","requires":"",
+	//cmddetail:"examples":""}
+    CMD_RegisterCommand("clock_calcDST",CLOCK_CalcDST, NULL);
+#endif
+
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
     g_synced = false;
 }
 

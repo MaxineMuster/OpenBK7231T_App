@@ -409,6 +409,9 @@ void PIN_SetupPins() {
 	// TODO: better place to call?
 	DHT_OnPinsConfigChanged();
 #endif
+#if ENABLE_LED_BASIC
+	LED_SetStripStateOutputs();
+#endif
 	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "PIN_SetupPins pins have been set up.\r\n");
 }
 
@@ -476,7 +479,8 @@ int PIN_IOR_NofChan(int test){
 			|| test == IOR_BL0937_CF || test == IOR_BL0937_CF1 || test == IOR_BL0937_SEL
 			|| test == IOR_LED_WIFI || test == IOR_LED_WIFI_n || test == IOR_LED_WIFI_n
 			|| (test >= IOR_IRRecv && test <= IOR_DHT11)
-			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)) {
+			|| (test >= IOR_SM2135_DAT && test <= IOR_BP1658CJ_CLK)
+			|| (test == IOR_HLW8112_SCSN)) {
 			return 0;
 	}
 	// all others have 1 channel
@@ -887,6 +891,34 @@ void CHANNEL_DoSpecialToggleAll() {
 }
 extern int g_pwmFrequency;
 
+#if 0
+void PIN_InterruptHandler(int gpio) {
+	int ch = g_cfg.pins.channels[gpio];
+	CHANNEL_Add(ch, 1);
+}
+#else
+
+
+#endif
+
+unsigned short g_counterDeltas[PLATFORM_GPIO_MAX];
+void PIN_InterruptHandler(int gpio) {
+	g_counterDeltas[gpio]++;
+}
+void PIN_ApplyCounterDeltas() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		if (g_counterDeltas[i]) {
+			// TODO: disable interrupts now so it won't get called in meantime?
+			int delta = g_counterDeltas[i];
+			g_counterDeltas[i] = 0;
+			int ch = g_cfg.pins.channels[i];
+			CHANNEL_Add(ch, delta);
+		}
+	}
+}
+
+
+
 void PIN_SetPinRoleForPinIndex(int index, int role) {
 	bool bDHTChange = false;
 	bool bSampleInitialState = false;
@@ -960,6 +992,10 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 		case IOR_ADC_Button:
 		case IOR_ADC:
 			HAL_ADC_Deinit(index);
+			break;
+		case IOR_Counter_f:
+		case IOR_Counter_r:
+			HAL_DetachInterrupt(index);
 			break;
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
@@ -1109,6 +1145,20 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 			}
 		}
 		break;
+#if ENABLE_LED_BASIC
+		case IOR_StripState:
+		case IOR_StripState_n:
+		{
+			HAL_PIN_Setup_Output(index);
+			if (role == IOR_StripState) {
+				HAL_PIN_SetOutputValue(index, LED_GetEnableAll());
+			}
+			else {
+				HAL_PIN_SetOutputValue(index, !LED_GetEnableAll());
+			}
+		}
+		break;
+#endif
 		case IOR_BridgeForward:
 		case IOR_BridgeReverse:
 		{
@@ -1150,6 +1200,14 @@ void PIN_SetPinRoleForPinIndex(int index, int role) {
 #else
 			HAL_ADC_Init(index);
 #endif
+			break; 
+		case IOR_Counter_f:
+			HAL_PIN_Setup_Input_Pullup(index);
+			HAL_AttachInterrupt(index, INTERRUPT_FALLING, PIN_InterruptHandler);
+			break;
+		case IOR_Counter_r:
+			HAL_PIN_Setup_Input_Pullup(index);
+			HAL_AttachInterrupt(index, INTERRUPT_RISING, PIN_InterruptHandler);
 			break;
 		case IOR_PWM_n:
 		case IOR_PWM_ScriptOnly:
@@ -1324,6 +1382,7 @@ int ChannelType_GetDivider(int type) {
 	case ChType_EnergyTotal_kWh_div1000:
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
+	case ChType_EnergyImport_kWh_div1000:
 	case ChType_Current_div1000:
 	case ChType_LeakageCurrent_div1000:
 	case ChType_ReadOnly_div1000:
@@ -1365,6 +1424,7 @@ const char *ChannelType_GetUnit(int type) {
 	case ChType_EnergyExport_kWh_div1000:
 	case ChType_EnergyToday_kWh_div1000:
 	case ChType_EnergyTotal_kWh_div100:
+	case ChType_EnergyImport_kWh_div1000:
 		return "kWh";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
@@ -1420,6 +1480,8 @@ const char *ChannelType_GetTitle(int type) {
 		return "EnergyExport";
 	case ChType_EnergyToday_kWh_div1000:
 		return "EnergyToday";
+	case ChType_EnergyImport_kWh_div1000:
+		return "EnergyImport";
 	case ChType_PowerFactor_div1000:
 	case ChType_PowerFactor_div100:
 		return "PowerFactor";
@@ -1581,55 +1643,58 @@ void CHANNEL_Set_Ex(int ch, int iVal, int iFlags, int ausemovingaverage) {
 void CHANNEL_Set(int ch, int iVal, int iFlags) {
 	CHANNEL_Set_Ex(ch, iVal, iFlags, 0);
 }
+char *g_channelPingPongs = 0;
 
-void CHANNEL_AddClamped(int ch, int iVal, int min, int max, int bWrapInsteadOfClamp) {
-#if 0
-	int prevValue;
-	if (ch < 0 || ch >= CHANNEL_MAX) {
-		addLogAdv(LOG_ERROR, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped: Channel index %i is out of range <0,%i)\n\r", ch, CHANNEL_MAX);
-		return;
-	}
-	prevValue = g_channelValues[ch];
-	g_channelValues[ch] = g_channelValues[ch] + iVal;
-
-	if (bWrapInsteadOfClamp) {
-		if (g_channelValues[ch] > max)
-			g_channelValues[ch] = min;
-		if (g_channelValues[ch] < min)
-			g_channelValues[ch] = max;
-	}
-	else {
-		if (g_channelValues[ch] > max)
-			g_channelValues[ch] = max;
-		if (g_channelValues[ch] < min)
-			g_channelValues[ch] = min;
-	}
-
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, g_channelValues[ch]);
-
-	Channel_OnChanged(ch, prevValue, 0);
-#else
+void CHANNEL_AddClamped(int ch, int iDelta, int min, int max, int bWrapInsteadOfClamp) {
 	// we want to support special channel indexes, so it's better to use GET/SET interface
 	// Special channel indexes are used to access things like dimmer, led colors, etc
-	iVal = CHANNEL_Get(ch) + iVal;
+	int newVal;;
 
-	if (bWrapInsteadOfClamp) {
-		if (iVal > max)
-			iVal = min;
-		if (iVal < min)
-			iVal = max;
+	if (bWrapInsteadOfClamp == 3) {
+		if (g_channelPingPongs) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		return;
+	} else if (bWrapInsteadOfClamp == 2) {
+		// ping-pong logic
+		if (g_channelPingPongs == 0) {
+			g_channelPingPongs = (char*)malloc(CHANNEL_MAX);
+			memset(g_channelPingPongs, 1, CHANNEL_MAX);
+		}
+		int prevVal = CHANNEL_Get(ch);
+		newVal = prevVal + iDelta * g_channelPingPongs[ch];
+		if (prevVal == min && newVal < min) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		else if (prevVal == max && newVal > max) {
+			g_channelPingPongs[ch] *= -1;
+		}
+		newVal = prevVal + iDelta * g_channelPingPongs[ch];
+		if (newVal > max) {
+			newVal = max;
+		}
+		else if (newVal < min) {
+			newVal = min;
+		}
+	} else if (bWrapInsteadOfClamp) {
+		newVal = CHANNEL_Get(ch) + iDelta;
+		if (newVal > max)
+			newVal = min;
+		if (newVal < min)
+			newVal = max;
 	}
 	else {
-		if (iVal > max)
-			iVal = max;
-		if (iVal < min)
-			iVal = min;
+		newVal = CHANNEL_Get(ch) + iDelta;
+		if (newVal > max)
+			newVal = max;
+		if (newVal < min)
+			newVal = min;
 	}
 
-	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, "CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, iVal);
+	addLogAdv(LOG_INFO, LOG_FEATURE_GENERAL, 
+		"CHANNEL_AddClamped channel %i has changed to %i\n\r", ch, newVal);
 
-	CHANNEL_Set(ch, iVal, 0);
-#endif
+	CHANNEL_Set(ch, newVal, 0);
 }
 void CHANNEL_Add(int ch, int iVal) {
 #if 0
@@ -2032,6 +2097,9 @@ void PIN_ticks(void* param)
 	int i;
 	int value;
 
+
+	PIN_ApplyCounterDeltas();
+
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	g_time = rtos_get_time();
 #else
@@ -2109,7 +2177,7 @@ void PIN_ticks(void* param)
 			activepoll_time = 1000; //20 x 50ms = 1s of polls after button release
 		}
 
-#if 1
+#if 0
 		if (g_cfg.pins.roles[i] == IOR_PWM || g_cfg.pins.roles[i] == IOR_PWM_ScriptOnly) {
 			HAL_PIN_PWM_Update(i, g_channelValuesFloats[g_cfg.pins.channels[i]]);
 		}
@@ -2323,6 +2391,9 @@ const char* g_channelTypeNames[] = {
 	"OpenStopClose",
 	"Percent",
 	"StopUpDown",
+	"EnergyImport_kWh_div1000",
+	"Enum",
+	"ReadOnlyEnum",
 	"error",
 	"error",
 };
@@ -2691,7 +2762,7 @@ void PIN_AddCommands(void)
 #ifdef ENABLE_BL_MOVINGAVG
 	//cmddetail:{"name":"setMovingAvg","args":"MovingAvg",
 	//cmddetail:"descr":"Moving average value for power and current. <=1 disable, >=2 count of avg values. The setting is temporary and need to be set at startup.",
-	//cmddetail:"fn":"NULL);","file":"new_pins.c","requires":"",
+	//cmddetail:"fn":"CMD_setMovingAvg","file":"new_pins.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("setMovingAvg", CMD_setMovingAvg, NULL);
 #endif

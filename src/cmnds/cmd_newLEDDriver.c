@@ -10,6 +10,7 @@
 #include "../driver/drv_public.h"
 #include "../driver/drv_local.h"
 #include "../hal/hal_flashVars.h"
+#include "../hal/hal_pins.h"
 #include "../hal/hal_flashConfig.h"
 #include "../rgb2hsv.h"
 #include <ctype.h>
@@ -146,6 +147,7 @@ bool LED_IsLedDriverChipRunning()
 		|| DRV_IsRunning("KP18058")
 		|| DRV_IsRunning("SM16703P")
 		|| DRV_IsRunning("SM15155E")
+		|| DRV_IsRunning("DMX")
 		; 
 #else
 	return false;
@@ -406,20 +408,23 @@ float led_gamma_correction (int color, float iVal) { // apply LED gamma and RGB 
 	}
 
 	// apply LED gamma correction:
-	float ch_bright_min = g_cfg.led_corr.rgb_bright_min / 100;
-	if (color > 2) {
-		ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
-	}
-	float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+
+	// this gamma correction function does not properly calculate gamma
+	// float ch_bright_min = g_cfg.led_corr.rgb_bright_min / 100;
+	// if (color > 2) {
+	//	ch_bright_min = g_cfg.led_corr.cw_bright_min / 100;
+	// }
+	// float oVal = (powf (brightnessNormalized0to1, g_cfg.led_corr.led_gamma) * (1 - ch_bright_min) + ch_bright_min) * iVal;
+
+	// color value adjusted to float 0-1, modified by brightness
+	float brightnessCorrectedColor = iVal / 255.0f * brightnessNormalized0to1;
+
+	// gamma correct the color value
+	float oVal = powf (brightnessCorrectedColor,  g_cfg.led_corr.led_gamma) * 255.0f;
 
 	// apply RGB level correction:
 	if (color < 3) {
 		rgb_used_corr[color] = g_cfg.led_corr.rgb_cal[color];
-		// boost gain to get full brightness when one RGB base color is dominant:
-		float sum_other_colors = led_baseColors[0] + led_baseColors[1] + led_baseColors[2] - led_baseColors[color];
-		if (led_baseColors[color] > sum_other_colors) {
-			rgb_used_corr[color] += (1.0f - rgb_used_corr[color]) * (1.0f - sum_other_colors / led_baseColors[color]);
-		}
 		oVal *= rgb_used_corr[color];
 	}
 
@@ -660,8 +665,8 @@ void apply_smart_light() {
 #endif
 #if	ENABLE_DRIVER_SM16703P
 	if (pixel_count > 0 && (g_lightMode != Light_Anim || g_lightEnableAll == 0)) {
-		SM16703P_setAllPixels(finalColors[0], finalColors[1], finalColors[2], finalColors[3], finalColors[4]);
-		SM16703P_Show();
+		Strip_setAllPixels(finalColors[0], finalColors[1], finalColors[2], finalColors[3], finalColors[4]);
+		Strip_Apply();
 	}
 #endif
 	
@@ -830,14 +835,31 @@ float LED_GetTemperature0to1Range() {
 }
 
 void LED_SetTemperature(int tmpInteger, bool bApply) {
-	float f;
+	float ww,cw,max_cw_ww;
 
 	led_temperature_current = tmpInteger;
 
-	f = LED_GetTemperature0to1Range();
+	ww = LED_GetTemperature0to1Range();
+	cw = 1 - ww;
 
-	led_baseColors[3] = (255.0f) * (1-f);
-	led_baseColors[4] = (255.0f) * f;
+	//normalize to have a local max of 100%
+	if (ww > cw)
+		max_cw_ww = ww;
+	else
+		max_cw_ww = cw;
+
+	ww = ww / max_cw_ww;
+	cw = cw / max_cw_ww;
+
+	//uncorrect for gamma to allow gamma correcting brightness later
+	if (g_cfg.led_corr.led_gamma >= 1 && g_cfg.led_corr.led_gamma <= 3) {
+		ww = powf(ww, 1 / g_cfg.led_corr.led_gamma);
+		cw = powf(cw, 1 / g_cfg.led_corr.led_gamma);
+	}
+
+	led_baseColors[3] = (255.0f) * cw;
+	led_baseColors[4] = (255.0f) * ww;
+
 
 	if(bApply) {
 		if (CFG_HasFlag(OBK_FLAG_LED_AUTOENABLE_ON_ANY_ACTION)) {
@@ -875,8 +897,20 @@ void LED_ToggleEnabled() {
 }
 bool g_guard_led_enable_event_cast = false;
 
+void LED_SetStripStateOutputs() {
+	for (int i = 0; i < PLATFORM_GPIO_MAX; i++) {
+		int state = g_cfg.pins.roles[i];
+		if (state == IOR_StripState) {
+			HAL_PIN_SetOutputValue(i, g_lightEnableAll);
+		}
+		else if (state == IOR_StripState_n) {
+			HAL_PIN_SetOutputValue(i, !g_lightEnableAll);
+		}
+	}
+}
 void LED_SetEnableAll(int bEnable) {
 	bool bEnableAllWasSetTo1;
+	bool bHadChange;
 
 	if (g_lightEnableAll == 0 && bEnable == 1) {
 		bEnableAllWasSetTo1 = true;
@@ -903,6 +937,7 @@ void LED_SetEnableAll(int bEnable) {
 	}
 	g_lightEnableAll = bEnable;
 
+	LED_SetStripStateOutputs();
 	apply_smart_light();
 #if	ENABLE_TASMOTADEVICEGROUPS
 	DRV_DGR_OnLedEnableAllChange(bEnable);
@@ -1238,9 +1273,18 @@ void LED_SetFinalRGBW(byte r, byte g, byte b, byte w) {
 	led_baseColors[0] = r;
 	led_baseColors[1] = g;
 	led_baseColors[2] = b;
+
 	// half between Cool and Warm
-	led_baseColors[3] = w / 2;
-	led_baseColors[4] = w / 2;
+    float w_half = w / 2 / 255.0f;
+    LED_SetTemperature0to1Range(0.5f);
+
+    //uncorrect for gamma to allow gamma correcting brightness later
+	if (g_cfg.led_corr.led_gamma >= 1 && g_cfg.led_corr.led_gamma <= 3) {
+		w_half = powf(w_half, 1 / g_cfg.led_corr.led_gamma);
+	}
+
+	led_baseColors[3] = (255.0f) * w_half;
+	led_baseColors[4] = (255.0f) * w_half;
 
 	RGBtoHSV(led_baseColors[0] / 255.0f, led_baseColors[1] / 255.0f, led_baseColors[2] / 255.0f, &g_hsv_h, &g_hsv_s, &g_hsv_v);
 
@@ -1748,7 +1792,7 @@ void NewLED_InitCommands(){
 	CMD_RegisterCommand("led_finishFullLerp", led_finishFullLerp, NULL);
 	//cmddetail:{"name":"led_gammaCtrl","args":"sub-cmd [par]",
 	//cmddetail:"descr":"control LED Gamma Correction and Calibration",
-	//cmddetail:"fn":"rgb_gamma_control","file":"cmnds/cmd_rgbGamma.c","requires":"",
+	//cmddetail:"fn":"led_gamma_control","file":"cmnds/cmd_newLEDDriver.c","requires":"",
 	//cmddetail:"examples":"led_gammaCtrl on"}
     CMD_RegisterCommand("led_gammaCtrl", led_gamma_control, NULL);
 	//cmddetail:{"name":"CTRange","args":"[MinRange][MaxRange]",

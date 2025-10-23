@@ -140,12 +140,14 @@ void SIM_Hack_ClearSimulatedPinRoles();
 
 void CHANNEL_FreeLabels();
 
-void SIM_ClearOBK(const char *flashPath) {
+void SIM_ShutdownOBK() {
 	if (bObkStarted) {
 		DRV_ShutdownAllDrivers();
 #if ENABLE_LITTLEFS
 		release_lfs();
 #endif
+		SVM_FreeAllFiles();
+		SVM_StopAllScripts();
 		SIM_Hack_ClearSimulatedPinRoles();
 		WIN_ResetMQTT();
 		SPILED_Shutdown(); // won't hurt
@@ -159,13 +161,24 @@ void SIM_ClearOBK(const char *flashPath) {
 		// LOG deinit after main init so commands will be re-added
 		LOG_DeInit();
 	}
+}
+void SIM_StartOBK(const char *flashPath) {
+
 	if (flashPath) {
 		SIM_SetupFlashFileReading(flashPath);
 	}
 	bObkStarted = true;
 	Main_Init();
 }
+void SIM_ClearOBK(const char *flashPath) {
+	SIM_ShutdownOBK();
+	SIM_StartOBK(flashPath);
+}
 void Win_DoUnitTests() {
+	//SELFTEST_ASSERT_EXPRESSION("sqrt(4)", 2)
+
+	Test_Commands_Channels();
+
 	Test_Driver_TCL_AC();
 
 	Test_PIR();
@@ -180,10 +193,10 @@ void Win_DoUnitTests() {
 	Test_Demo_ConditionalRelay();
 	Test_Expressions_RunTests_Braces();
 	Test_Expressions_RunTests_Basic();
-	//Test_Enums();
+	Test_Enums();
 	Test_Backlog();
 	Test_DoorSensor();
-	Test_WS2812B();
+	Test_LEDstrips();
 	Test_Command_If_Else();
 	Test_MQTT();
 	Test_ChargeLimitDriver();
@@ -247,7 +260,6 @@ void Win_DoUnitTests() {
 	Test_LEDDriver();
 	Test_LFS();
 	Test_Scripting();
-	Test_Commands_Channels();
 	Test_Command_If();
 	Test_Tokenizer();
 	Test_Http();
