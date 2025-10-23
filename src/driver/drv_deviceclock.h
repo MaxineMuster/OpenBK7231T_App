@@ -21,6 +21,7 @@ void CLOCK_setDeviceTimeOffset(int offs);
 int CLOCK_GetEventTime(int id);
 int CLOCK_RemoveEvent(int id);
 int CLOCK_ClearEvents();
+void CLOCK_Init_Events();
 void CLOCK_Init();
 void CLOCK_OnEverySecond();
 bool Clock_IsTimeSynced();
