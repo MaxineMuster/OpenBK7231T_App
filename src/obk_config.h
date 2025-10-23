@@ -82,12 +82,9 @@
 #define ENABLE_OBK_SCRIPTING					1
 #define ENABLE_ADVANCED_CHANNELTYPES_DISCOVERY	1
 #define ENABLE_LITTLEFS							1
-<<<<<<< HEAD
-#define ENABLE_DRIVER_DCF77						1
-=======
 //#define ENABLE_DRIVER_TUYAMCU					1
 #undef ENABLE_HTTP_MAC
->>>>>>> upstream/main
+#define ENABLE_DRIVER_DCF77						1
 
 #elif PLATFORM_W800
 
