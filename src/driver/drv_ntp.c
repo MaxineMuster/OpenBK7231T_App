@@ -185,7 +185,7 @@ void NTP_Init() {
     CMD_RegisterCommand("ntp_info", NTP_Info, NULL);
 
 #if ENABLE_CALENDAR_EVENTS
-	NTP_Init_Events();
+	CLOCK_Init_Events();
 #endif
 #if ENABLE_CLOCK_DST
 	//cmddetail:{"name":"clock_calcDST","args":"[nthWeekEnd monthEnd dayEnd hourEnd nthWeekStart monthStart dayStart hourStart [g_DSToffset hours - default is 1 if unset]",
