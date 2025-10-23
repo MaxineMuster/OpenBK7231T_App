@@ -25,6 +25,7 @@ void CLOCK_Init();
 void CLOCK_OnEverySecond();
 bool Clock_IsTimeSynced();
 commandResult_t CLOCK_SetTimeZoneOfs(const void *context, const char *cmd, const char *args, int cmdFlags);
+commandResult_t CLOCK_CalcDST(const void *context, const char *cmd, const char *args, int cmdFlags);
 void CLOCK_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
 #if ENABLE_CLOCK_SUNRISE_SUNSET
 extern struct SUN_DATA {  /* sunrise / sunset globals */

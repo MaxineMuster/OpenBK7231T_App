@@ -195,7 +195,7 @@ void NTP_Init() {
     CMD_RegisterCommand("clock_calcDST",CLOCK_CalcDST, NULL);
 #endif
 
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), g_timeOffsetSeconds);
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "NTP driver initialized with server=%s, offset=%d", CFG_GetNTPServer(), Clock_GetTimesZoneOfsSeconds());
     g_synced = false;
 }
 
