@@ -948,13 +948,12 @@ int http_fn_index(http_request_t* request) {
 	if (g_AccessPointMode == 2) {
 		hprintf255(request, "<h5>Wifi: WPA-AP \"%s\"</h5>", g_HAL_AP_Wifi_SSID);
 	} else
-#else
+#endif
 	if (Main_HasWiFiConnected())
 	{
 		int rssi = HAL_GetWifiStrength();
 		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(rssi)], rssi);
 	}
-#endif
 #if PLATFORM_BEKEN
 	/*
 typedef enum {
