@@ -944,11 +944,17 @@ int http_fn_index(http_request_t* request) {
 		}
 	}
 #endif
+#if ENABLE_WPA_AP
+	if (g_AccessPointMode == 2) {
+		hprintf255(request, "<h5>Wifi: WPA-AP \"%s\"</h5>", g_HAL_AP_Wifi_SSID);
+	} else
+#else
 	if (Main_HasWiFiConnected())
 	{
 		int rssi = HAL_GetWifiStrength();
 		hprintf255(request, "<h5>Wifi RSSI: %s (%idBm)</h5>", str_rssi[wifi_rssi_scale(rssi)], rssi);
 	}
+#endif
 #if PLATFORM_BEKEN
 	/*
 typedef enum {
@@ -1669,6 +1675,8 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			// values:     0 = STA 1 = OpenAP      2 = WAP-AP
 			g_AccessPointMode = 2;	// make sure, we don't try to connect as STA client!
 			HAL_DisconnectFromWifi();
+			strncpy(g_HAL_AP_Wifi_SSID, ssid, sizeof(g_HAL_AP_Wifi_SSID)-1);
+			g_HAL_AP_Wifi_SSID[sizeof(g_HAL_AP_Wifi_SSID) - 1] = '\0'; // just to ensure null-termination
 			HAL_SetupWiFiAccessPoint(ssid, pw);
 		}
 	}
