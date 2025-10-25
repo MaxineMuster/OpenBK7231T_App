@@ -60,7 +60,7 @@ int WiFI_SetMacAddress(char *mac) {
 }
 void HAL_DisconnectFromWifi()
 {
-    
+    wifi_mgmr_sta_disconnect();
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
@@ -72,6 +72,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
     wifi_interface = wifi_mgmr_ap_enable();
     /*no password when only one param*/
+    
     wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, NULL, HAL_AP_Wifi_Channel);
 
 // set in user_main - included as "extern"
@@ -91,7 +92,10 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 		}
 		return -1;
 	}
-	wifi_interface_t wifi_interface;
+	wifi_mgmr_sta_disconnect();
+	wifi_interface_t wifi_interface={0};
+	wifi_mgmr_sta_autoconnect_disable();
+	wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
 	//struct netif *net;
 	wifi_interface = wifi_mgmr_ap_enable();
 	wifi_mgmr_ap_start(wifi_interface, ssid, hidden_ssid, key, HAL_AP_Wifi_Channel);
