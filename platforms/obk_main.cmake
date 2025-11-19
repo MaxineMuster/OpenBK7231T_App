@@ -97,6 +97,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_max72xx_internal.c
 	${OBK_SRCS}driver/drv_max72xx_single.c
 	${OBK_SRCS}driver/drv_mcp9808.c
+	${OBK_SRCS}driver/drv_multiPinI2CScanner.c
 	${OBK_SRCS}driver/drv_ntp.c
 	${OBK_SRCS}driver/drv_deviceclock.c
 	${OBK_SRCS}libraries/obktime/obktime.c
@@ -133,6 +134,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_tm1637.c
 	${OBK_SRCS}driver/drv_tm1638.c
 	${OBK_SRCS}driver/drv_tm_gn_display_shared.c
+	${OBK_SRCS}driver/drv_girierMCU.c
 	${OBK_SRCS}driver/drv_tuyaMCU.c
 	${OBK_SRCS}driver/drv_tuyaMCUSensor.c
 	${OBK_SRCS}driver/drv_uart.c

@@ -193,7 +193,7 @@ void CLOCK_RunEventsForSecond(time_t runTime) {
 //				if (BIT_CHECK(e->weekDayFlags, ltm->tm_wday)) {
 				if (BIT_CHECK(e->weekDayFlags, tc.wday)) {
 #if ENABLE_CLOCK_SUNRISE_SUNSET
-					if (e->sunflags) {
+					if (e->sunflags) {	// no need to check for sunrise/sunset here. If sunflags != 0, it's either of them!!
 /*
 						if (e->lastDay != ltm->tm_wday) {
 							e->lastDay = ltm->tm_wday;  // stop any further sun events today 
@@ -391,6 +391,7 @@ commandResult_t CMD_CLOCK_AddEvent(const void *context, const char *cmd, const c
 		dusk2Dawn(&sun_data, sunflags, &hour_b, &minute_b, calc_day_offset(tc.wday, flags));
 		hour = hour_b;
 		minute = minute_b;
+		addLogAdv(LOG_DEBUG, LOG_FEATURE_CMD,"Adding sunflags %2x",sunflags);
 	}
 
 	CLOCK_AddEvent(hour, minute, second, flags, id, sunflags, s);
