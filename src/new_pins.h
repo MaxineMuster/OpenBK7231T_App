@@ -1137,7 +1137,8 @@ typedef enum channelType_e {
 #define PLATFORM_GPIO_MAX 0
 #endif
 #elif PLATFORM_ESP8266
-#define PLATFORM_GPIO_MAX 17
+//2025-11-22 added NC for unusable IOs 6-8 and 11 plus added ADC, so its 0 to 17 now --> 18 
+#define PLATFORM_GPIO_MAX 18
 #elif PLATFORM_TR6260
 #define PLATFORM_GPIO_MAX 25
 #elif PLATFORM_RTL87X0C

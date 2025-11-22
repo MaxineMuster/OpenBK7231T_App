@@ -2968,6 +2968,10 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"d.appendChild(s);"
 		"	for (var i = 0; i < sr.length; i++) {"
 		"	if(b && sr[i][0].startsWith(\"PWM\")) continue; "
+#if PLATFORM_ESP8266
+		"ISADC=sr[i][0].startsWith(\"ADC\")"
+		"if(alias.startsWith(\"ADC\")) { if (! ISADC) continue;} else { if (ISADC) continue;}"
+#endif
 		"var o = document.createElement(\"option\");"
 		"	o.text = sr[i][0];"
 		"	o.value = sr[i][1];"
