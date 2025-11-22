@@ -2956,6 +2956,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"}");
 
 	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
+		"if (alias.startsWith(\"NC \")) return;"
 		"let f = document.getElementById(\"x\");"
 		"let d = document.createElement(\"div\");"
 		"d.className = \"hdiv\";"
