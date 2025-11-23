@@ -25,11 +25,11 @@ void CLOCK_setDeviceTime(uint32_t time){
 	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime - time = %lu - g_secondsElapsed =%lu \r\n",time,g_secondsElapsed);
 	g_epochOnStartup = (uint32_t)time - g_secondsElapsed;
 #if ENABLE_CLOCK_DST
-#include "drv_public.h"
-#include "drv_ds3231.h"
 	setDST();	// just to be sure: recalculate DST
 #endif
 #if (ENABLE_DRIVER_DS3231)
+#include "drv_public.h"
+#include "drv_ds3231.h"
 	if (DRV_IsRunning("DS3231")) DS3231_SetEpoch(time);
 #endif
 
