@@ -33,9 +33,9 @@ void CLOCK_setDeviceTime(uint32_t time){
 #if (ENABLE_DRIVER_DS3231)
 #include "drv_public.h"
 #include "drv_ds3231.h"
-	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime 1 - temp = %lu - g_epochOnStartup = %lu \r\n",temp,g_epochOnStartup);
+//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime 1 - temp = %lu - g_epochOnStartup = %lu \r\n",temp,g_epochOnStartup);
 	temp -= g_epochOnStartup;
-	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime 2 - temp = %lu \r\n",temp);
+//	ADDLOG_DEBUG(LOG_FEATURE_RAW, "CLOCK_setDeviceTime 2 - temp = %lu \r\n",temp);
 	if (DRV_IsRunning("DS3231")) DS3231_informClockWasSet( (temp*temp > 25));		// use "force" if new time differs more than 5 seconds (temp*temp is allways positive)
 #endif
 

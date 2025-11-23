@@ -110,7 +110,7 @@ bool DS3231_SetEpoch(const time_t st)
 
 void DS3231_informClockWasSet(bool force){
 //    ADDLOG_DEBUG(LOG_FEATURE_RAW, "DS3231_informClockWasSet called. force=%i - clocksetcounter=%i",force,  clocksetcounter);
-    if (force || clocksetcounter++ % 60 == 0){
+    if ((clocksetcounter++ % 60 == 0) || force){
     	ADDLOG_INFO(LOG_FEATURE_RAW, "DS3231_informClockWasSet - setting RTC time. force=%i - clocksetcounter=%i",force,  clocksetcounter);
     	DS3231_SetEpoch(Clock_GetCurrentTimeWithoutOffset());
     }

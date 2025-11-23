@@ -2956,7 +2956,7 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"}");
 
 	poststr(request, "function f(alias, id, c, b, ch1, ch2) {"
-		"if (alias.startsWith(\"NC \")) return;"
+		"if (alias.trim()==\"NC\") return;"
 		"let f = document.getElementById(\"x\");"
 		"let d = document.createElement(\"div\");"
 		"d.className = \"hdiv\";"
@@ -2969,8 +2969,8 @@ int http_fn_cfg_pins(http_request_t* request) {
 		"	for (var i = 0; i < sr.length; i++) {"
 		"	if(b && sr[i][0].startsWith(\"PWM\")) continue; "
 #if PLATFORM_ESP8266
-		"ISADC=sr[i][0].startsWith(\"ADC\");"
-		"if(alias.startsWith(\"ADC\")) { if (i>0 && ! ISADC) continue;} else { if (ISADC) continue;}"
+		"ISADC=sr[i][0].includes(\"ADC\");"
+		"if(alias.trim()==\"ADC\") { if (i>0 && ! ISADC) continue;} else { if (ISADC) continue;}"
 #endif
 		"var o = document.createElement(\"option\");"
 		"	o.text = sr[i][0];"
