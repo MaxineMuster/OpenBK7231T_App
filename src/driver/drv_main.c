@@ -653,7 +653,7 @@ void DRV_OnEverySecond() {
 	}
 #ifndef OBK_DISABLE_ALL_DRIVERS
 	// unconditionally run CLOCK
-	CLOCK_OnEverySecond()
+	CLOCK_OnEverySecond();
 #endif			
 	for (i = 0; i < g_numDrivers; i++) {
 		if (g_drivers[i].bLoaded) {
