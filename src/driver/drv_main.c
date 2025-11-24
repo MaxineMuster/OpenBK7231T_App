@@ -118,14 +118,14 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PinMutex.",
 	//drvdetail:"requires":""}
-	{ "PinMutex",		DRV_PinMutex_Init,			NULL, NULL, DRV_PinMutex_RunFrame, NULL, NULL, -1  },
+	{ "PinMutex",		DRV_PinMutex_Init,			NULL, NULL, DRV_PinMutex_RunFrame, NULL, NULL, NULL, -1  },
 #endif
 #if ENABLE_DRIVER_GOSUNDSW2
 	//drvdetail:{"name":"GosundSW2",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"GosundSW2",
 	//drvdetail:"requires":""}
-	{ "GosundSW2",		DRV_GosundSW2_Init,			NULL, NULL, DRV_GosundSW2_RunFrame, NULL, NULL, -1  },
+	{ "GosundSW2",		DRV_GosundSW2_Init,			NULL, NULL, DRV_GosundSW2_RunFrame, NULL, NULL, NULL, -1  },
 #endif
 #if ENABLE_DRIVER_TCL
 	//drvdetail:{"name":"TCL",
@@ -312,7 +312,7 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"T",
 	//drvdetail:"requires":""}
-	{ "MAX31855",	MAX31855_Init,		MAX31855_RunEverySecond,			NULL, NULL, NULL, NULL, -1  },
+	{ "MAX31855",	MAX31855_Init,		MAX31855_RunEverySecond,		NULL, NULL, NULL, NULL, NULL, -1  },
 #endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
