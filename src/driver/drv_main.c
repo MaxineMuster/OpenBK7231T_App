@@ -651,6 +651,10 @@ void DRV_OnEverySecond() {
 	if (DRV_Mutex_Take(100) == false) {
 		return;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// unconditionally run CLOCK
+	CLOCK_OnEverySecond()
+#endif			
 	for (i = 0; i < g_numDrivers; i++) {
 		if (g_drivers[i].bLoaded) {
 			if (g_drivers[i].onEverySecond != 0) {
@@ -824,6 +828,10 @@ void DRV_Generic_Init() {
 	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// init CLOCK unconditionally on start
+	CLOCK_Init();
+#endif
 }
 
 void DRV_OnHassDiscovery(const char *topic) {
@@ -849,6 +857,9 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 	if (DRV_Mutex_Take(100) == false) {
 		return;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	CLOCK_AppendInformationToHTTPIndexPage(request, bPreState);
+#endif
 	for (i = 0; i < g_numDrivers; i++) {
 		if (g_drivers[i].bLoaded) {
 			c_active++;
