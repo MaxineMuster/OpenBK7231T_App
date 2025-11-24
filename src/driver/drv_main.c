@@ -870,7 +870,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 */
 	for (i = 0; i < g_numDrivers; i++) {
 		if (g_drivers[i].LoadedFlag>0) {
-			c_active++;
+			if (g_drivers[i].LoadedFlag==1) c_active++;	// count only drivers not hidden
 			if (g_drivers[i].appendInformationToHTTPIndexPage) {
 				g_drivers[i].appendInformationToHTTPIndexPage(request, bPreState);
 			}
