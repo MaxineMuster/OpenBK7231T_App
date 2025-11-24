@@ -147,7 +147,7 @@ void DoorDeepSleep_StopDriver() {
 
 }
 
-void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request)
+void DoorDeepSleep_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
 	int untilSleep;
 
