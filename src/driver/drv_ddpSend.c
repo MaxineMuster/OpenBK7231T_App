@@ -134,6 +134,8 @@ void DRV_DDPSend_Shutdown()
 }
 void DRV_DDPSend_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState)
 {
+	if (bPreState) 
+		return;
 	hprintf255(request, "<h2>DDP sent: %i packets, %i bytes, errored packets: %i</h2>", 
 		stat_sendPackets, stat_sendBytes, stat_failedPackets);
 }

@@ -34,6 +34,8 @@ static int nextValidPin(int pin) {
 // startDriver MultiPinI2CScanner
 void MultiPinI2CScanner_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState)
 {
+	if (bPreState) 
+		return;
 	hprintf255(request, "Scan pins: %i %i, adr %i", g_scl, g_sda, g_adr);
 
 }
