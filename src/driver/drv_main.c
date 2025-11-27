@@ -30,11 +30,9 @@ typedef struct driver_s {
 	void(*stopFunc)();
 	void(*onChannelChanged)(int ch, int val);
 	void(*onHassDiscovery)(const char *topic);
-	int8_t LoadedFlag;	// negative values will allow to predefine, which value the flag will have, if loaded.
+	bool bLoaded;
 } driver_t;
 
-// to allow a driver loaded, but no shown on GUI page
-#define hidden 3
 
 void TuyaMCU_RunEverySecond();
 void GirierMCU_RunEverySecond();
@@ -54,7 +52,7 @@ static driver_t g_drivers[] = {
 	TuyaMCU_Shutdown,                        // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"tmSensor",
 	//drvdetail:"title":"TODO",
@@ -68,7 +66,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #ifdef ENABLE_DRIVER_GIRIERMCU
@@ -80,7 +78,7 @@ static driver_t g_drivers[] = {
 	GirierMCU_Shutdown,                      // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 
@@ -97,7 +95,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	TCA9554_OnChannelChanged,                // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_DMX
@@ -113,7 +111,7 @@ static driver_t g_drivers[] = {
 	DMX_Shutdown,                            // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_FREEZE
@@ -129,7 +127,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_TESTSPIFLASH
@@ -145,7 +143,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_PIR
@@ -161,7 +159,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	PIR_OnChannelChanged,                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_PIXELANIM
@@ -177,7 +175,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_DRAWERS
@@ -193,7 +191,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_HGS02
@@ -209,7 +207,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_PINMUTEX
@@ -225,7 +223,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_GOSUNDSW2
@@ -241,7 +239,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_TCL
@@ -257,7 +255,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	TCL_DoDiscovery,                         // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_OPENWEATHERMAP
@@ -273,7 +271,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_WIDGET
@@ -289,7 +287,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if WINDOWS
@@ -305,7 +303,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_CHARTS
@@ -321,7 +319,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_NTP
@@ -337,9 +335,10 @@ static driver_t g_drivers[] = {
 	NTP_Stop,                                // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
+/*
 	//drvdetail:{"name":"CLOCK",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"CLOCK driver will allways run. It will usually get time from NTP and handle timed events",
@@ -352,8 +351,9 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	- hidden,                                // Flag loaded/hidden
+	false,                                // Flag loaded/hidden
 	},
+*/
 #if ENABLE_DRIVER_DS3231
 	//drvdetail:{"name":"DS3231",
 	//drvdetail:"title":"TODO",
@@ -367,7 +367,7 @@ static driver_t g_drivers[] = {
 	DS3231_Stop,                             // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
  #endif
 #if ENABLE_DRIVER_HTTPBUTTONS
@@ -383,7 +383,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_TESTPOWER
@@ -399,7 +399,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_TESTLED
@@ -415,7 +415,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	Test_LED_Driver_OnChannelChanged,        // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_TESTUART
@@ -431,7 +431,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_TEST_COMMANDS
@@ -447,7 +447,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_SIMPLEEEPROM
@@ -463,7 +463,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_MULTIPINI2CSCANNER
@@ -479,7 +479,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_I2C
@@ -495,7 +495,7 @@ static driver_t g_drivers[] = {
 	DRV_I2C_Shutdown,                        // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_RN8209
@@ -511,7 +511,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BL0942
@@ -527,7 +527,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_PWM_GROUP
@@ -543,7 +543,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BL0942SPI
@@ -559,7 +559,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_HLW8112SPI
@@ -575,7 +575,7 @@ static driver_t g_drivers[] = {
 	HLW8112SPI_Stop,                         // stopFunction
 	NULL,                                    // onChannelChanged
 	HLW8112_OnHassDiscovery,                 // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_CHARGINGLIMIT
@@ -591,7 +591,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BL0937
@@ -607,7 +607,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_CSE7761
@@ -623,7 +623,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_CSE7766
@@ -639,7 +639,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_MAX6675
@@ -655,7 +655,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_MAX31855
@@ -671,7 +671,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_PT6523
@@ -687,7 +687,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_TEXTSCROLLER
@@ -703,7 +703,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_SM16703P
@@ -719,7 +719,7 @@ static driver_t g_drivers[] = {
 	SM16703P_Shutdown,                       // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_SM15155E
@@ -735,7 +735,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_IRREMOTEESP
@@ -751,7 +751,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_IR
@@ -767,7 +767,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_IR2
@@ -783,7 +783,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 
@@ -800,7 +800,7 @@ static driver_t g_drivers[] = {
 	DRV_DDPSend_Shutdown,                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_DDP
@@ -816,7 +816,7 @@ static driver_t g_drivers[] = {
 	DRV_DDP_Shutdown,                        // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_SSDP
@@ -832,7 +832,7 @@ static driver_t g_drivers[] = {
 	DRV_SSDP_Shutdown,                       // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_TASMOTADEVICEGROUPS
@@ -848,7 +848,7 @@ static driver_t g_drivers[] = {
 	DRV_DGR_Shutdown,                        // stopFunction
 	DRV_DGR_OnChannelChanged,                // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_WEMO
@@ -864,7 +864,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_HUE
@@ -880,7 +880,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
@@ -896,7 +896,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"DoorSensor",
 	//drvdetail:"title":"TODO",
@@ -910,7 +910,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	DoorDeepSleep_OnChannelChanged,          // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_ADCBUTTON
@@ -926,7 +926,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_MAX72XX
@@ -942,7 +942,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_LED
@@ -958,7 +958,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"BP5758D",
 	//drvdetail:"title":"TODO",	
@@ -972,7 +972,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"BP1658CJ",
 	//drvdetail:"title":"TODO",
@@ -986,7 +986,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"SM2235",
 	//drvdetail:"title":"TODO",
@@ -1000,7 +1000,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BMP280
@@ -1016,7 +1016,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_MAX72XX
@@ -1032,7 +1032,7 @@ static driver_t g_drivers[] = {
 	DRV_MAX72XX_Shutdown,                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BMPI2C
@@ -1048,7 +1048,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_CHT83XX
@@ -1064,7 +1064,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_MCP9808
@@ -1080,7 +1080,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_KP18058
@@ -1096,7 +1096,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_ADCSMOOTHER
@@ -1112,7 +1112,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_SHT3X
@@ -1128,7 +1128,7 @@ static driver_t g_drivers[] = {
 	SHT3X_StopDriver,                        // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_SGP
@@ -1144,7 +1144,7 @@ static driver_t g_drivers[] = {
 	SGP_StopDriver,                          // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_SHIFTREGISTER
@@ -1160,7 +1160,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	Shift_OnChannelChanged,                  // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_AHT2X
@@ -1176,7 +1176,7 @@ static driver_t g_drivers[] = {
 	AHT2X_StopDriver,                        // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_DS1820
@@ -1192,7 +1192,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_DS1820_FULL
@@ -1208,7 +1208,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_HT16K33
@@ -1224,7 +1224,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 	// Shared driver for TM1637, GN6932, TM1638 - TM_GN_Display_SharedInit
@@ -1241,7 +1241,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"GN6932",
 	//drvdetail:"title":"TODO",
@@ -1255,7 +1255,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"TM1638",
 	//drvdetail:"title":"TODO",
@@ -1269,7 +1269,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 	//drvdetail:{"name":"HD2015",
 	//drvdetail:"title":"TODO",
@@ -1283,7 +1283,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BATTERY
@@ -1299,7 +1299,7 @@ static driver_t g_drivers[] = {
 	Batt_StopDriver,                         // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BKPARTITIONS
@@ -1315,7 +1315,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_BRIDGE
@@ -1331,7 +1331,7 @@ static driver_t g_drivers[] = {
 	Bridge_driver_DeInit,                    // stopFunction
 	Bridge_driver_OnChannelChanged,          // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if ENABLE_DRIVER_UART_TCP
@@ -1347,7 +1347,7 @@ static driver_t g_drivers[] = {
 	UART_TCP_Deinit,                         // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 #if PLATFORM_TXW81X
@@ -1363,7 +1363,7 @@ static driver_t g_drivers[] = {
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
-	-1,                                      // Flag loaded/hidden
+	false                                    // Driver loaded
 	},
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, -1  }, 
@@ -1376,7 +1376,7 @@ bool DRV_IsRunning(const char* name) {
 	int i;
 
 	for (i = 0; i < g_numDrivers; i++) {
-		if (g_drivers[i].LoadedFlag>0) {
+		if (g_drivers[i].bLoaded) {
 			if (!stricmp(name, g_drivers[i].name)) {
 				return true;
 			}
@@ -1409,9 +1409,13 @@ void DRV_OnEverySecond() {
 	if (DRV_Mutex_Take(100) == false) {
 		return;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// unconditionally run CLOCK
+	CLOCK_OnEverySecond();
+#endif	
 
 	for (i = 0; i < g_numDrivers; i++) {
-		if (g_drivers[i].LoadedFlag>0) {
+		if (g_drivers[i].bLoaded) {
 			if (g_drivers[i].onEverySecond != 0) {
 				g_drivers[i].onEverySecond();
 			}
@@ -1426,7 +1430,7 @@ void DRV_RunQuickTick() {
 		return;
 	}
 	for (i = 0; i < g_numDrivers; i++) {
-		if (g_drivers[i].LoadedFlag>0) {
+		if (g_drivers[i].bLoaded) {
 			if (g_drivers[i].runQuickTick != 0) {
 				g_drivers[i].runQuickTick();
 			}
@@ -1441,7 +1445,7 @@ void DRV_OnChannelChanged(int channel, int iVal) {
 	//	return;
 	//}
 	for (i = 0; i < g_numDrivers; i++) {
-		if (g_drivers[i].LoadedFlag>0) {
+		if (g_drivers[i].bLoaded) {
 			if (g_drivers[i].onChannelChanged != 0) {
 				g_drivers[i].onChannelChanged(channel, iVal);
 			}
@@ -1453,7 +1457,7 @@ void DRV_OnChannelChanged(int channel, int iVal) {
 void DRV_ShutdownAllDrivers() {
 	int i;
 	for (i = 0; i < g_numDrivers; i++) {
-		if (g_drivers[i].LoadedFlag>0) {
+		if (g_drivers[i].bLoaded) {
 			DRV_StopDriver(g_drivers[i].name);
 		}
 	}
@@ -1466,11 +1470,11 @@ void DRV_StopDriver(const char* name) {
 	}
 	for (i = 0; i < g_numDrivers; i++) {
 		if (*name == '*' || !stricmp(g_drivers[i].name, name)) {
-			if (g_drivers[i].LoadedFlag>0) {
+			if (g_drivers[i].bLoaded) {
 				if (g_drivers[i].stopFunc != 0) {
 					g_drivers[i].stopFunc();
 				}
-				g_drivers[i].LoadedFlag *= -1;		// we made sure, flag is > 0, so it will be reverted here
+				g_drivers[i].bLoaded = false;
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s stopped.", g_drivers[i].name);
 			}
 			else {
@@ -1508,7 +1512,7 @@ void DRV_StartDriver(const char* name) {
 				break;
 			}
 #endif
-			if (g_drivers[i].LoadedFlag>0) {
+			if (g_drivers[i].bLoaded) {
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.\n", name);
 				bStarted = 1;
 				break;
@@ -1518,7 +1522,7 @@ void DRV_StartDriver(const char* name) {
 				if (g_drivers[i].initFunc) {
 					g_drivers[i].initFunc();
 				}
-				g_drivers[i].LoadedFlag *= -1;	//
+				g_drivers[i].bLoaded = true;
 				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.\n", name);
 				bStarted = 1;
 				break;
@@ -1583,6 +1587,10 @@ void DRV_Generic_Init() {
 	//cmddetail:"fn":"DRV_Stop","file":"driver/drv_main.c","requires":"",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("stopDriver", DRV_Stop, NULL);
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	// init CLOCK unconditionally on start
+	CLOCK_Init();
+#endif
 }
 
 void DRV_OnHassDiscovery(const char *topic) {
@@ -1592,7 +1600,7 @@ void DRV_OnHassDiscovery(const char *topic) {
 		return;
 	}
 	for (i = 0; i < g_numDrivers; i++) {
-		if (g_drivers[i].LoadedFlag>0) {
+		if (g_drivers[i].bLoaded) {
 			if (g_drivers[i].onHassDiscovery) {
 				g_drivers[i].onHassDiscovery(topic);
 			}
@@ -1608,9 +1616,12 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 	if (DRV_Mutex_Take(100) == false) {
 		return;
 	}
+#ifndef OBK_DISABLE_ALL_DRIVERS
+	CLOCK_AppendInformationToHTTPIndexPage(request, bPreState);
+#endif
 	for (i = 0; i < g_numDrivers; i++) {
-		if (g_drivers[i].LoadedFlag>0) {
-			if (g_drivers[i].LoadedFlag==1) c_active++;	// count only drivers not hidden
+		if (g_drivers[i].bLoaded) {
+			c_active++;
 			if (g_drivers[i].appendInformationToHTTPIndexPage) {
 				g_drivers[i].appendInformationToHTTPIndexPage(request, bPreState);
 			}
@@ -1625,7 +1636,7 @@ void DRV_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 			// generate active drivers list in (  )
 			hprintf255(request, " (");
 			for (i = 0; i < g_numDrivers; i++) {
-				if (g_drivers[i].LoadedFlag==1) {
+				if (g_drivers[i].bLoaded) {
 					// if at least one name printed, add separator
 					if (j != 0) {
 						hprintf255(request, ", ");
