@@ -315,6 +315,7 @@ void NEO6M_UART_Init(void) {
 	setclock2gps = false;
 	fakelat[0]='\0';
 	fakelong[0]='\0';
+	bool savecfg=0;
 	for (int i=1; i<=temp; i++) {
 		arg = Tokenizer_GetArg(i);
 		
@@ -357,7 +358,7 @@ void NEO6M_UART_Init(void) {
 			fakelong[i]='\0';
 			ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: fakelong=%s",fakelong);
 		} 
-		bool savecfg=0;
+		
 		fake=NULL;
 		fake=strstr(arg, "savecfg");
 		if ( arg && fake ) {
