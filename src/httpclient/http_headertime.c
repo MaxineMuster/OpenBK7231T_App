@@ -21,7 +21,7 @@
 
 void http_get_headertime(const char* host, unsigned short server_port, int offset) {
     int sock;
-    struct sockaddr_in server_addr = { 8, AF_INET, htons(server_port), inet_addr(host)};
+    struct sockaddr_in server_addr = { 8, AF_INET, htons(server_port), {inet_addr(host)}};
     char buffer[512];
     
     sock = socket(AF_INET, SOCK_STREAM, 0);
