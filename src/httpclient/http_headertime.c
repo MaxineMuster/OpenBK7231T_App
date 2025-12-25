@@ -10,6 +10,7 @@
 //#include "lite-log.h"
 #include "http_client.h"
 #include "iot_export_errno.h"
+#include "../hal/hal_wifi.h"	// for HAL_GetMyGatewayString()
 
 #include "../libraries/obktime/obktime.h"	// for time functions
 #include "../driver/drv_deviceclock.h"
@@ -20,18 +21,12 @@
 
 void http_get_headertime(const char* host, unsigned short server_port, int offset) {
     int sock;
-    struct sockaddr_in server_addr;
+    struct sockaddr_in server_addr = { 8, AF_INET, htons(server_port), inet_addr(host)};
     char buffer[512];
     
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) return;
-    
-    server_addr.sin_family = AF_INET;
-
-    server_addr.sin_port = htons(server_port);
-    inet_pton(AF_INET, host, &server_addr.sin_addr);
-    
-    
+        
     if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         close(sock);
         return;
@@ -39,7 +34,7 @@ void http_get_headertime(const char* host, unsigned short server_port, int offse
 
     send(sock, HEAD_REQUEST, strlen(HEAD_REQUEST), 0);
     
-    char *start;
+    char *start=NULL;
     int recv_size = recv(sock, buffer, sizeof(buffer) - 1, 0);
     if (recv_size > 0) {
         buffer[recv_size] = '\0';  // Null-terminate the received data
