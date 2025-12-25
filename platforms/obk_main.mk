@@ -68,6 +68,7 @@ OBKM_SRC  += $(OBK_SRCS)tiny_crc8.c
 OBKM_SRC  += $(OBK_SRCS)httpclient/http_client.c
 OBKM_SRC  += $(OBK_SRCS)httpclient/utils_net.c
 OBKM_SRC  += $(OBK_SRCS)httpclient/utils_timer.c
+OBKM_SRC  += $(OBK_SRCS)httpclient/http_headertime.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/lfs_util.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/lfs.c
 OBKM_SRC  += $(OBK_SRCS)littlefs/our_lfs.c
