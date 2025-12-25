@@ -424,6 +424,7 @@
     <ClCompile Include="src\sim\Point.cpp" />
     <ClCompile Include="src\driver\drv_deviceclock.c" />
     <ClCompile Include="src\driver\drv_ds3231.c" />
+    <ClCompile Include="src\httpclient\http_headertime.c" />
     <ClCompile Include="src\libraries\obktime\obktime.c" />
     <ClCompile Include="src\driver\drv_rc.cpp" />
   </ItemGroup>
