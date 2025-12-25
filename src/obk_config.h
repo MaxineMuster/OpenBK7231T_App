@@ -615,5 +615,8 @@
 // #define ENABLE_BL_MOVINGAVG					1
 #endif
 
+#define ENABLE_HTTP_HEADERTIME						1
+
+
 // closing OBK_CONFIG_H
 #endif

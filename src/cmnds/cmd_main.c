@@ -1113,6 +1113,7 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("WebServer", CMD_WebServer, NULL);
 #endif
+	CMD_InitGetHeaderTime();
 	
 #if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
