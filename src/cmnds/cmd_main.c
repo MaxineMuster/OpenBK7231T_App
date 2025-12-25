@@ -71,6 +71,9 @@ int g_sleepfactor = 1;
 #elif PLATFORM_ECR6600
 #include "psm_system.h"
 #endif
+#if ENABLE_HTTP_HEADERTIME
+#include "../httpclient/http_headertime.h"
+#endif	
 
 #define HASH_SIZE 128
 
@@ -1113,8 +1116,9 @@ void CMD_Init_Early() {
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("WebServer", CMD_WebServer, NULL);
 #endif
+#if ENABLE_HTTP_HEADERTIME
 	CMD_InitGetHeaderTime();
-	
+#endif	
 #if ENABLE_OBK_SCRIPTING
 	CMD_InitScripting();
 #endif

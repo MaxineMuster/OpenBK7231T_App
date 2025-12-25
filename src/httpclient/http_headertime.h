@@ -1,0 +1,2 @@
+void CMD_InitGetHeaderTime();
+
