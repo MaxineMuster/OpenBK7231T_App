@@ -1469,7 +1469,39 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	if(bChanged) {
 		poststr(request,"<h4> Device will reconnect after restarting</h4>");
 	}*/
-	poststr(request, "<h2> Check networks reachable by module</h2> This will take a few seconds<br>");
+	poststr(request, "<script>let actsel=0;byID=e=>document.getElementById(e);"
+			"function verify(){"
+#if ENABLE_WPA_AP
+			"if (actsel==2){"
+				"txt='';ts=byID('SSIDAP').value;tp=byID('PWAP').value;(ts.length<1)&&(txt='SSID is empty!');"
+				"(tp.length<8)&&(txt+=' Password is less than 8 chars!'); if (txt != ''){alert(txt); return false}"
+				"else return confirm('Are you sure to convert module to access point with \\nSSID='+ts+' \\nPW='+tp+' \\n?')"
+			"}else"
+#endif
+			" if(actsel==1){"
+				"return confirm('Are you sure to convert module to an Open Accesspoint (deleting client SSID and passphrase)?')"
+			"}else if(actsel==0){"
+				"return confirm('Are you sure? Please double-check SSID and password.')"
+			"}};"
+			"shows=s=>{for(i=0;i<3;i++){e=byID('wifi'+i);e.style.display=i==s?'block':'none';e.disabled=i==s?false:true;actsel=s}},"
+			"setup=e=>{byID('w'+e).selected=true;shows(e)},");
+	hprintf255(request,"window.addEventListener('load',()=>setup(%i));</script>",g_AccessPointMode);
+	poststr(request, "<h2>WiFi configuration</h2>Select WiFi mode <select style='width:unset' name='wifimode' onchange='shows(this.value);'>"
+				"<option id='w0' value=0>WiFi Client</option>"
+				"<option id='w1' value=1>Open Accesspoint</option>"
+				"<option id='w2' value=2>WPA Accesspoint</option>"
+				"</select>");
+
+	poststr(request, "<form action='cfg_wifi' id='scanform'></form>"
+		"<form action=\"/cfg_wifi_set\">"
+		"<input type='hidden' id='wifi1' name='open' value='1'>");
+#if ENABLE_WPA_AP
+	poststr(request, "<fieldset id='wifi2'><input type=\"hidden\" name=\"WPA-AP\" value=\"1\">\
+APs SSID:<br><input name=\"SSIDAP\" id=\"SSIDAP\">\
+APs passphrase:<br><input name=\"PWAP\" id=\"PWAP\">\
+</fieldset>");
+#endif
+	poststr(request, "<fieldset id='wifi0'><h2> Check networks reachable by module</h2> This will take a few seconds<br>");
 	if (http_getArg(request->url, "scan", tmpA, sizeof(tmpA))) {
 #ifdef WINDOWS
 
@@ -1559,26 +1591,10 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
 	}
-	poststr(request, "<form action=\"/cfg_wifi\">\
-<input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
-<input type=\"submit\" value=\"Scan Local Networks\">\
-</form>");
-	poststr_h4(request, "Use this to disconnect from your WiFi");
-	poststr(request, "<form action=\"/cfg_wifi_set\">\
-<input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
-<input type=\"submit\" value=\"Convert to Open Access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
-</form>");
-#if ENABLE_WPA_AP
-	poststr_h2(request, "Start a (WPA2 based) WiFi Accesspoint");
-	poststr(request, "<form action=\"/cfg_wifi_set\"  onsubmit=\"txt='';ts=this.SSIDAP.value;tp=this.PWAP.value;(ts.length<1)&&(txt='SSID is empty!');(tp.length<8)&&(txt+=' Password is less than 8 chars!'); if (txt != ''){alert(txt); return false}  else   return confirm('Are you sure to convert module to access point with \\nSSID='+ts+' \\nPW='+tp+' \\n?\\n\\nThis is non permanent - after a reboot actual state is restored!')\" >\
-<input type=\"hidden\" name=\"WPA-AP\" value=\"1\">\
-<label>APs SSID:<br><input name=\"SSIDAP\"><label>\
-<label>APs passphrase:<br><input name=\"PWAP\"><label>\
-<input type=\"submit\" value=\"Convert to access point with the above data\">\
-</form>");
-#endif
+	poststr(request, "<input type='hidden' name='scan' value='1' form='scanform'>"
+		"<input type='submit' value='Scan Local Networks'  form='scanform'>");
 	poststr_h2(request, "Use this to connect to your WiFi");
-	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
+	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "");
 	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	poststr(request, "Note: It is possible to retain used SSID using command setStartupSSIDChannel in early.bat");
@@ -1587,16 +1603,17 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.value='';e.type='text'}else e.type='password'\" > enable clear text password (clears existing)</span>");
+	poststr(request, "</fieldset>");
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
 	poststr(request, "<p>Enabling web authentication will protect this web interface and API using basic HTTP authentication. Username is always <b>admin</b>.</p>");
 	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_admin_password_enabled\" id=\"web_admin_password_enabled\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
-	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label></div>");
+	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label>");
 	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
 #endif
 	poststr(request, "<br><br>\
-<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please double-check SSID and password.')\">\
+<input type=\"submit\" value=\"Submit\" onclick=\"verify()\">\
 </form>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
