@@ -1043,9 +1043,11 @@ void Main_OnEverySecond()
 			case WiFimodeOpenAP:
 				HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
 				break;
-			case WiFimodeWPA_AP:
+#if ENABLE_WPA_AP
+				case WiFimodeWPA_AP:
 				HAL_SetupWiFiAccessPoint(AP_ssid,AP_pass);
 				break;
+#exit
 			}
 		}
 	}
