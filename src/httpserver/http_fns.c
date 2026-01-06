@@ -1680,6 +1680,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (http_getArg(request->url, "open", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiSSID("");
 		bChanged |= CFG_SetWiFiPass("");
+		bChanged |= CFG_SetWifiMode(1);
 		poststr(request, "WiFi mode set: open access point.");
 	}
 #if ENABLE_WPA_AP
@@ -1721,6 +1722,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			bChanged |= CFG_SetWiFiPass(tmpA);
 		}
 		poststr(request, "WiFi mode set: connect to WLAN.");
+		bChanged |= CFG_SetWifiMode(0);
 		if(bChanged) HAL_DisableEnhancedFastConnect();
 	}
 	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
