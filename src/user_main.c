@@ -1047,7 +1047,7 @@ void Main_OnEverySecond()
 				case WiFimodeWPA_AP:
 				HAL_SetupWiFiAccessPoint(AP_ssid,AP_pass);
 				break;
-#exit
+#endif
 			}
 		}
 	}
