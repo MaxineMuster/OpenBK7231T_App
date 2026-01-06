@@ -22,7 +22,7 @@ bool g_bStaticIP = false, mac_init = false;
 
 static struct ip_info if_ip;
 // is (Open-) Access point or a client?
-// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
@@ -77,7 +77,7 @@ void HAL_PrintNetworkInfo()
 	WiFI_GetMacAddress((char*)mac);
 	// left align not working, mculib problem? But then tr6260 uses mculib too, and no such problem there.
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_WifiMode == 0 ? "STA" : "AP");
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
 	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
@@ -184,7 +184,7 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+//	g_WifiMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	wifi_set_opmode(WIFI_MODE_STA);
 	wifi_remove_config_all(STATION_IF);
 	wifi_remove_config_all(SOFTAP_IF);
@@ -221,7 +221,7 @@ void HAL_DisconnectFromWifi()
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 // set in user_main - included as "extern"
-//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+//	g_WifiMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	wifi_set_opmode(WIFI_MODE_AP_STA);
 	int channel = 1, ret;
 	wifi_config_u config;

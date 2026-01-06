@@ -37,7 +37,7 @@ void alert_log(const char *format, ...) {
 // length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 // is (Open-) Access point or a client?
-// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static uint8_t psk_value[40]      = {0x0};
@@ -313,7 +313,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 {
     alert_log("HAL_ConnectToWiFi");
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+//	g_WifiMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	wifi_init_sta(oob_ssid, connect_key, ip);
 }
 
@@ -424,7 +424,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	alert_log("AP started OK!");
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+//	g_WifiMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 
 	return 0;
 }
@@ -458,7 +458,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 	alert_log("AP started OK!");
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+//	g_WifiMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 
 	return 0;
 }

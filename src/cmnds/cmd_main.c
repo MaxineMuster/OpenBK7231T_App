@@ -653,7 +653,7 @@ static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const ch
 		
 	HAL_AP_Wifi_Channel = (uint8_t)Tokenizer_GetArgIntegerDefault(2,1);
 	snprintf(g_HAL_AP_Wifi_SSID, sizeof(g_HAL_AP_Wifi_SSID), "%s", ssid);
-	g_AccessPointMode = 2;	// make sure, we don't try to connect as STA client!
+	g_WifiMode = 2;	// make sure, we don't try to connect as STA client!
 	HAL_DisconnectFromWifi();
 	HAL_SetupWiFiAccessPoint(ssid, pw);	
 /*

@@ -15,7 +15,7 @@ static void (*g_wifiStatusCallback)(int code);
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 // is (Open-) Access point or a client?
-// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
@@ -112,7 +112,7 @@ void HAL_PrintNetworkInfo()
 				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
 				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
 //				 ip, gw, netmask, macstr, dns );
-				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_AccessPointMode == 0? dns :"-" );
+				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_WifiMode == 0? dns :"-" );
 				 				 
 	bk_printf(buffer);
 	// do we need this in web Log?

@@ -82,7 +82,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
     wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, NULL, HAL_AP_Wifi_Channel);
 
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 1;
+//	g_WifiMode = 1;
 
 	return 0;
 }
@@ -106,7 +106,7 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	wifi_interface = wifi_mgmr_ap_enable();
 	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, key, HAL_AP_Wifi_Channel);
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 0;
+//	g_WifiMode = 0;
 
 	return 0;
 }
@@ -333,7 +333,7 @@ void WiFI_GetMacAddress(char *mac) {
 }
 const char *HAL_GetMACStr(char *macstr) {
 	uint8_t mac[6];
-	if(g_AccessPointMode != 0) {
+	if(g_WifiMode != 0) {
 		wifi_mgmr_ap_mac_get(mac);
 	} else {
 		wifi_mgmr_sta_mac_get(mac);

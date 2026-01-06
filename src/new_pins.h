@@ -1467,7 +1467,8 @@ typedef struct mainConfig_s {
 	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
 	// unused_fill at offs 0x0000045E 
-	short unused_fill; // correct alignment
+//	short unused_fill; // correct alignment
+	short WiFi_mode;	// STA, OpenAP or WPA-AP?
 	// dgr_sendFlags at offs 0x00000460 
 	int dgr_sendFlags;
 	// dgr_recvFlags at offs 0x00000464 
@@ -1518,7 +1519,8 @@ typedef struct mainConfig_s {
 	char ping_host[64];
 	// ofs 0x000005E0 (dec 1504)
 	//char initCommandLine[512];
-#if PLATFORM_W600 || PLATFORM_W800
+//#if PLATFORM_W600 || PLATFORM_W800
+#if PLATFORM_W600
 #define ALLOW_SSID2 0
 #define ALLOW_WEB_PASSWORD 0
 	char initCommandLine[512];
@@ -1544,9 +1546,15 @@ typedef struct mainConfig_s {
 #if PLATFORM_BEKEN
 	obkFastConnectData_t fcdata;
 	// offset 0x00000D0C (3340 decimal)
-	char unused[244];
+//	char unused[244];
+	char AP_SSID[33];
+	char AP_PASS[33];
+	char unused[178];
 #else
-	char unused[324];
+//	char unused[324];
+	char AP_SSID[33];
+	char AP_PASS[33];
+	char unused[258];
 #endif
 #endif
 } mainConfig_t;

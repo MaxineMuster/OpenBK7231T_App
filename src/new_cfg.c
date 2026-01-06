@@ -124,6 +124,7 @@ void CFG_SetDefaultConfig() {
 	strcpy(g_cfg.mqtt_userName, "homeassistant");
 	strcpy(g_cfg.mqtt_pass, "qqqqqqqqqq");
 	// already zeroed but just to remember, open AP by default
+	g_cfg.WiFi_mode = 1;	// default: OpenAP
 	g_cfg.wifi_ssid[0] = 0;
 	g_cfg.wifi_pass[0] = 0;
 	// i am not sure about this, because some platforms might have no way to store mac outside our cfg?
@@ -345,15 +346,32 @@ void CFG_SetMQTTPort(int p) {
 		g_cfg_pendingChanges++;
 	}
 }
+/*
 void CFG_SetOpenAccessPoint() {
 	// is there a change?
-	if(g_cfg.wifi_ssid[0] == 0 && g_cfg.wifi_pass[0] == 0) {
+//	if(g_cfg.wifi_ssid[0] == 0 && g_cfg.wifi_pass[0] == 0) {
+	if(g_cfg.WiFi_mode == 1) {
 		return;
 	}
-	g_cfg.wifi_ssid[0] = 0;
-	g_cfg.wifi_pass[0] = 0;
+//	g_cfg.wifi_ssid[0] = 0;
+//	g_cfg.wifi_pass[0] = 0;
+	g_cfg.WiFi_mode = 1;
 	// mark as dirty (value has changed)
 	g_cfg_pendingChanges++;
+}
+*/
+int CFG_SetWifiMode(short m) {
+	// is there a change?
+	if(g_cfg.WiFi_mode == m) {
+		return 0;
+	}
+	g_cfg.WiFi_mode = m;
+	// mark as dirty (value has changed)
+	g_cfg_pendingChanges++;
+	return 1;
+}
+short CFG_GetWifiMode() {
+	return g_cfg.WiFi_mode;
 }
 const char *CFG_GetWiFiSSID(){
 	return g_cfg.wifi_ssid;
@@ -364,6 +382,13 @@ const char *CFG_GetWiFiPass(){
 	memcpy(wifi_pass, g_cfg.wifi_pass, sizeof(g_cfg.wifi_pass));
 	wifi_pass[sizeof(g_cfg.wifi_pass)] = 0;
 	return wifi_pass;
+}
+const char *CFG_GetAP_SSID(){
+	return g_cfg.AP_SSID;
+}
+const char *CFG_GetAP_Pass(){
+	// we allready reserved 32+1 chars, so we can use up to 32 chars + 0 for a string
+	return g_cfg.AP_PASS;
 }
 const char *CFG_GetWiFiSSID2() {
 #if ALLOW_SSID2
@@ -423,6 +448,28 @@ int CFG_SetWiFiPass2(const char *s) {
 #endif
 	return 0;
 }
+int CFG_SetAP_SSID(const char *s) {
+#if ENABLE_WPA_AP
+	if (strcpy_safe_checkForChanges(g_cfg.AP_SSID, s, sizeof(g_cfg.AP_SSID))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		return 1;
+	}
+#endif
+	return 0;
+}
+int CFG_SetAP_Pass(const char *s) {
+#if ENABLE_WPA_AP
+	// this will return non-zero if there were any changes
+	if (strcpy_safe_checkForChanges(g_cfg.AP_PASS, s, sizeof(g_cfg.AP_PASS))) {
+		// mark as dirty (value has changed)
+		g_cfg_pendingChanges++;
+		return 1;
+	}
+#endif
+	return 0;
+}
+
 const char *CFG_GetMQTTHost() {
 	return g_cfg.mqtt_host;
 }
