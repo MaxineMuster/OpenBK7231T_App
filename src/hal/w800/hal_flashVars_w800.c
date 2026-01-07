@@ -9,13 +9,10 @@ static int FLASH_VARS_STRUCTURE_SIZE = sizeof(FLASH_VARS_STRUCTURE);
 //W800 - 0x1F0303 is based on sdk\OpenW600\demo\wm_flash_demo.c
 //W600 - 0xF0000 is based on sdk\OpenW600\demo\wm_flash_demo.c
 //2528 was picked based on current sizeof(mainConfig_t) which is 2016 with 512 buffer bytes.
-//20260106 - try for V4 of config - (3584 instead of 2016) so 3584+512 = 4096
+//20260106 - try for V4/V5 of config - (3584 + 512 instead of 2016 + 512) so use 3584+512 = 4096
 
 #if defined(PLATFORM_W600) 
-//#define FLASH_VARS_STRUCTURE_ADDR (0xF0000 + 2528)
 #define FLASH_VARS_STRUCTURE_ADDR (0xF0000 + 4096)
-#elif defined(PLATFORM_W800)
-#define FLASH_VARS_STRUCTURE_ADDR (0x1F0303 + 4096) 
 #else
 #include "easyflash.h"
 #endif
@@ -28,8 +25,8 @@ static int FLASH_VARS_STRUCTURE_SIZE = sizeof(FLASH_VARS_STRUCTURE);
 
 void initFlashIfNeeded();
 
-//#if PLATFORM_W600
-#if PLATFORM_W600 || PLATFORM_W800
+#if PLATFORM_W600
+
 /// @brief This prints the current boot count as a way to visually verify the flash write operation.
 void print_flash_boot_count() {
 	FLASH_VARS_STRUCTURE data;
@@ -133,8 +130,7 @@ int HAL_FlashVars_GetChannelValue(int ch) {
 void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte r, byte g, byte b, byte bEnableAll) {
 #ifndef DISABLE_FLASH_VARS_VARS
 	int iChangesCount = 0;
-//#if PLATFORM_W600
-#if PLATFORM_W600 || PLATFORM_W800
+#if PLATFORM_W600
 	tls_fls_read(FLASH_VARS_STRUCTURE_ADDR, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
 #else
 	ef_get_env_blob(KV_KEY_FLASH_VARS, &flash_vars, FLASH_VARS_STRUCTURE_SIZE, NULL);
@@ -150,8 +146,7 @@ void HAL_FlashVars_SaveLED(byte mode, short brightness, short temperature, byte 
 
 	if (iChangesCount > 0) {
 		ADDLOG_INFO(LOG_FEATURE_CFG, "####### Flash Save LED #######");
-//#if PLATFORM_W600
-#if PLATFORM_W600 || PLATFORM_W800
+#if PLATFORM_W600
 		tls_fls_write(FLASH_VARS_STRUCTURE_ADDR, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
 #else
 		ef_set_env_blob(KV_KEY_FLASH_VARS, &flash_vars, FLASH_VARS_STRUCTURE_SIZE);
