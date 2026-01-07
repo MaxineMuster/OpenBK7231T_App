@@ -1678,8 +1678,8 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	http_setup(request, httpMimeTypeHTML);
 	http_html_start(request, "Saving Wifi");
 	if (http_getArg(request->url, "open", tmpA, sizeof(tmpA))) {
-		bChanged |= CFG_SetWiFiSSID("");
-		bChanged |= CFG_SetWiFiPass("");
+//		bChanged |= CFG_SetWiFiSSID("");
+//		bChanged |= CFG_SetWiFiPass("");
 		bChanged |= CFG_SetWifiMode(1);
 		poststr(request, "WiFi mode set: open access point.");
 	}

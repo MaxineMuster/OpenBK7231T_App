@@ -1574,14 +1574,18 @@ void Main_Init_After_Delay()
 		g_WifiMode = WiFimodeOpenAP;
 	}
 	if (g_WifiMode == WiFimodeSTA){
-		if (Main_HasFastConnect()) {
+		if (*wifi_ssid == 0) {		//failsafe - in case no SSID given force OpenAP, even if STA is set
+			g_WifiMode = WiFimodeOpenAP;
+		}else{ 
+			if (Main_HasFastConnect()) {
 #if ENABLE_MQTT
-			mqtt_loopsWithDisconnected = 9999;
+				mqtt_loopsWithDisconnected = 9999;
 #endif
-			Main_ConnectToWiFiNow();
+				Main_ConnectToWiFiNow();
+			}
+			ADDLOGF_INFO("Using SSID [%s]\r\n", wifi_ssid);
+			ADDLOGF_INFO("Using Pass [%s]\r\n", wifi_pass);
 		}
-		ADDLOGF_INFO("Using SSID [%s]\r\n", wifi_ssid);
-		ADDLOGF_INFO("Using Pass [%s]\r\n", wifi_pass);
 	}
 
 	// NOT WORKING, I done it other way, see ethernetif.c
