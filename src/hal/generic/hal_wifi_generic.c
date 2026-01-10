@@ -3,16 +3,6 @@
 #include "../../logging/logging.h"
 
 uint8_t HAL_AP_Wifi_Channel = 1;	// use channel 1 as default
-#if ENABLE_WPA_AP
-char g_HAL_AP_Wifi_SSID[64] = "OBK_WPA_AP";
-/*
-const char* HAL_GetAPSSID(){
-	return g_HAL_AP_Wifi_SSID;
-}
-*/
-#endif
-
-
 const char* __attribute__((weak)) HAL_GetMyIPString()
 {
 	return "error";

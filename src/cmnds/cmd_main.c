@@ -637,13 +637,17 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 }
 static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	g_openAP = 5;
+//	g_openAP = 5;
+	g_WifIiStartConnect = 5;
+	g_WifiMode = 1;
+	
 
 	return CMD_RES_OK;
 }
 #if ENABLE_WPA_AP
 static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
+	extern  int g_WifIiStartConnect;
 	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
 	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
@@ -652,10 +656,10 @@ static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const ch
 	char *pw = Tokenizer_GetArg(1);
 		
 	HAL_AP_Wifi_Channel = (uint8_t)Tokenizer_GetArgIntegerDefault(2,1);
-	snprintf(g_HAL_AP_Wifi_SSID, sizeof(g_HAL_AP_Wifi_SSID), "%s", ssid);
+	CFG_SetAP_SSID(ssid);
+	CFG_SetAP_Pass(pw);
 	g_WifiMode = 2;	// make sure, we don't try to connect as STA client!
-	HAL_DisconnectFromWifi();
-	HAL_SetupWiFiAccessPoint(ssid, pw);	
+	g_WifIiStartConnect = 2;
 /*
 
 	uint8_t argnum=Tokenizer_GetArgsCount();

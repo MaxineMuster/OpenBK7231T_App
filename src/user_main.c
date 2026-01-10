@@ -67,9 +67,9 @@ void bg_register_irda_check_func(FUNCPTR func);
 
 int g_secondsElapsed = 0;
 // open access point after this number of seconds
-int g_openAP = 0;
+//int g_openAP = 0;
 // connect to wifi or start AP after this number of seconds
-static int g_WifIiStartConnect = 0;
+short g_WifIiStartConnect = 0;
 // reset after this number of seconds
 static int g_reset = 0;
 // is connected to WiFi?
@@ -80,6 +80,11 @@ static int g_bHasWiFiConnected = 0;
 // in order to change when moving e.g. from sta to access-point.
 // otherwise user_main.c will try to connect as client if this is not changed!
 short g_WifiMode = 0;	// 0 = WiFimodeSTA	1 = WiFimodeOpenAP	2 = WiFimodeWPA_AP 
+/*
+#define	WiFimodeSTA	0
+#define	WiFimodeOpenAP	1
+#define WiFimodeWPA_AP	2
+*/
 typedef enum{
 	WiFimodeSTA,
 	WiFimodeOpenAP,
@@ -502,30 +507,20 @@ void Main_OnWiFiStatusChange(int code)
 			HAL_DisconnectFromWifi();
 		}
 #endif
-		if (g_WifiMode != WiFimodeSTA){	// if changing from WiFimodeSTA to AP, we will disconnect, but don't want it to reconnect !
-			if(g_secondsElapsed < 30)
-			{
-				g_WifIiStartConnect = 5;
-			}
-			else
-			{
-				g_WifIiStartConnect = 15;
-			}
-		} else g_WifIiStartConnect = 0;		// no WiFimodeSTA re-connect in AP mode!!!
 		g_bHasWiFiConnected = 0;
 		g_timeSinceLastPingReply = -1;
-		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i (g_WifiMode = %i)\r\n", __func__, code, g_WifiMode);
+		ADDLOGF_INFO("%s - WIFI_STA_DISCONNECTED - %i\r\n", __func__, code);
+		// if not in STA (changing from WiFimodeSTA to AP) stop here and don't try to reconnect !
+		if (g_WifiMode != WiFimodeSTA) break;
+		
+		// only in STA retry to connect !
+		g_WifIiStartConnect = g_secondsElapsed < 30 ? 5 : 15;
 		break;
 	case WIFI_STA_AUTH_FAILED:
 		// try to connect again in few seconds
 		// for me first auth will often fail, so retry more aggressively during startup
 		// the maximum of 6 tries during first 30 seconds should be acceptable
-		if (g_secondsElapsed < 30) {
-			g_WifIiStartConnect = 5;
-		}
-		else {
-			g_WifIiStartConnect = 60;
-		}
+		g_WifIiStartConnect = g_secondsElapsed < 30 ? 5 : 15;
 		g_bHasWiFiConnected = 0;
 		ADDLOGF_INFO("%s - WIFI_STA_AUTH_FAILED - %i\r\n", __func__, code);
 		break;
@@ -569,7 +564,6 @@ void Main_OnWiFiStatusChange(int code)
 		/* for softap mode */
 	case WIFI_AP_CONNECTED:
 		g_bHasWiFiConnected = 1;
-		g_WifIiStartConnect = 0;	// to be sure: we don't want STA to reconnect
 		ADDLOGF_INFO("%s - WIFI_AP_CONNECTED - %i\r\n", __func__, code);
 		break;
 	case WIFI_AP_FAILED:
@@ -669,8 +663,8 @@ void Main_ScheduleHomeAssistantDiscovery(int seconds) {
 void Main_ConnectToWiFiNow() {
 	const char* wifi_ssid, * wifi_pass;
 
-	g_WifiMode = WiFimodeSTA;
-	g_WifIiStartConnect = 0;	// ToDo: Check if needed - in case of "fastconnect" we set it to 5 before the call of Main_ConnectToWiFiNow()
+//	g_WifiMode = WiFimodeSTA;
+//	g_WifIiStartConnect = 0;	// ToDo: Check if needed - in case of "fastconnect" we set it to 5 before the call of Main_ConnectToWiFiNow()
 	CheckForSSID12_Switch();
 	wifi_ssid = CFG_GetWiFiSSIDX();
 	wifi_pass = CFG_GetWiFiPassX();
@@ -1560,15 +1554,6 @@ void Main_Init_After_Delay()
 
 	// regardless of mode, as "default" start in 5 seconds
 	g_WifIiStartConnect = 5;
-//	if ((*wifi_ssid == 0))
-/*	if (g_WifiMode == WiFimodeOpenAP)
-	{
-		// start AP mode in 5 seconds
-//		g_openAP = 5;
-	}
-	else {
-*/
-
 	if (bSafeMode)
 	{
 		g_WifiMode = WiFimodeOpenAP;

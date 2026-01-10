@@ -9,10 +9,6 @@
 #endif
 #include <stdint.h>
 extern uint8_t HAL_AP_Wifi_Channel; 	// defined and inintialized in hal_wifi_generic.c
-#if ENABLE_WPA_AP
-extern char g_HAL_AP_Wifi_SSID[64]; 	// defined and inintialized in hal_wifi_generic.c
-//const char* HAL_GetAPSSID();
-#endif
 
 typedef enum HALWifiStatus {
 	WIFI_UNDEFINED,

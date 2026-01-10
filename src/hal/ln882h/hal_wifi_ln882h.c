@@ -431,6 +431,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
+#if ENABLE_WPA_AP
 	alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
 	if (ssid[0] == 0) {
 		alert_log("Error: empty SSID!!\r\n");
@@ -459,7 +460,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	alert_log("AP started OK!");
 // set in user_main - included as "extern"
 //	g_WifiMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-
+#endif
 	return 0;
 }
 

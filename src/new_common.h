@@ -1079,7 +1079,7 @@ extern int g_bWantPinDeepSleep;
 extern int g_pinDeepSleepWakeUp;
 extern int g_timeSinceLastPingReply;
 extern int g_startPingWatchDogAfter;
-extern int g_openAP;
+//extern int g_openAP;
 extern int g_bootFailures;
 extern int g_secondsElapsed;
 extern int g_rebootReason;
@@ -1093,6 +1093,7 @@ extern uint8_t g_wifi_channel;
 // in order to change when moving e.g. from sta to access-point.
 // otherwise user_main.c will try to connect as client if this is not changed!
 extern short g_WifiMode;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+extern short g_WifIiStartConnect;
 
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);

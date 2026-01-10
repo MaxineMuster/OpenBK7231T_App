@@ -398,7 +398,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-
+#if ENABLE_WPA_AP
 	if ( key && strlen(key) < 8){
 		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
 		if (g_wifiStatusCallback != 0) {
@@ -410,10 +410,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 	// int demo_create_softap(u8 *ssid, u8 *key, int chan, int encrypt, int format)  		format: key's format: 0-HEX, 1-ASCII
 	demo_create_softap(ssid, key, HAL_AP_Wifi_Channel, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
-
-	// dhcp_server_start(0);
-	// dhcp_server_stop(void);
-
+#endif
 	return 0;
 }
 
