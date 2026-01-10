@@ -647,7 +647,6 @@ static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const ch
 #if ENABLE_WPA_AP
 static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
-	extern  int g_WifIiStartConnect;
 	if(Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2))
 	{
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;

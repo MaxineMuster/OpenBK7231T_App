@@ -1502,8 +1502,8 @@ int http_fn_cfg_wifi(http_request_t* request) {
 		"</select>");
 #if ENABLE_WPA_AP
 	poststr(request, "<fieldset id='wifi2'>");
-	hprintf255(request, "AP SSID:<br><input type='text' id='SSIDAP' name='SSIDAP' value='%s'>",CFG_GetAP_SSID());
-	hprintf255(request, "AP passphrase:<br><input type='text' id='PWAP' name='PWAP' value='%s'>",CFG_GetAP_Pass());
+	hprintf255(request, "AP SSID:<br><input id='SSIDAP' name='SSIDAP' value='%s'>",CFG_GetAP_SSID());
+	hprintf255(request, "AP passphrase:<br><input id='PWAP' name='PWAP' value='%s'>",CFG_GetAP_Pass());
 //	add_label_text_field(request, "AP SSID", "SSIDAP", CFG_GetAP_SSID(), "");
 //	add_label_text_field(request, "AP passphrase", "PWAP", CFG_GetAP_Pass(), "");
 	poststr(request, "</fieldset>");
