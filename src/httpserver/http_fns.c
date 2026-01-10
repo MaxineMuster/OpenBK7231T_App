@@ -1696,7 +1696,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 #if ENABLE_WPA_AP
 	else if (newwm==2) {
 		int testforboth=0, s;
-		if ( s = http_getArg(request->url, "SSIDAP", tmpA, sizeof(tmpA))) {
+		if ( (s = http_getArg(request->url, "SSIDAP", tmpA, sizeof(tmpA))) ) {
 			if (s > 3){
 				bChanged |= CFG_SetAP_SSID(tmpA);
 				addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "WPA-AP: ssid=%s \r\n",tmpA);
@@ -1704,7 +1704,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			}
 			else addLogAdv(LOG_ERROR, LOG_FEATURE_HTTP, "WPA-AP: ssid too short\r\n",tmpA);
 		}
-		if (s = http_getArg(request->url, "PWAP", tmpA, sizeof(tmpA))) {
+		if ( (s = http_getArg(request->url, "PWAP", tmpA, sizeof(tmpA))) ) {
 			if (s >7){
 				bChanged |= CFG_SetAP_Pass(tmpA);
 				addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "WPA-AP: PW=%s \r\n",tmpA);
