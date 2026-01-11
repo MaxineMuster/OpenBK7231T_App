@@ -1481,7 +1481,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			");"
 			"if(txt)return alert(txt),!1;"
 			"TCM=' to convert module to an ';"
-			"return confirm('Are you sure'+['? Please double-check SSID and password.',TCM+'Open Accesspoint?',TCM+'Accesspoint?\nSSID='+ts+' \nPW='+tp][v])};"
+			"return confirm('Are you sure'+['? Please double-check SSID and password.',TCM+'Open Accesspoint?',TCM+'Accesspoint?\\nSSID='+ts+' \\nPW='+tp][v])};"
 			"shows=s=>[0,2].forEach(i=>{e=byID('wifi'+i);e.style.display=i==s?'block':'none';e.disabled=i!=s;});"
 			"setup=e=>{byID('wfm').innerHTML=['WiFi Client','Open AP','WPA AP'].map((v,i)=>"
 			"`<option id='w${i}'value='${i}' ${i==e&&'selected'}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');shows(e)},");
