@@ -456,6 +456,7 @@ void HAL_DisconnectFromWifi()
 }
 
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 // set in user_main - included as "extern"
@@ -474,7 +475,8 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		return 0;
 	}
 
-	if(wifi_start_ap((char*)ssid, (! key || key[0] == 0) ? RTW_SECURITY_OPEN : RTW_SECURITY_WPA2_MIXED_PSK, (! key || key[0] == 0) ? NULL : key, strlen(ssid), key ? strlen(key) : 0, HAL_AP_Wifi_Channel) < 0)
+	int keylen = (! key || key[0] == 0) ? 0 : strlen(key);
+	if(wifi_start_ap((char*)ssid, (keylen==0) ? RTW_SECURITY_OPEN : RTW_SECURITY_WPA2_MIXED_PSK, (keylen == 0) ? NULL : (char*)key, strlen(ssid), keylen, g_wifi_channel) < 0)
 	{
 		ADDLOG_ERROR(LOG_FEATURE_GENERAL, "Failed to start AP");
 		return 0;
@@ -489,12 +491,12 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	dhcps_init(pnetif);
 	return 0;
 }
-
+#endif
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 
-/*
+#if !ENABLE_WPA_AP
 	g_WifiMode = 1;		// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	rtw_mode_t mode = RTW_MODE_STA_AP;
 	struct ip_addr ipaddr;
@@ -524,8 +526,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	netif_set_addr(pnetif, ip_2_ip4(&ipaddr), ip_2_ip4(&netmask), ip_2_ip4(&gw));
 	dhcps_init(pnetif);
 	return 0;
-*/
+#else
 	return HAL_SetupWiFiAccessPoint(ssid, NULL);
+#endif
 }
 
 #endif // PLATFORM_REALTEK

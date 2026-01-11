@@ -135,18 +135,17 @@ void HAL_DisconnectFromWifi()
 	wifi.disconnect();
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char *key)
 {
 	char dhcpend[16]={0};	//4 * up to 3 digits (=12) + 3 "." (=15) + "\0" --> 16
-#ifndef WPA_AP_STA_CLIENTS
-#define WPA_AP_STA_CLIENTS 1
-#endif
 	sprintf(dhcpend,"192.168.4.%i",2 + WPA_AP_STA_CLIENTS);
 	
-	wifi.set_network_ap("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.2", "192.168.4.254");
+	wifi.set_network_ap("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.2", dhcpend);
 	wifi.start_ap(ssid, key, HAL_AP_Wifi_Channel);
 	return 0;
 }
+#endif
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 	wifi.set_network_ap("192.168.4.1", "255.255.255.0", "192.168.4.1", "192.168.4.2", "192.168.4.254");

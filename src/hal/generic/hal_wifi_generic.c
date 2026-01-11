@@ -2,7 +2,11 @@
 #include "../../new_common.h"
 #include "../../logging/logging.h"
 
-uint8_t HAL_AP_Wifi_Channel = 1;	// use channel 1 as default
+//uint8_t HAL_AP_Wifi_Channel = 1;	// use channel 1 as default
+// let's use (existing) g_wifi_channel - we can only be AP or STA, so we can share it ...
+#ifndef AP_STA_CLIENTS
+#define AP_STA_CLIENTS 3
+#endif
 const char* __attribute__((weak)) HAL_GetMyIPString()
 {
 	return "error";

@@ -374,6 +374,7 @@ void HAL_DisconnectFromWifi()
 	}
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 	int32 ret;
@@ -478,17 +479,18 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		dns_start_eloop("w0");
 	}
 	if (! key || key[0] == 0){
-		wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, HAL_AP_Wifi_Channel);
+		wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, g_wifi_channel);
 	} else {
-		wifi_create_ap(ssid, key, WPA_KEY_MGMT_PSK, HAL_AP_Wifi_Channel);
+		wifi_create_ap(ssid, key, WPA_KEY_MGMT_PSK, g_wifi_channel);
 	}
 	ieee80211_iface_start(WIFI_MODE_AP);
 }
-
+#endif
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-/*	int32 ret;
+#if !ENABLE_WPA_AP
+	int32 ret;
 	os_sprintf(sys_cfgs.ssid, "%s", ssid);
 	void* ops;
 	struct lmac_init_param lparam;
@@ -590,11 +592,11 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 		dns_start_eloop("w0");
 	}
 
-	wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, HAL_AP_Wifi_Channel);
+	wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, g_wifi_channel);
 	ieee80211_iface_start(WIFI_MODE_AP);
-*/
+#else
 	return HAL_SetupWiFiAccessPoint(ssid, NULL);
-
+#endif
 }
 
 #endif // PLATFORM_TXW81X

@@ -461,22 +461,36 @@ void HAL_DisconnectFromWifi()
     bk_wlan_stop(STATION);
 }
 
-//int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
-int HAL_SetupWiFiAP(const char* ssid, const char* key)
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 #define APP_DRONE_DEF_NET_IP        "192.168.4.1"
 #define APP_DRONE_DEF_NET_MASK      "255.255.255.0"
 #define APP_DRONE_DEF_NET_GW        "192.168.4.1"
 #define APP_DRONE_DEF_CHANNEL       1
 
+	bool s = (ssid[0] != 0);
+	bool k = (!key || os_strlen(key) >= 8);
+	if (!(s && k)) {
+		if (!s) {
+		    ADDLOGF_INFO("ERROR: empty SSID!!\r\n");
+		}
+		if (!k) {
+		    ADDLOGF_INFO("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
+		}
+
+		if (g_wifiStatusCallback != 0) {
+		    g_wifiStatusCallback(WIFI_AP_FAILED);
+		}
+		return -1;
+	}
+	
 	if (sta_ip_is_start()) HAL_DisconnectFromWifi();
 	general_param_t general;
-//	ap_param_t ap_info;
 	network_InitTypeDef_st wNetConfig;
 	unsigned char* mac;
 
 	memset(&general, 0, sizeof(general_param_t));
-//	memset(&ap_info, 0, sizeof(ap_param_t));
 	memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
 
 	general.role = 1,
@@ -488,29 +502,11 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 
 
 	ADDLOGF_INFO("no flash configuration, use default\r\n");
-//	mac = (unsigned char*)&ap_info.bssid.array;
 	// this is MAC for Access Point, it's different than Client one
 	// see wifi_get_mac_address source
 	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
 
-/*
-	ap_info.chann = APP_DRONE_DEF_CHANNEL;
-	ap_info.cipher_suite = (! key || key[0] == 0) ? 0 : SECURITY_TYPE_WPA2_AES;
-	//memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, strlen(APP_DRONE_DEF_SSID));
-	memcpy(ap_info.ssid.array, ssid, strlen(ssid));
-
-	ap_info.key_len = (! key || key[0] == 0) ? 0 : os_strlen(key);
-	memset(&ap_info.key, 0, 65);
-
-
-	bk_wlan_ap_set_default_channel(ap_info.chann);
-
-	//int len = strlen((char*)ap_info.ssid.array);
-
-	os_strncpy((char*)wNetConfig.wifi_ssid, (char*)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
-	os_strncpy((char*)wNetConfig.wifi_key, (char*)ap_info.key, sizeof(wNetConfig.wifi_key));
-*/
-	bk_wlan_ap_set_default_channel(HAL_AP_Wifi_Channel);
+	bk_wlan_ap_set_default_channel(g_wifi_channel);
 	os_strncpy((char*)wNetConfig.wifi_ssid, ssid, sizeof(wNetConfig.wifi_ssid));
 	os_strncpy((char*)wNetConfig.wifi_key, key, sizeof(wNetConfig.wifi_key));
 
@@ -547,36 +543,99 @@ int HAL_SetupWiFiAP(const char* ssid, const char* key)
 
 	//}
 	bk_wlan_start(&wNetConfig);
-// set in user_main - included as "extern"
-//	g_WifiMode = (! key || key[0] == 0) ? 1 : 0;
 
 	//dhcp_server_start(0);
 	//dhcp_server_stop(void);
 
 	return 0;
 }
-int HAL_SetupWiFiOpenAccessPoint(const char* ssid){
-// set in user_main - included as "extern"
-//	g_WifiMode = 1;
-	return HAL_SetupWiFiAP(ssid, NULL);
-}
+#endif
 
-int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
-{
-	if ( ssid[0] == 0 ){
-		ADDLOGF_INFO("ERROR: empty SSID!!\r\n");
-		if (g_wifiStatusCallback != 0) {
-			g_wifiStatusCallback(WIFI_AP_FAILED);
-		}
-		return -1;
-	} 
-	if ( key && os_strlen(key) < 8){
-		ADDLOGF_INFO("ERROR! key(%s) needs to be at least 8 characters!\r\n",key);
-		if (g_wifiStatusCallback != 0) {
-			g_wifiStatusCallback(WIFI_AP_FAILED);
-		}
-		return -1;
-	} 
-	return HAL_SetupWiFiAP(ssid,key);
+int HAL_SetupWiFiOpenAccessPoint(const char* ssid){
+#if !ENABLE_WPA_AP
+#define APP_DRONE_DEF_NET_IP        "192.168.4.1"
+#define APP_DRONE_DEF_NET_MASK      "255.255.255.0"
+#define APP_DRONE_DEF_NET_GW        "192.168.4.1"
+#define APP_DRONE_DEF_CHANNEL       1
+
+	general_param_t general;
+	ap_param_t ap_info;
+	network_InitTypeDef_st wNetConfig;
+	unsigned char* mac;
+
+	memset(&general, 0, sizeof(general_param_t));
+	memset(&ap_info, 0, sizeof(ap_param_t));
+	memset(&wNetConfig, 0x0, sizeof(network_InitTypeDef_st));
+
+	general.role = 1,
+	general.dhcp_enable = 1,
+
+	strcpy((char*)wNetConfig.local_ip_addr, APP_DRONE_DEF_NET_IP);
+	strcpy((char*)wNetConfig.net_mask, APP_DRONE_DEF_NET_MASK);
+	strcpy((char*)wNetConfig.dns_server_ip_addr, APP_DRONE_DEF_NET_GW);
+
+
+	ADDLOGF_INFO("no flash configuration, use default\r\n");
+	mac = (unsigned char*)&ap_info.bssid.array;
+	// this is MAC for Access Point, it's different than Client one
+	// see wifi_get_mac_address source
+	wifi_get_mac_address((char*)mac, CONFIG_ROLE_AP);
+	ap_info.chann = APP_DRONE_DEF_CHANNEL;
+	ap_info.cipher_suite = 0;
+	//memcpy(ap_info.ssid.array, APP_DRONE_DEF_SSID, strlen(APP_DRONE_DEF_SSID));
+	memcpy(ap_info.ssid.array, ssid, strlen(ssid));
+
+	ap_info.key_len = 0;
+	memset(&ap_info.key, 0, 65);
+
+
+	bk_wlan_ap_set_default_channel(ap_info.chann);
+
+	//int len = strlen((char*)ap_info.ssid.array);
+
+	os_strncpy((char*)wNetConfig.wifi_ssid, (char*)ap_info.ssid.array, sizeof(wNetConfig.wifi_ssid));
+	os_strncpy((char*)wNetConfig.wifi_key, (char*)ap_info.key, sizeof(wNetConfig.wifi_key));
+
+	wNetConfig.wifi_mode = SOFT_AP;
+	wNetConfig.dhcp_mode = DHCP_SERVER;
+	os_strncpy((char*)wNetConfig.gateway_ip_addr, (char*)APP_DRONE_DEF_NET_GW, sizeof(wNetConfig.gateway_ip_addr));
+	os_strncpy((char*)wNetConfig.dns_server_ip_addr, (char*)APP_DRONE_DEF_NET_GW, sizeof(wNetConfig.dns_server_ip_addr));
+	wNetConfig.wifi_retry_interval = 100;
+
+	if (1)
+	{
+		ADDLOGF_INFO("set ip info: %s,%s,%s\r\n",
+			wNetConfig.local_ip_addr,
+			wNetConfig.net_mask,
+			wNetConfig.dns_server_ip_addr);
+	}
+
+	if (1)
+	{
+		ADDLOGF_INFO("ssid:%s  key:%s mode:%d\r\n", wNetConfig.wifi_ssid, wNetConfig.wifi_key, wNetConfig.wifi_mode);
+	}
+	//{
+	//	IPStatusTypedef ipStatus;
+
+	//	memset(&ipStatus, 0x0, sizeof(IPStatusTypedef));
+	//	bk_wlan_get_ip_status(&ipStatus, STATION);
+	//	ipStatus.dhcp = 1;
+	//  strcpy((char *)ipStatus.ip, APP_DRONE_DEF_NET_IP);
+	//  strcpy((char *)ipStatus.mask, APP_DRONE_DEF_NET_MASK);
+	//  strcpy((char *)ipStatus.gate, APP_DRONE_DEF_NET_GW);
+	//  strcpy((char *)ipStatus.dns, APP_DRONE_DEF_NET_IP);
+	//	bk_wlan_set_ip_status(&ipStatus, STATION);
+
+	//}
+	bk_wlan_start(&wNetConfig);
+//	g_bOpenAccessPointMode = 1;
+
+	//dhcp_server_start(0);
+	//dhcp_server_stop(void);
+
+	return 0;
+#else
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
+#endif
 }
 

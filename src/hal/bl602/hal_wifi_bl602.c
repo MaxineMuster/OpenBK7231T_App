@@ -31,7 +31,10 @@ extern uint16_t phy_channel_to_freq(uint8_t band, int channel);
 
 void HAL_ConnectToWiFi(const char *ssid, const char *psk, obkStaticIP_t *ip)
 {
-    wifi_interface_t wifi_interface;
+    wifi_interface_t wifi_interface={0};
+    if ((wifi_interface=wifi_mgmr_ap_netif_get())) {
+	wifi_mgmr_ap_stop(wifi_interface);
+    }
     if(ip->localIPAddr[0] == 0)
     {
         wifi_mgmr_sta_ip_unset();
@@ -71,26 +74,29 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
+#if !ENABLE_WPA_AP
     uint8_t hidden_ssid = 0;
     //int channel;
     wifi_interface_t wifi_interface;
-	//struct netif *net;
+    //struct netif *net;
 
     wifi_interface = wifi_mgmr_ap_enable();
     /*no password when only one param*/
-    
-    wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, NULL, HAL_AP_Wifi_Channel);
+    wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, NULL, 1);
 
-// set in user_main - included as "extern"
-//	g_WifiMode = 1;
+    g_bAccessPointMode = 1;
 
-	return 0;
+    return 0;
+#else
+    return HAL_SetupWiFiAccessPoint(ssid,NULL);
+#endif
 }
+
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 
 	uint8_t hidden_ssid = 0;
-	//int channel;
-
+	wifi_interface_t wifi_interface={0};
 	if ( key && strlen(key) < 8){
 		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
 		if (g_wifiStatusCallback != 0) {
@@ -98,18 +104,18 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 		}
 		return -1;
 	}
-	wifi_mgmr_sta_disconnect();
-	wifi_interface_t wifi_interface={0};
-	wifi_mgmr_sta_autoconnect_disable();
-	wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
-	//struct netif *net;
+	if ((wifi_interface=wifi_mgmr_sta_netif_get())){	// are we STA? disconnect! 
+		wifi_mgmr_sta_disconnect();
+		wifi_mgmr_sta_autoconnect_disable();
+		wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
+	}
 	wifi_interface = wifi_mgmr_ap_enable();
-	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, key, HAL_AP_Wifi_Channel);
-// set in user_main - included as "extern"
-//	g_WifiMode = 0;
-
+	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, (char*)key, g_wifi_channel);
+	g_bAccessPointMode = 1;
 	return 0;
 }
+#endif
+
 static void event_cb_wifi_event(input_event_t *event, void *private_data)
 {
 

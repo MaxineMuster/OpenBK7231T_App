@@ -247,7 +247,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		memcpy(connect_param.password, key, strlen(key));
 		connect_param.password_len = strlen(key);
 	}
-	connect_param.channel = HAL_AP_Wifi_Channel; 
+	connect_param.channel = g_wifi_channel; 
 
 	if(wifi_start_ap(&connect_param) < 0)
 	{

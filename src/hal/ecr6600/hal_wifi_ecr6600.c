@@ -183,8 +183,6 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-// set in user_main - included as "extern"
-//	g_WifiMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	wifi_set_opmode(WIFI_MODE_STA);
 	wifi_remove_config_all(STATION_IF);
 	wifi_remove_config_all(SOFTAP_IF);
@@ -218,17 +216,17 @@ void HAL_DisconnectFromWifi()
 	wifi_disconnect();
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-// set in user_main - included as "extern"
-//	g_WifiMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	wifi_set_opmode(WIFI_MODE_AP_STA);
-	int channel = 1, ret;
+	int ret;
 	wifi_config_u config;
 
 	memset(&config, 0, sizeof(config));
 	strlcpy((char*)config.ap.ssid, ssid, sizeof(config.ap.ssid));
-	config.ap.channel = channel;
+	config.ap.channel = g_wifi_channel;
+	config.ap.max_connect = AP_STA_CLIENTS;
 	config.ap.authmode = (! key || key[0] == 0) ? AUTH_OPEN : AUTH_WPA2_PSK;
 	if ( key && key[0] != 0) {
 		strlcpy((char*)config.ap.password, key, sizeof(config.ap.password));
@@ -243,7 +241,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	ret = wifi_start_softap(&config);
 	if(SYS_OK != ret)
 	{
-		system_printf("HAL_SetupWiFiOpenAccessPoint failed, err: %d\n", ret);
+		system_printf("HAL_SetupWiFiAccessPoint failed, err: %d\n", ret);
 		if(g_wifiStatusCallback != NULL)
 		{
 			g_wifiStatusCallback(WIFI_AP_FAILED);
@@ -264,17 +262,20 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	wifi_softap_set_dhcps_lease(&dhcp_cfg_info);
 	return 0;
 }
+#endif
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-/*
+#if !ENABLE_WPA_AP
 	wifi_set_opmode(WIFI_MODE_AP_STA);
-	int channel = 1, ret;
+//	int channel = 1, ret;
+	int ret;
 	wifi_config_u config;
 
 	memset(&config, 0, sizeof(config));
 	strlcpy((char*)config.ap.ssid, ssid, sizeof(config.ap.ssid));
-	config.ap.channel = channel;
+//	config.ap.channel = channel;
+	config.ap.channel = g_wifi_channel;
 	config.ap.authmode = AUTH_OPEN;
 
 	while(!wifi_is_ready())
@@ -306,9 +307,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 	wifi_softap_set_dhcps_lease(&dhcp_cfg_info);
 	return 0;
-*/
+#else
 	return HAL_SetupWiFiAccessPoint(ssid, NULL);
-	
+#endif
 }
 
 #endif // PLATFORM_ECR6600

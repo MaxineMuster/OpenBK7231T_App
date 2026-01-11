@@ -69,27 +69,28 @@ void HAL_DisconnectFromWifi()
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 	char ap_psk[8] = { 0 };
-// set in user_main - included as "extern"
-//	g_WifiMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+#if !ENABLE_WPA_AP
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)ap_psk);
 	wlan_ap_enable();
 
 	return 0;
+#else
+	return HAL_SetupWiFiAccessPoint(ssid, ap_psk);
+#endif
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	
-	if ( !key || strlen(key) < 8){
+	if ( key && strlen(key) < 8){
 		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
 		if (g_wifiStatusCallback != 0) {
 			g_wifiStatusCallback(WIFI_AP_FAILED);
 		}
 		return -1;
 	}
-// set in user_main - included as "extern"
-//	g_WifiMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
@@ -98,7 +99,7 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 
 	return 0;
 }
-
+#endif
 
 static void wlan_msg_recv(uint32_t event, uint32_t data, void *arg)
 {

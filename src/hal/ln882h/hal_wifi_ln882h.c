@@ -350,10 +350,7 @@ void wifi_init_ap(const char* ssid, const char* key)
     server_config.renew         = 2880;
     server_config.ip_start.addr = ipaddr_addr((const char *)"192.168.4.100");
     server_config.ip_end.addr   = ipaddr_addr((const char *)"192.168.4.150");
-#ifndef WPA_AP_STA_CLIENTS
-#define WPA_AP_STA_CLIENTS 3
-#endif
-    server_config.client_max    = WPA_AP_STA_CLIENTS;
+    server_config.client_max    = AP_STA_CLIENTS;
     dhcpd_curr_config_set(&server_config);
 
     // fix to generate unique AP MAC, mirrors STA code
@@ -379,7 +376,7 @@ void wifi_init_ap(const char* ssid, const char* key)
 		.pwd             = (! key || key[0] == 0) ? "" : key,
 		.bssid           = mac_addr,
 		.ext_cfg = {
-			.channel         = HAL_AP_Wifi_Channel,
+			.channel         = g_wifi_channel,
 			.authmode        = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK,
 			.ssid_hidden     = 0,
 			.beacon_interval = 100,
@@ -414,54 +411,58 @@ void wifi_init_ap(const char* ssid, const char* key)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
+#if !ENABLE_WPA_AP
 	alert_log("Starting open AP: %s", ssid);
 	wifi_init_ap(ssid,NULL);
 
 	alert_log("AP started, waiting for: netdev_got_ip()");
-    while (!netdev_got_ip()) {
-        OS_MsDelay(1000);
-    }
-
-	alert_log("AP started OK!");
-// set in user_main - included as "extern"
-//	g_WifiMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-
+	int tries=0;
+	while (!netdev_got_ip() && ++tries < 5) {
+		OS_MsDelay(1000);
+	}
+	if (tries < 5) alert_log("AP started OK!");
+	else alert_log("AP start failed!");
 	return 0;
+#else
+	HAL_SetupWiFiAccessPoint(ssid, NULL)
+#endif
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-#if ENABLE_WPA_AP
-	alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
-	if (ssid[0] == 0) {
-		alert_log("Error: empty SSID!!\r\n");
-	        if (g_wifiStatusCallback != NULL) {
-		    g_wifiStatusCallback(WIFI_AP_FAILED);
+	bool s = (ssid[0] != 0);
+	bool k = (!key || strlen(key) >= 8);
+	if (s && k) {
+		if (key) alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
+		else alert_log("Starting open AP: %s", ssid);
+		wifi_init_ap(ssid,key);
+		alert_log("AP started, waiting for: netdev_got_ip()");
+		while (!netdev_got_ip() && ++tries < 5) {
+			OS_MsDelay(1000);
 		}
-		return WIFI_ERR_INVALID_PARAM;
-	}
-	if (key[0] == 0 || strlen(key) < 8) {
-		alert_log("Error: Password minimum is 8 characters!!\r\n");
-	        if (g_wifiStatusCallback != NULL) {
-		    g_wifiStatusCallback(WIFI_AP_FAILED);
+		if (tries < 5){
+			alert_log("AP started OK!");
+			return WIFI_ERR_NONE;
 		}
-		return WIFI_ERR_INVALID_PARAM;
+		else{
+			alert_log("AP start failed!");
+			return WIFI_ERR_TIMEOUT;
+		}
 	}
-	 
-	wifi_init_ap(ssid,key);
-	int tmp;
-	wifi_softap_get_max_supp_sta_num(&tmp);
 
-	alert_log("AP started for %i clients, waiting for: netdev_got_ip()",tmp);
-    while (!netdev_got_ip()) {
-        OS_MsDelay(1000);
-    }
+	if (!s) {
+	    ADDLOGF_INFO("ERROR: empty SSID!!\r\n");
+	}
+	if (!k) {
+	    ADDLOGF_INFO("ERROR: Password minimum is 8 characters!\r\n");
+	}
 
-	alert_log("AP started OK!");
-// set in user_main - included as "extern"
-//	g_WifiMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-#endif
-	return 0;
+	if (g_wifiStatusCallback != 0) {
+	    g_wifiStatusCallback(WIFI_AP_FAILED);
+	}
+	return WIFI_ERR_INVALID_PARAM;
 }
+#endif
 
 #endif // PLATFORM_LN882H

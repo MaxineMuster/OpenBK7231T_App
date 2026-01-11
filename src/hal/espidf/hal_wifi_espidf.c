@@ -236,10 +236,9 @@ void HAL_DisconnectFromWifi()
 	esp_wifi_disconnect();
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-// set in user_main - included as "extern"
-//	g_WifiMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP
 #if PLATFORM_ESPIDF
 	if(sta_netif != NULL)
 #else
@@ -252,23 +251,10 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		delay_ms(50);
 	}
 	ap_netif = esp_netif_create_default_wifi_ap();
-//	sta_netif = esp_netif_create_default_wifi_sta();
 	wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
 	cfg.nvs_enable = false;
 	esp_wifi_init(&cfg);
 
-/*
-	if(handlers_registered)
-	{
-		esp_event_handler_instance_unregister(IP_EVENT,
-			IP_EVENT_STA_GOT_IP,
-			instance_got_ip);
-		esp_event_handler_instance_unregister(WIFI_EVENT,
-			ESP_EVENT_ANY_ID,
-			instance_any_id);
-		handlers_registered = false;
-	}
-*/
 	if(!handlers_registered)
 	{
 		esp_event_handler_instance_register(WIFI_EVENT,
@@ -283,13 +269,9 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		.ap =
 		{
 			.ssid_len = strlen(ssid),
-			.channel = HAL_AP_Wifi_Channel,
-#ifndef WPA_AP_STA_CLIENTS
-#define WPA_AP_STA_CLIENTS 1
-#endif
-			.max_connection = WPA_AP_STA_CLIENTS,
+			.channel = g_wifi_channel,
+			.max_connection = AP_STA_CLIENTS,
 			.authmode = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA_PSK,
-//			.authmode =  WIFI_AUTH_OPEN,
 #if !PLATFORM_ESP8266
 			.pmf_cfg =
 			{
@@ -305,13 +287,10 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 	};
 	strncpy((char*)wifi_ap_config.ap.ssid, (char*)ssid, 32);
 	if ( key && key[0] != 0 ) strncpy((char*)wifi_ap_config.ap.password, (char*)key, 64);
-//	memcpy(wifi_config.sta.password, evt->password, sizeof(wifi_config.sta.password));
-//	if ( key && key[0] != 0 ) memcpy(wifi_ap_config.ap.password, (uint8_t*)key, sizeof(wifi_ap_config.ap.password));
 	esp_netif_set_hostname(ap_netif, CFG_GetDeviceName());
 
 	esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config);
 	esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config);
-//	esp_wifi_set_mode(WIFI_MODE_APSTA);
 	esp_wifi_set_mode(WIFI_MODE_AP);
 	esp_wifi_set_max_tx_power(10 * 4);
 	esp_wifi_start();
@@ -322,10 +301,12 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 	return 1;
 }
+#endif
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-/*
+#if !ENABLE_WPA_AP
+
 	g_WifiMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	ap_netif = esp_netif_create_default_wifi_ap();
 	sta_netif = esp_netif_create_default_wifi_sta();
@@ -374,8 +355,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	esp_netif_get_ip_info(ap_netif, &g_ip_info);
 
 	return 1;
-*/
+#else
 	return HAL_SetupWiFiAccessPoint(ssid, NULL);
+#endif
 }
 
 #endif // PLATFORM_ESPIDF

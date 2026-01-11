@@ -654,7 +654,7 @@ static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const ch
 	char *ssid = Tokenizer_GetArg(0);
 	char *pw = Tokenizer_GetArg(1);
 		
-	HAL_AP_Wifi_Channel = (uint8_t)Tokenizer_GetArgIntegerDefault(2,1);
+	g_wifi_channel = (uint8_t)Tokenizer_GetArgIntegerDefault(2,1);
 	CFG_SetAP_SSID(ssid);
 	CFG_SetAP_Pass(pw);
 	g_WifiMode = 2;	// make sure, we don't try to connect as STA client!
@@ -665,7 +665,7 @@ static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const ch
 	const char* arg;
 	const char* search=NULL;
 	uint8_t chan = 1;
-	uint8_t mac_clients = WPA_AP_STA_CLIENTS;
+	uint8_t mac_clients = AP_STA_CLIENTS;
 	
 	
 	if (argnum > 2){
