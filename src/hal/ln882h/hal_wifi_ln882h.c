@@ -409,6 +409,43 @@ void wifi_init_ap(const char* ssid, const char* key)
     }
 }
 
+
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	bool s = (ssid[0] != 0);
+	bool k = (!key || strlen(key) >= 8);
+	if (s && k) {
+		int tries=0;
+		if (key) alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
+		else alert_log("Starting open AP: %s", ssid);
+		wifi_init_ap(ssid,key);
+		alert_log("AP started, waiting for: netdev_got_ip()");
+		while (!netdev_got_ip() && ++tries < 5) {
+			OS_MsDelay(1000);
+		}
+		if (tries < 5){
+			alert_log("AP started OK!");
+			return WIFI_ERR_NONE;
+		}
+		alert_log("AP start failed!");
+		return WIFI_ERR_TIMEOUT;
+	}
+
+	if (!s) {
+	    alert_log("ERROR: empty SSID!!\r\n");
+	}
+	if (!k) {
+	    alert_log("ERROR: Password minimum is 8 characters!\r\n");
+	}
+
+	if (g_wifiStatusCallback != 0) {
+	    g_wifiStatusCallback(WIFI_AP_FAILED);
+	}
+	return WIFI_ERR_INVALID_PARAM;
+}
+#endif
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
 #if !ENABLE_WPA_AP
@@ -424,45 +461,8 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	else alert_log("AP start failed!");
 	return 0;
 #else
-	HAL_SetupWiFiAccessPoint(ssid, NULL)
+	HAL_SetupWiFiAccessPoint(ssid, NULL);
 #endif
 }
-
-#if ENABLE_WPA_AP
-int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
-{
-	bool s = (ssid[0] != 0);
-	bool k = (!key || strlen(key) >= 8);
-	if (s && k) {
-		if (key) alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
-		else alert_log("Starting open AP: %s", ssid);
-		wifi_init_ap(ssid,key);
-		alert_log("AP started, waiting for: netdev_got_ip()");
-		while (!netdev_got_ip() && ++tries < 5) {
-			OS_MsDelay(1000);
-		}
-		if (tries < 5){
-			alert_log("AP started OK!");
-			return WIFI_ERR_NONE;
-		}
-		else{
-			alert_log("AP start failed!");
-			return WIFI_ERR_TIMEOUT;
-		}
-	}
-
-	if (!s) {
-	    ADDLOGF_INFO("ERROR: empty SSID!!\r\n");
-	}
-	if (!k) {
-	    ADDLOGF_INFO("ERROR: Password minimum is 8 characters!\r\n");
-	}
-
-	if (g_wifiStatusCallback != 0) {
-	    g_wifiStatusCallback(WIFI_AP_FAILED);
-	}
-	return WIFI_ERR_INVALID_PARAM;
-}
-#endif
 
 #endif // PLATFORM_LN882H

@@ -323,7 +323,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	}
 	return 0;
 #else
-	HAL_SetupWiFiAccessPoint(ssid, NULL)
+	HAL_SetupWiFiAccessPoint(ssid, NULL);
 #endif
 }
 
