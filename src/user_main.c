@@ -75,11 +75,9 @@ static int g_reset = 0;
 // is connected to WiFi?
 static int g_bHasWiFiConnected = 0;
 // is (Open-) Access point or a client? 
-// included as "external int g_WifiMode;" from new_common.h in other 
+// included as "external byte g_WifiMode;" from new_common.h in other 
 // code like hal_wifi or http_fns.c
-// in order to change when moving e.g. from sta to access-point.
-// otherwise user_main.c will try to connect as client if this is not changed!
-short g_WifiMode = 0;	// 0 = WiFimodeSTA	1 = WiFimodeOpenAP	2 = WiFimodeWPA_AP 
+byte g_WifiMode = 0;	// 0 = WiFimodeSTA	1 = WiFimodeOpenAP	2 = WiFimodeWPA_AP 
 /*
 #define	WiFimodeSTA	0
 #define	WiFimodeOpenAP	1
@@ -1027,20 +1025,20 @@ void Main_OnEverySecond()
 		g_WifIiStartConnect--;
 		if (0 == g_WifIiStartConnect)
 		{
-			switch(g_WifiMode){
-			case WiFimodeSTA:
+			if (g_WifiMode==WiFimodeSTA){
 				if (g_bHasWiFiConnected == 0)
 					{
 						Main_ConnectToWiFiNow();
 					}
-				break;
-			case WiFimodeOpenAP:
-				HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
-				break;
+			} else {
+				g_wifi_channel = CFG_GetAP_channel();
+				if (g_WifiMode==WiFimodeOpenAP){
+					HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
+				}
 #if ENABLE_WPA_AP
-				case WiFimodeWPA_AP:
-				HAL_SetupWiFiAccessPoint(AP_ssid,AP_pass);
-				break;
+				if (g_WifiMode==WiFimodeWPA_AP){
+					HAL_SetupWiFiAccessPoint(AP_ssid,AP_pass);
+				}
 #endif
 			}
 		}
@@ -1525,7 +1523,7 @@ void Main_Init_After_Delay()
 #if ENABLE_WPA_AP
 	AP_ssid = CFG_GetAP_SSID();
 	AP_pass = CFG_GetAP_Pass();
-	ADDLOGF_INFO("WPA-AP read: SSID=%s PW=%s\r\n",AP_ssid,AP_pass);
+//	ADDLOGF_INFO("WPA-AP read: SSID=%s PW=%s\r\n",AP_ssid,AP_pass);
 #endif
 	ADDLOGF_INFO("%s", __func__);
 

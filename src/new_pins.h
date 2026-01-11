@@ -1468,7 +1468,8 @@ typedef struct mainConfig_s {
 	short startChannelValues[CHANNEL_MAX];
 	// unused_fill at offs 0x0000045E 
 //	short unused_fill; // correct alignment
-	short WiFi_mode;	// STA, OpenAP or WPA-AP?
+	byte AP_channel; // Channel used in AP mode
+	byte WiFi_mode;	// STA, OpenAP or WPA-AP?
 	// dgr_sendFlags at offs 0x00000460 
 	int dgr_sendFlags;
 	// dgr_recvFlags at offs 0x00000464 

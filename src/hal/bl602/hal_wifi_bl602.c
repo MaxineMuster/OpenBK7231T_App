@@ -109,6 +109,9 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 		wifi_mgmr_sta_autoconnect_disable();
 		wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
 	}
+	if ((wifi_interface=wifi_mgmr_ap_netif_get())){	// are we in AP-mode? We were called, so mode could have changed, destroy old AP 
+		wifi_mgmr_ap_stop(NULL);		// needs interface, but won't use it, so we can use local var here ...
+	}
 	wifi_interface = wifi_mgmr_ap_enable();
 	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, (char*)key, g_wifi_channel);
 	g_bAccessPointMode = 1;

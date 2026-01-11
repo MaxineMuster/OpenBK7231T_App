@@ -1483,23 +1483,27 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			"TCM=' to convert module to an ';"
 			"return confirm('Are you sure'+['? Please double-check SSID and password.',TCM+'Open Accesspoint?',TCM+'Accesspoint?\\nSSID='+ts+' \\nPW='+tp][v])};"
 			"shows=s=>[0,2].forEach(i=>{e=byID('wifi'+i);e.style.display=i==s?'block':'none';e.disabled=i!=s;});"
-			"setup=e=>{byID('wfm').innerHTML=['WiFi Client','Open AP','WPA AP'].map((v,i)=>"
-			"`<option id='w${i}'value='${i}' ${i==e&&'selected'}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');shows(e)},");
+			"setup=(e,c)=>{byID('wfm').innerHTML=['WiFi Client','Open AP','WPA AP'].map((v,i)=>"
+			"`<option id='w${i}'value='${i}' ${i==e&&'selected'}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');"
+			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c&&'selected'||''}>${i+1}</option>`).join('');"
+			"shows(e)},");
 #else
 			"return confirm('Are you sure'+['? Please double-check SSID and password.',' to convert module to an Open Accesspoint?'[v])};"
 			"shows=s=>e=byID('wifi0');e.style.display=0==s?'block':'none';e.disabled=s!=0});"
-			"setup=e=>{byID('wfm').innerHTML=['WiFi Client','Open Accesspoint'].map((v,i)=>"
-			"`<option id='w${i}'value='${i}' ${i==e&&'selected'}>${v}</option>`).join('');shows(e)},");
+			"setup=(e,c)=>{byID('wfm').innerHTML=['WiFi Client','Open Accesspoint'].map((v,i)=>"
+			"`<option id='w${i}'value='${i}' ${i==e&&'selected'||''}>${v}</option>`).join('');"
+			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c&&'selected'||''}>${i+1}</option>`).join('');"
+			"shows(e)},");
 #endif
 			// a bit "hacky" to generate the option list, select the actual maoe and hide the others
 			//['WiFi Client','Open AP','WPA AP'].map((v,i)=>`<option id='w${i}' value='${i}' ${i==1 &&'selected'}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');
 			// will generate (for e==1 to set the selected option)
 			// <option id='w0' value=0>WiFi Client</option> <option id='w1' value=1 selected>Open Accesspoint</option> <option id='w2' value=2>WPA Accesspoint</option>
-	hprintf255(request,"window.addEventListener('load',()=>setup(%i));</script>",g_WifiMode);
+	hprintf255(request,"window.addEventListener('load',()=>setup(%i,%i));</script>",g_WifiMode,CFG_GetAP_channel());
 	poststr(request, "<h2>WiFi configuration</h2><form action='cfg_wifi' id='scanform'></form>"
 		"<form action=\"/cfg_wifi_set\">"
-		"Set WiFi mode <select style='width:unset' name='wfm' id='wfm' onchange='shows(this.value);'>"
-		"</select>");
+		"Set WiFi mode <select style='width:unset' name='wfm' id='wfm' onchange='shows(this.value);'></select>"
+		" AP Channel: <select style='width:unset' name='APchan' id='APchan'></select>");
 #if ENABLE_WPA_AP
 	poststr(request, "<fieldset id='wifi2'>");
 	hprintf255(request, "AP SSID:<br><input id='SSIDAP' name='SSIDAP' value='%s'>",CFG_GetAP_SSID());
@@ -1681,6 +1685,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set \r\n");
 	bChanged = 0;
+	bool ChanChange=0;
 	short newwm=1, wmok=0;
 
 	http_setup(request, httpMimeTypeHTML);
@@ -1689,6 +1694,13 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		bChanged = (newwm!=g_WifiMode);
 //		g_WifiMode = newwm;
 //		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "wfm=%s (as int %i)\r\n",tmpA,newwm);
+	}
+	if (http_getArg(request->url, "APchan", tmpA, sizeof(tmpA))) {
+		byte oldchan, newchan;
+		oldchan = CFG_GetAP_channel();
+		newchan = (byte)atoi(tmpA);
+		ChanChange = (oldchan != newchan);
+		bChanged |= CFG_SetAP_channel((byte)atoi(tmpA));
 	}
 	if (newwm==1) {
 		wmok=1;
@@ -1742,6 +1754,9 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		if (newwm==0) poststr(request, "Client.");
 		else hprintf255(request, "%s access point.",newwm==1?"open":"WPA");
 		if (bChanged) g_WifIiStartConnect = 2;
+	} else if(ChanChange && g_WifiMode > 0){
+		hprintf255(request, "AP channel changed to %i. Restarting AP.",CFG_GetAP_channel());
+		g_WifIiStartConnect = 2;
 	}
 #if ALLOW_WEB_PASSWORD
 	if (http_getArg(request->url, "web_PW_en", tmpA, sizeof(tmpA))) {

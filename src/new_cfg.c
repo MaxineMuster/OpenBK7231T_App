@@ -368,7 +368,7 @@ void CFG_SetOpenAccessPoint() {
 	g_cfg_pendingChanges++;
 }
 */
-int CFG_SetWifiMode(short m) {
+int CFG_SetWifiMode(byte m) {
 	// is there a change?
 	if(g_cfg.WiFi_mode == m) {
 		return 0;
@@ -378,8 +378,21 @@ int CFG_SetWifiMode(short m) {
 	g_cfg_pendingChanges++;
 	return 1;
 }
-short CFG_GetWifiMode() {
+byte CFG_GetWifiMode() {
 	return g_cfg.WiFi_mode;
+}
+int CFG_SetAP_channel(byte c) {
+	// is there a change?
+	if(g_cfg.AP_channel == c) {
+		return 0;
+	}
+	g_cfg.AP_channel = c;
+	// mark as dirty (value has changed)
+	g_cfg_pendingChanges++;
+	return 1;
+}
+byte CFG_GetAP_channel() {
+	return g_cfg.AP_channel;
 }
 const char *CFG_GetWiFiSSID(){
 	return g_cfg.wifi_ssid;

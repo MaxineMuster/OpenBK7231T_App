@@ -1085,14 +1085,12 @@ extern int g_secondsElapsed;
 extern int g_rebootReason;
 extern float g_wifi_temperature;
 extern char g_wifi_bssid[33];
-extern uint8_t g_wifi_channel;
+extern byte g_wifi_channel;
 // are we acting as (Open-) Access point or as client? 
 // initialized in user_main.c
-// included as "external int g_WifiMode;" 
+// included as "external byte g_WifiMode;" 
 // in other code like hal_wifi-code or http_fns.c
-// in order to change when moving e.g. from sta to access-point.
-// otherwise user_main.c will try to connect as client if this is not changed!
-extern short g_WifiMode;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+extern byte g_WifiMode;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 extern short g_WifIiStartConnect;
 
 
