@@ -77,6 +77,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
 	return 0;
 #else
+	printf("Debug HAL_SetupWiFiOpenAccessPoint! ssid=%s!\r\n",ssid);
 	return HAL_SetupWiFiAccessPoint(ssid, NULL);
 #endif
 }
@@ -84,6 +85,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 #if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	
+
+	printf("Debug HAL_SetupWiFiAccessPoint! ssid=%s key=%s!\r\n",ssid, key?key:"NULL");
+
 	if ( key && strlen(key) < 8){
 		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
 		if (g_wifiStatusCallback != 0) {
@@ -103,12 +107,12 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	conf=(wlan_ap_default_conf_t *)wlan_ap_get_default_conf();
 	conf->channel=g_wifi_channel;
 */
-	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)key);
 	wlan_ap_config_t config;
 	memset(&config, 0, sizeof(config));
 	wlan_ap_get_config(&config);
 	config.u.channel=g_wifi_channel;
 	wlan_ap_set_config(&config);
+	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)key);
 	wlan_ap_enable();
 
 	return 0;
