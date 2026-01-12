@@ -94,17 +94,18 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
+
+/	// not present in XR809
 	wlan_ap_default_conf_t *conf;
 	conf=(wlan_ap_default_conf_t *)wlan_ap_get_default_conf();
 	conf->channel=g_wifi_channel;
+*
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)key);
-/*
 	wlan_ap_config_t config;
 	memset(&config, 0, sizeof(config));
 	wlan_ap_get_config(&config);
 	config.u.channel=g_wifi_channel;
 	wlan_ap_set_config(&config);
-*/
 	wlan_ap_enable();
 
 	return 0;
