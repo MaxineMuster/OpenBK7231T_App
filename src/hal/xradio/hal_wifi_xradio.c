@@ -95,10 +95,7 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 		}
 		return -1;
 	}
-	if (!key){ 
-		char ap_psk[8] = { 0 };
-		key = ap_psk;
-	}
+	char ap_psk[8] = { 0 };
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 /*
@@ -112,6 +109,7 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	wlan_ap_get_config(&config);
 	config.u.channel=g_wifi_channel;
 	wlan_ap_set_config(&config);
+//	wlan_ap_set((uint8_t *)ssid, strlen(ssid), key ? (uint8_t *)key : (uint8_t*)ap_psk);
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)key);
 	wlan_ap_enable();
 
