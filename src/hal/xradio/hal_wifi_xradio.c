@@ -68,8 +68,8 @@ void HAL_DisconnectFromWifi()
 }
 
 int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
-	char ap_psk[8] = { 0 };
 #if !ENABLE_WPA_AP
+	char ap_psk[8] = { 0 };
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 	wlan_ap_set((uint8_t *)ssid, strlen(ssid), (uint8_t *)ap_psk);
@@ -77,7 +77,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char *ssid) {
 
 	return 0;
 #else
-	return HAL_SetupWiFiAccessPoint(ssid, ap_psk);
+	return HAL_SetupWiFiAccessPoint(ssid, NULL);
 #endif
 }
 
@@ -91,7 +91,10 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 		}
 		return -1;
 	}
-
+	if (!key){ 
+		char ap_psk[8] = { 0 };
+		key = ap_psk;
+	}
 	net_switch_mode(WLAN_MODE_HOSTAP);
 	wlan_ap_disable();
 /*
