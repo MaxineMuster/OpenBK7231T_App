@@ -133,6 +133,7 @@ void CFG_SetDefaultConfig() {
 	strcpy(g_cfg.mqtt_pass, "qqqqqqqqqq");
 	// already zeroed but just to remember, open AP by default
 	g_cfg.WiFi_mode = 1;	// default: OpenAP
+	g_cfg.AP_channel = 1;	// default: OpenAP with channel 1
 	g_cfg.wifi_ssid[0] = 0;
 	g_cfg.wifi_pass[0] = 0;
 	// i am not sure about this, because some platforms might have no way to store mac outside our cfg?
