@@ -108,7 +108,7 @@ int HAL_SetupWiFiAccessPoint(const char *ssid, const char *key) {
 	wlan_ap_config_t config;
 	memset(&config, 0, sizeof(config));
 	wlan_ap_get_config(&config);
-	config.u.channel=g_wifi_channel;
+	config.u.channel=(uint8_t)g_wifi_channel;
 	wlan_ap_set_config(&config);
 //	wlan_ap_set((uint8_t *)ssid, strlen(ssid), key ? (uint8_t *)key : (uint8_t*)ap_psk);
 	wlan_ap_enable();
