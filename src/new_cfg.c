@@ -26,11 +26,7 @@ int g_cfg_pendingChanges = 0;
 #define MAIN_CFG_VERSION_V3 3
 // version 4 - bumped size by 1024,
 // added alternate ssid fields
-#if PLATFORM_W600
-#define MAIN_CFG_VERSION 3
-#else
 #define MAIN_CFG_VERSION 5
-#endif
 
 static byte CFG_CalcChecksum(mainConfig_t *inf) {
 	int header_size;
@@ -858,6 +854,16 @@ void CFG_InitAndLoad() {
 			WiFI_GetMacAddress((char*)g_cfg.mac);
 		}
 		WiFI_SetMacAddress((char*)g_cfg.mac);
+#endif
+#if defined(PLATFORM_W600)
+		if (g_cfg.version <= MAIN_CFG_VERSION_V3){
+			// we read a valid V3 config, convert to V5
+			// (flash_vars should have been moved before by HAL_FlashVars_IncreaseBootCount() ... )
+			g_cfg.version = MAIN_CFG_VERSION;
+			// zero additional memory - it included flashvars and old date might be interpreted as web password 
+			memset((char*)(&g_cfg) + MAGIC_CONFIG_SIZE_V3, 0, sizeof(mainConfig_t) - MAGIC_CONFIG_SIZE_V3);
+			g_cfg_pendingChanges ++;
+		}
 #endif
 		addLogAdv(LOG_WARN, LOG_FEATURE_CFG, "CFG_InitAndLoad: Correct config has been loaded with %i changes count.",g_cfg.changeCounter);
 	}
