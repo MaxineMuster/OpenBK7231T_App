@@ -655,5 +655,8 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
+
+#define ENABLE_DRIVER_SHT3X						1
+
 // closing OBK_CONFIG_H
 #endif

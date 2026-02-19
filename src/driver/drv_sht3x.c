@@ -20,6 +20,42 @@ static float g_temp = 0.0, g_humid = 0.0, g_caltemp = 0.0, g_calhum = 0.0;
 static bool g_shtper = false;
 static softI2C_t g_softI2C;
 
+static uint8_t SHT3X_CalcCrc(uint8_t* data);
+void SHT3X_GetSerial() {
+	uint8_t data[6];
+	uint8_t crc_word1, crc_word2;
+	// Try SHT3X Serial Number Read (0x36 0x82 - no clock stretching)
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR);
+	Soft_I2C_WriteByte(&g_softI2C, 0x36);
+	Soft_I2C_WriteByte(&g_softI2C, 0x82);
+	Soft_I2C_Stop(&g_softI2C);
+	rtos_delay_milliseconds(2);
+
+	Soft_I2C_Start(&g_softI2C, SHT3X_I2C_ADDR | 1);
+	Soft_I2C_ReadBytes(&g_softI2C, data, 6);
+	Soft_I2C_Stop(&g_softI2C);
+
+	// Format: [SNB_3, SNB_2, CRC_word1, SNB_1, SNB_0, CRC_word2]
+	ADDLOG_DEBUG(LOG_FEATURE_SENSOR, "SHT3X read serial: SNB=[%02X%02X%02X%02X], CRC=[%02X,%02X]", 
+			data[0], data[1], data[3], data[4], data[2], data[5]);
+
+	// Calculate CRC
+	crc_word1 = SHT3X_CalcCrc(data);  // CRC of SNB_3 and SNB_2
+	crc_word2 = SHT3X_CalcCrc((uint8_t*)&data[3]);  // CRC of SNB_1 and SNB_0
+
+	// Check if CRCs match (valid real SHT3X)
+	if (crc_word1 == data[2] && crc_word2 == data[5]) {
+		ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHT3X Serial: %02X%02X%02X%02X (Valid CRC)", 
+			data[0], data[1], data[3], data[4]);
+	}
+}
+
+commandResult_t CMD_SHT3X_GetSerial(const void* context, const char* cmd, const char* args, int cmdFlags)
+{
+	SHT3X_GetSerial();
+	return CMD_RES_OK;
+}
+
 
 commandResult_t SHT3X_Calibrate(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
@@ -497,6 +533,11 @@ void SHT3X_Init() {
 	//cmddetail:"fn":"SHT3X_SetAlertCmd","file":"driver/drv_sht3x.c","requires":"all",
 	//cmddetail:"examples":"SHT_SetAlertCmd"}
 	CMD_RegisterCommand("SHT_SetAlert", SHT3X_SetAlertCmd, NULL);
+	//cmddetail:{"name":"SHT_GetSerial","args":"",
+	//cmddetail:"descr":"Get SHT3X Sensor serial number",
+	//cmddetail:"fn":"CMD_SHT3X_GetSerial","file":"driver/drv_sht3x.c","requires":"",
+	//cmddetail:"examples":"SHT_GetSerial"}	
+	CMD_RegisterCommand("SHT_GetSerial",CMD_SHT3X_GetSerial, NULL);
 }
 void SHT3X_OnEverySecond()
 {
