@@ -547,6 +547,58 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
 #else
 
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+    system_parameter_set_hostname(SOFT_AP_IF, CFG_GetDeviceName());
+
+    uint8_t macaddr[6] = { 0 }, macaddr_default[6] = { 0 };
+    wifi_config_t wifi_config = {
+        .ap = {
+            .ssid_len = strlen(ssid),
+            .password = "",
+            .channel = 1,
+            .authmode = WIFI_AUTH_WPA2_PSK,
+            .ssid_hidden = 0,
+            .max_connection = AP_STA_CLIENTS,
+            .beacon_interval = 100,
+            .reserved = 0,
+        },
+    };
+    memcpy(&wifi_config.ap.password, key, strlen(key));
+    memcpy(&wifi_config.ap.ssid, ssid, wifi_config.ap.ssid_len);
+    wifi_init_type_t init_param = {
+        .wifi_mode = WIFI_MODE_AP,
+        .sta_ps_mode = WIFI_NO_POWERSAVE,
+        .dhcp_mode = WLAN_DHCP_SERVER,
+        .local_ip_addr = "192.168.4.1",
+        .gateway_ip_addr = "192.168.4.1",
+        .net_mask = "255.255.255.0",
+    };
+
+    wifi_set_mode(init_param.wifi_mode);
+
+    system_parameter_get_wifi_macaddr_default(SOFT_AP_IF, macaddr_default);
+    wifi_get_macaddr(SOFT_AP_IF, macaddr);
+    if(ln_is_valid_mac((const char*)macaddr) && memcmp(macaddr, macaddr_default, 6) != 0)
+    {
+        wifi_set_macaddr_current(SOFT_AP_IF, macaddr);
+    }
+    else
+    {
+        ln_generate_random_mac(macaddr);
+        wifi_set_macaddr(SOFT_AP_IF, macaddr);
+    }
+
+    wifi_set_config(SOFT_AP_IF, &wifi_config);
+
+    netif_set_hostname(ethernetif_get_netif(SOFT_AP_IF), CFG_GetDeviceName());
+    wifi_start(&init_param, true);
+//    g_bOpenAccessPointMode = 1;
+
+    return 0;
+}
+#endif
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
     system_parameter_set_hostname(SOFT_AP_IF, CFG_GetDeviceName());
@@ -592,7 +644,7 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 
     netif_set_hostname(ethernetif_get_netif(SOFT_AP_IF), CFG_GetDeviceName());
     wifi_start(&init_param, true);
-    g_bOpenAccessPointMode = 1;
+//    g_bOpenAccessPointMode = 1;
 
     return 0;
 }
