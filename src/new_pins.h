@@ -1614,7 +1614,6 @@ typedef struct mainConfig_s {
 	char AP_PASS[33];
 	char unused[258];
 #endif
-#endif
 } mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
