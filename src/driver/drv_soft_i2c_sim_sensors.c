@@ -24,6 +24,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>   // abs()
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
 
 #include "drv_soft_i2c_sim.h"
 
@@ -687,7 +689,7 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
         	dev->i2cAddr = def_addr; 
         }
 	SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
-	
+	return CMD_RES_OK;
 }
 
 int SoftI2C_Sim_AddSHT3x(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {

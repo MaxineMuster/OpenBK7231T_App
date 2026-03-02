@@ -29,6 +29,9 @@
 #include "../new_common.h"
 #include "../new_pins.h"
 #include "../new_cfg.h"
+// Commands register, execution API and cmd tokenizer
+#include "../cmnds/cmd_public.h"
+
 
 
 // -------------------------------------------------------
