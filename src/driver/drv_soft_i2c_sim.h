@@ -26,6 +26,10 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "../new_common.h"
+#include "../new_pins.h"
+#include "../new_cfg.h"
+
 
 // -------------------------------------------------------
 // Physical quantity IDs  (extend freely)
