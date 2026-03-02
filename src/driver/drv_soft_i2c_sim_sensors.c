@@ -26,6 +26,9 @@
 #include <stdlib.h>   // abs()
 #include "../logging/logging.h"
 
+// e.g. for wal_stricmp (instead of missing strcasecmp)
+#include "../cmnds/new_common.h"
+
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
@@ -660,23 +663,23 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 		ADDLOG_ERROR(LOG_FEATURE_SENSOR, "No sensor type given!");
 		return CMD_RES_BAD_ARGUMENT;
 	}else {
-        	if (strcasecmp(type, "SHT3x") == 0) {
+        	if (wal_stricmp(type, "SHT3x") == 0) {
 			printf("Detected: SHT3x\n");
 			sens_ops = &g_sht3x_ops;
 			def_addr = 0x44 << 1;
-		} else if (strcasecmp(type, "SHT4x") == 0) {
+		} else if (wal_stricmp(type, "SHT4x") == 0) {
 			printf("Detected: SHT4x\n");
 			sens_ops = &g_sht4x_ops;
 			def_addr = 0x44 << 1;
-		} else if (strcasecmp(type, "AHT2x") == 0) {
+		} else if (wal_stricmp(type, "AHT2x") == 0) {
 			printf("Detected: AHT2x\n");
 			sens_ops = &g_aht2x_ops;
 			def_addr = 0x38 << 1;
-		} else if (strcasecmp(type, "CHT83xx") == 0) {
+		} else if (wal_stricmp(type, "CHT83xx") == 0) {
 			printf("Detected: CHT83xx\n");
 			sens_ops = &g_cht83xx_ops;
 			def_addr = 0x40 << 1;
-		} else if (strcasecmp(type, "BMP280") == 0) {
+		} else if (wal_stricmp(type, "BMP280") == 0) {
 			printf("Detected: BMP280\n");
 			sens_ops = &g_bmp280_ops;
 			def_addr = 0x58 << 1;		// to be dicussed, what is "default"
