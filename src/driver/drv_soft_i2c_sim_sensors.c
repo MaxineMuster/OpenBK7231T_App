@@ -648,9 +648,9 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 	Tokenizer_TokenizeString(args, 0);
 	
 	
-	uint8_t pin_data=9, uint8_t pin_clk=17;
-	pin_clk   = Tokenizer_GetPinEqual("SCL=",    dev->i2c.pin_clk);
-	pin_data  = Tokenizer_GetPinEqual("SDA=",    dev->i2c.pin_data);
+	uint8_t pin_data=9, pin_clk=17;
+	pin_clk   = (uint8_t)Tokenizer_GetPinEqual("SCL=", pin_clk);
+	pin_data  = (uint8_t)Tokenizer_GetPinEqual("SDA=", pin_data);
 	const char *type = Tokenizer_GetArgEqualDefault("type=","NO");
 	uint8_t def_addr;
 	sim_sensor_ops_t *sens_ops;
