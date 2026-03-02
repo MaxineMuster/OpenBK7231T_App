@@ -176,8 +176,8 @@ bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
 
     g_cur = sim_find(i2c->pin_data, i2c->pin_clk, addr7);
     if (!g_cur) {
-        printf("[SIM] Start: no device at addr=0x%02X pins(dat=%u,clk=%u)\n",
-               addr7, i2c->pin_data, i2c->pin_clk);
+        printf("[SIM] Start: no device at addr=0x%02X (argument addr=0x%02X) pins(dat=%u,clk=%u)\n",
+               addr7, addr, i2c->pin_data, i2c->pin_clk);
         return false;  // NACK
     }
 

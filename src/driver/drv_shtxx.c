@@ -70,6 +70,7 @@ static bool SHTXX_CRC8(const uint8_t *data, uint8_t expected)
 // -------------------------------------------------------
 static inline void SHTXX_SendCmd(shtxx_dev_t *dev, const uint8_t *cmd, uint8_t len)
 {
+ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_SendCmd: Calling Soft_I2C_Start() for addr=0x%02X",dev->i2cAddr);
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr);
     for(uint8_t i = 0; i < len; i++)
         Soft_I2C_WriteByte(&dev->i2c, cmd[i]);
@@ -83,6 +84,7 @@ static bool SHTXX_SendCmdReadData(shtxx_dev_t *dev,
                                    const uint8_t *cmd, uint8_t cmd_len,
                                    uint8_t delay, uint8_t *out)
 {
+ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_SendCmdReadData: Calling Soft_I2C_Start() for addr=0x%02X",dev->i2cAddr | 1);
     SHTXX_SendCmd(dev, cmd, cmd_len);
     if(delay) rtos_delay_milliseconds(delay);
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr | 1);
@@ -186,6 +188,7 @@ static bool SHTXX_ReadSerial(shtxx_dev_t *dev)
     uint8_t data[6];
     SHTXX_SendCmd(dev, sn_cmd[dev->typeIdx], sn_len[dev->typeIdx]);
     rtos_delay_milliseconds(2);
+ADDLOG_INFO(LOG_FEATURE_SENSOR, "SHTXX_ReadSerial: Calling Soft_I2C_Start() for addr=0x%02X",dev->i2cAddr | 1);
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr | 1);
     Soft_I2C_ReadBytes(&dev->i2c, data, 6);
     Soft_I2C_Stop(&dev->i2c);
