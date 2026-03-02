@@ -1158,6 +1158,7 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_SHTXX
        //drvdetail:{"name":"SHTXX",
        //drvdetail:"title":"TODO",
        //drvdetail:"descr":"Humidity/temperature sensor. Testing for unknown sensor on 0x44",
