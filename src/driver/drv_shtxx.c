@@ -613,7 +613,7 @@ void SHTXX_Init()
     dev->i2cAddr = SHTXX_I2C_ADDR;
     if(dev->typeIdx == SHTXX_TYPE_SHT3X) {
         uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("adress=", 0x44));
-        if (A != SHTXX_I2C_ADDR) dev->i2cAddr = A;
+        if (A != SHTXX_I2C_ADDR) dev->i2cAddr = A << 1;
     }
 
     Soft_I2C_PreInit(&dev->i2c);

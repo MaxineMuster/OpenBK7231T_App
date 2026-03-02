@@ -162,7 +162,7 @@ int SoftI2C_Sim_AddAHT2x (uint8_t pin_data, uint8_t pin_clk);
 int SoftI2C_Sim_AddBMP280(uint8_t pin_data, uint8_t pin_clk, uint8_t addr);
 int SoftI2C_Sim_AddCHT83xx(uint8_t pin_data, uint8_t pin_clk, uint8_t addr);
 
-// defined in drv_soft_i2c_sim_sensors.c, initialized in drv_soft_i2c_sim.c
+// defined in drv_soft_i2c_sim_sensors.c, initialized in drv_main.c
 commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, const char* args, int cmdFlags);
 // -------------------------------------------------------
 // Minimal usage example (WIN32 startup code):
