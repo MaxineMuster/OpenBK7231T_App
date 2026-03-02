@@ -695,7 +695,7 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
         	ADDLOG_INFO(LOG_FEATURE_SENSOR, "No device address given, using default 0X%02X!",def_addr >> 1 );
         	addr = def_addr; 
         }
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Adding %s sensor at address 0X%02X SDA=%i SCL=%i",type, def_addr >> 1, pin_data, pin_clk );
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Adding %s sensor at address 0X%02X SDA=%i SCL=%i",type, addr >> 1, pin_data, pin_clk );
 	SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
 	return CMD_RES_OK;
 }

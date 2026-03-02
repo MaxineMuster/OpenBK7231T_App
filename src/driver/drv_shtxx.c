@@ -571,10 +571,10 @@ commandResult_t SHTXX_CMD_ListSensors(const void *context, const char *cmd,
 
 // -------------------------------------------------------
 // startDriver SHTXX [SCL=<pin>] [SDA=<pin>] [chan_t=<ch>]
-//                   [chan_h=<ch>] [type=3|4] [adress=<hex>]
+//                   [chan_h=<ch>] [type=3|4] [address=<hex>]
 //
 // type=0 or omitted → auto-detect (needs ENABLE_SERIAL_READ).
-// adress= accepts decimal (68) or "0x45" notation.
+// address= accepts decimal (68) or "0x45" notation.
 // -------------------------------------------------------
 void SHTXX_Init()
 {
@@ -609,10 +609,10 @@ void SHTXX_Init()
     dev->typeIdx = (typeArg == 4) ? SHTXX_TYPE_SHT4X : SHTXX_TYPE_SHT3X;
 
     // Address: parse "0x45" without strtol (saves ~400B if not already in fw).
-    // Use A/B suffix for backward compat: adress=A → 0x44, adress=B → 0x45.
+    // Use A/B suffix for backward compat: address=A → 0x44, address=B → 0x45.
     dev->i2cAddr = SHTXX_I2C_ADDR;
     if(dev->typeIdx == SHTXX_TYPE_SHT3X) {
-        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("adress=", 0x44));
+        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("address=", 0x44));
         if (A != SHTXX_I2C_ADDR) dev->i2cAddr = A << 1;
     }
 
