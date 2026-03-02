@@ -27,7 +27,7 @@
 #include "../logging/logging.h"
 
 // e.g. for wal_stricmp (instead of missing strcasecmp)
-#include "../cmnds/new_common.h"
+#include "../new_common.h"
 
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
