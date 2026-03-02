@@ -24,7 +24,7 @@
 
 // Include the real softI2C_t definition so the stub
 // signatures match what the sensor drivers expect.
-#include "drv_soft_i2c.h"
+//#include "drv_soft_i2c.h"
 
 // -------------------------------------------------------
 // Compile-time limits
