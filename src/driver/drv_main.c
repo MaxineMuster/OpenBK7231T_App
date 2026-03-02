@@ -1157,6 +1157,21 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
+       //drvdetail:{"name":"SHTXX",
+       //drvdetail:"title":"TODO",
+       //drvdetail:"descr":"Humidity/temperature sensor. Testing for unknown sensor on 0x44",
+       //drvdetail:"requires":""}
+       { "SHTXX",                               // Driver Name
+       SHTXX_Init,                              // Init
+       SHTXX_OnEverySecond,                     // onEverySecond
+       SHTXX_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+       NULL,                                    // runQuickTick
+       SHTXX_StopDriver,                        // stopFunction
+       NULL,                                    // onChannelChanged
+       NULL,                                    // onHassDiscovery
+       false,                                   // loaded
+       },
+#endif
 #if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
 	//drvdetail:"title":"TODO",
