@@ -81,10 +81,10 @@ static inline void SHTXX_SendCmd(shtxx_dev_t *dev, const uint8_t *cmd, uint8_t l
 // -------------------------------------------------------
 static bool SHTXX_SendCmdReadData(shtxx_dev_t *dev,
                                    const uint8_t *cmd, uint8_t cmd_len,
-                                   uint8_t delay_ms, uint8_t *out)
+                                   uint8_t delay, uint8_t *out)
 {
     SHTXX_SendCmd(dev, cmd, cmd_len);
-    if(delay_ms) rtos_delay_milliseconds(delay_ms);
+    if(delay) rtos_delay_milliseconds(delay);
     Soft_I2C_Start(&dev->i2c, dev->i2cAddr | 1);
     Soft_I2C_ReadBytes(&dev->i2c, out, 6);
     Soft_I2C_Stop(&dev->i2c);
