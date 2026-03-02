@@ -547,18 +547,21 @@ commandResult_t SHTXX_CMD_ListSensors(const void *context, const char *cmd,
         shtxx_dev_t *s = &g_sensors[i];
         int16_t tf = s->lastTemp % 10;
         if(tf < 0) tf = -tf;
-        ADDLOG_INFO(LOG_FEATURE_SENSOR,
 #ifdef ENABLE_SERIAL_READ
+        ADDLOG_INFO(LOG_FEATURE_SENSOR,
                     "  [%i] SHT%cx SDA=%i SCL=%i sn=%08X T=%d.%dC H=%d.%d%% ch=%i/%i",
                     i, (s->typeIdx==SHTXX_TYPE_SHT3X)?'3':'4',
                     s->i2c.pin_data, s->i2c.pin_clk, s->serial,
+                    s->lastTemp/10, tf, s->lastHumid/10, s->lastHumid%10,
+                    s->channel_temp, s->channel_humid);
 #else
+        ADDLOG_INFO(LOG_FEATURE_SENSOR,
                     "  [%i] SHT%cx SDA=%i SCL=%i T=%d.%dC H=%d.%d%% ch=%i/%i",
                     i, (s->typeIdx==SHTXX_TYPE_SHT3X)?'3':'4',
                     s->i2c.pin_data, s->i2c.pin_clk,
-#endif
                     s->lastTemp/10, tf, s->lastHumid/10, s->lastHumid%10,
                     s->channel_temp, s->channel_humid);
+#endif
     }
     return CMD_RES_OK;
 }
