@@ -664,35 +664,38 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 		return CMD_RES_BAD_ARGUMENT;
 	}else {
         	if (wal_stricmp(type, "SHT3x") == 0) {
-			printf("Detected: SHT3x\n");
+//			printf("Detected: SHT3x\n");
 			sens_ops = &g_sht3x_ops;
 			def_addr = 0x44 << 1;
 		} else if (wal_stricmp(type, "SHT4x") == 0) {
-			printf("Detected: SHT4x\n");
+//			printf("Detected: SHT4x\n");
 			sens_ops = &g_sht4x_ops;
 			def_addr = 0x44 << 1;
 		} else if (wal_stricmp(type, "AHT2x") == 0) {
-			printf("Detected: AHT2x\n");
+//			printf("Detected: AHT2x\n");
 			sens_ops = &g_aht2x_ops;
 			def_addr = 0x38 << 1;
 		} else if (wal_stricmp(type, "CHT83xx") == 0) {
-			printf("Detected: CHT83xx\n");
+//			printf("Detected: CHT83xx\n");
 			sens_ops = &g_cht83xx_ops;
 			def_addr = 0x40 << 1;
 		} else if (wal_stricmp(type, "BMP280") == 0) {
-			printf("Detected: BMP280\n");
+//			printf("Detected: BMP280\n");
 			sens_ops = &g_bmp280_ops;
 			def_addr = 0x58 << 1;		// to be dicussed, what is "default"
 		} else {
-			printf("Unknown sensor type %s.\n",type);
+			ADDLOG_ERROR(LOG_FEATURE_SENSOR, "Unknown sensor type %s.",type);
+			return CMD_RES_BAD_ARGUMENT;
 		}
         }
-        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("adress=", 0));
+        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("address=", 0));
         if (A != 0){
         	addr = A << 1;
         } else {
+        	ADDLOG_INFO(LOG_FEATURE_SENSOR, "No device address given, using default 0X%02X!",def_addr >> 1 );
         	addr = def_addr; 
         }
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Adding %s sensor at address 0X%02X SDA=%i SCL=%i",type, def_addr >> 1, pin_data, pin_clk );
 	SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
 	return CMD_RES_OK;
 }
