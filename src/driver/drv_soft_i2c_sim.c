@@ -32,6 +32,17 @@
 #define SIM_MAX_DEVICES   16
 #define SIM_DEFAULT_STEP  10   // default drift per read in x10 units
 
+
+
+
+// Internally we use the shifted address in g_devices.
+// So e.g.  for SHT3x/SHT4x with address 0x44 we store 0x44 << 1 ( = 0x88)
+// but in displaying / logging we should use "known" 7 bit address (like 0x44 for SHT3x)
+#define dispI2Cadress(S) 	S >> 1
+
+
+
+
 // -------------------------------------------------------
 // Internal device record
 // -------------------------------------------------------
@@ -61,15 +72,15 @@ static int32_t sim_rand(int32_t lo, int32_t hi) {
 }
 
 // -------------------------------------------------------
-// Device lookup by (pin_data, pin_clk, 7-bit addr)
+// Device lookup by (pin_data, pin_clk, shifted 7-bit addr)
 // -------------------------------------------------------
-static sim_device_t *sim_find(uint8_t pin_data, uint8_t pin_clk, uint8_t addr7) {
+static sim_device_t *sim_find(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     for (int i = 0; i < SIM_MAX_DEVICES; i++) {
         if (!g_devices[i].active) continue;
         sim_ctx_t *c = &g_devices[i].ctx;
         if (c->pin_data == pin_data &&
             c->pin_clk  == pin_clk  &&
-            c->i2c_addr == addr7)
+            c->i2c_addr == addr)
             return &g_devices[i];
     }
     return NULL;
@@ -141,7 +152,7 @@ int SoftI2C_Sim_Register(uint8_t pin_data, uint8_t pin_clk,
             d->ctx.i2c_addr   = i2c_addr & 0xFE; // strip R/W bit just in case
             if (ops->init) ops->init(&d->ctx);
             printf("[SIM] Registered '%s' addr=0x%02X pins(dat=%u,clk=%u) slot=%d\n",
-                   ops->name ? ops->name : "?", i2c_addr, pin_data, pin_clk, i);
+                   ops->name ? ops->name : "?", dispI2Cadress(i2c_addr), pin_data, pin_clk, i);		// dispI2Cadress() display 7 bit adress --> >> 1
             return i;
         }
     }
@@ -155,6 +166,7 @@ sim_ctx_t *SoftI2C_Sim_GetCtx(int slot) {
     return &g_devices[slot].ctx;
 }
 
+
 // -------------------------------------------------------
 // Soft_I2C_* stubs – these replace the hardware versions
 // on Windows.  Sensor drivers call these unchanged.
@@ -162,6 +174,13 @@ sim_ctx_t *SoftI2C_Sim_GetCtx(int slot) {
 
 bool Soft_I2C_PreInit(softI2C_t *i2c) {
     SoftI2C_Sim_Init();
+    
+    //cmddetail:{"name":"Sim_AddI2Csensor","args":"[type=SHT3x/SHT4x/AHT2x/CHT83xx/BMP280] [SCL=<pin>] [SDA=<pin>] [adress=<hex> optional, try default if ommited]",
+    //cmddetail:"descr":"Ads a pseudo sensor to the given pins",
+    //cmddetail:"fn":"CMD_SoftI2C_simAddSensor","file":"driver/drv_soft_i2c_sim.c","requires":"",
+    //cmddetail:"examples":"Sim_AddI2Csensor SHT3x SCL=24 SDA=17 adress=0x45"}
+    CMD_RegisterCommand("Sim_AddI2Csensor", CMD_SoftI2C_simAddSensor, NULL);
+
     printf("[SIM] PreInit pins dat=%u clk=%u\n", i2c->pin_data, i2c->pin_clk);
     return true;  // always report bus healthy
 }
@@ -169,6 +188,8 @@ bool Soft_I2C_PreInit(softI2C_t *i2c) {
 // Start a transaction.
 // addr is the 8-bit wire address (7-bit device addr | R/W bit).
 // Returns true (ACK) if a virtual device is found, false (NACK) otherwise.
+// Internally we use the shifted address, e.g. 0x44 << 1 ( =0x88)
+// but in displaying / logging use "known" 7 bit address (like 0x44 for SHT3x)
 bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
     SoftI2C_Sim_Init();
     bool    is_read = (addr & 0x01) != 0;
@@ -176,8 +197,8 @@ bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
 
     g_cur = sim_find(i2c->pin_data, i2c->pin_clk, addr7);
     if (!g_cur) {
-        printf("[SIM] Start: no device at addr=0x%02X (argument addr=0x%02X) pins(dat=%u,clk=%u)\n",
-               addr7, addr, i2c->pin_data, i2c->pin_clk);
+        printf("[SIM] Start: no device at addr=0x%02X pins(dat=%u,clk=%u)\n",
+               dispI2Cadress(addr7), i2c->pin_data, i2c->pin_clk);
         return false;  // NACK
     }
 
@@ -229,12 +250,12 @@ void Soft_I2C_Stop(softI2C_t *i2c) {
         if (ack) {
             printf("[SIM] '%s' addr=0x%02X cmd=0x%02X (len=%u) -> %u byte response\n",
                    ops->name ? ops->name : "?",
-                   ctx->i2c_addr, ctx->cmd_len ? ctx->cmd[0] : 0xFF,
+                   dispI2Cadress(ctx->i2c_addr), ctx->cmd_len ? ctx->cmd[0] : 0xFF,
                    ctx->cmd_len, ctx->resp_len);
         } else {
             printf("[SIM] '%s' addr=0x%02X cmd=0x%02X NACK\n",
                    ops->name ? ops->name : "?",
-                   ctx->i2c_addr, ctx->cmd_len ? ctx->cmd[0] : 0xFF);
+                   dispI2Cadress(ctx->i2c_addr), ctx->cmd_len ? ctx->cmd[0] : 0xFF);
         }
     } else {
         // Read phase ended.

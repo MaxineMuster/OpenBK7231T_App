@@ -641,6 +641,55 @@ static const sim_sensor_ops_t g_cht83xx_ops = {
 // Convenience registration functions
 // ===================================================================
 
+
+commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, const char* args, int cmdFlags) {
+	Tokenizer_TokenizeString(args, 0);
+	
+	
+	uint8_t pin_data=9, uint8_t pin_clk=17;
+	pin_clk   = Tokenizer_GetPinEqual("SCL=",    dev->i2c.pin_clk);
+	pin_data  = Tokenizer_GetPinEqual("SDA=",    dev->i2c.pin_data);
+	const char *type = Tokenizer_GetArgEqualDefault("type=","NO");
+	uint8_t def_addr;
+	sim_sensor_ops_t *sens_ops;
+	if (!strcmp(type,"NO"){
+		ADDLOG_ERROR(LOG_FEATURE_SENSOR, "No sensor type given!");
+		return CMD_RES_BAD_ARGUMENT;
+	}else {
+        	if (strcasecmp(type, "SHT3x") == 0) {
+			printf("Detected: SHT3x\n");
+			sens_ops = g_sht3x_ops;
+			def_addr = 0x44 << 1;
+		} else if (strcasecmp(type, "SHT4x") == 0) {
+			printf("Detected: SHT4x\n");
+			sens_ops = g_sht4x_ops;
+			def_addr = 0x44 << 1;
+		} else if (strcasecmp(input, "AHT2x") == 0) {
+			printf("Detected: AHT2x\n");
+			sens_ops = g_aht2x_ops;
+			def_addr = 0x38 << 1;
+		} else if (strcasecmp(input, "CHT83xx") == 0) {
+			printf("Detected: CHT83xx\n");
+			sens_ops = g_cht83xx_ops;
+			def_addr = 0x40 << 1;
+		} else if (strcasecmp(input, "BMP280") == 0) {
+			printf("Detected: BMP280\n");
+			sens_ops = g_bmp280_ops;
+			def_addr = 0x58 << 1;		// to be dicussed, what is "default"
+		} else {
+			printf("Unknown sensor type %s.\n",type);
+		}
+        }
+        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("adress=", 0));
+        if (A != 0){
+        	dev->i2cAddr = A << 1;
+        } else {
+        	dev->i2cAddr = def_addr; 
+        }
+	SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
+	
+}
+
 int SoftI2C_Sim_AddSHT3x(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     return SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_sht3x_ops);
 }
