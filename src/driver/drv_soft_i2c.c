@@ -24,6 +24,7 @@ void usleep(int r) //delay function do 10*r nops, because rtos_delay_millisecond
 }
 #endif
 
+#ifndef WIN32
 void Soft_I2C_SetLow(uint8_t pin) {
 	HAL_PIN_Setup_Output(pin);
 	HAL_PIN_SetOutputValue(pin, 0);
@@ -153,4 +154,4 @@ uint8_t Soft_I2C_ReadByte(softI2C_t *i2c, bool nack)
 
 	return val;
 }
-
+#endif // to #ifndef WIN32
