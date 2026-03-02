@@ -342,6 +342,7 @@ const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def) {
 		if ( arg && found) {
 			s=(found + strlen(search));
 //			ADDLOG_INFO(LOG_FEATURE_DRV,"Tokenizer_GetArgEqual: Found %s . Value is %s",search,s);
+			break;
 		}
 	}		
 	if (!s) s = def;
@@ -354,7 +355,7 @@ const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def) {
 int Tokenizer_GetArgEqualInteger(const char *search, const int def) {
 	int ret=def;
 	const char* found=Tokenizer_GetArgEqualDefault(search, "##X##");		// search for argument, default must be no number
-	if(found[0] == '0' && (found[1] == 'x' || found[1] == 'X') ) {			// also handle hex numbers (e.g. i2c addreses)
+	if(strlen(found) > 2 && found[0] == '0' && (found[1] == 'x' || found[1] == 'X') ) {                  // also handle hex numbers (e.g. i2c addreses), at least 0x[one digit] --> strlen(found) > 2
 		sscanf(found, "%x", &ret);
 		return ret;
 	}

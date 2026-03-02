@@ -247,7 +247,9 @@ static bool aht2x_encode(sim_ctx_t *ctx) {
     // Initialise
     if (c0 == 0xBE) {
         s->calibrated = true;
-        ctx->resp_len = 0;
+//        ctx->resp_len = 0;
+        ctx->resp[0]  = 0x08;
+        ctx->resp_len = 1;
         return true;
     }
 
