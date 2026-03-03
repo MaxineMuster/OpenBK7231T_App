@@ -32,6 +32,7 @@
 // Commands register, execution API and cmd tokenizer
 #include "../cmnds/cmd_public.h"
 
+
 #include "drv_soft_i2c_sim.h"
 
 // ===================================================================
@@ -233,32 +234,38 @@ static void aht2x_init(sim_ctx_t *ctx) {
 
 static bool aht2x_encode(sim_ctx_t *ctx) {
     aht2x_state_t *s = (aht2x_state_t *)ctx->user;
-    if (!s || ctx->cmd_len < 1) return false;
-    uint8_t c0 = ctx->cmd[0];
+    if (!s) return false;
 
-    // Soft reset
-    if (c0 == 0xBA) {
-        s->calibrated     = false;
-        s->busy_countdown = 0;
-        ctx->resp_len = 0;
-        return true;
-    }
-
-    // Initialise
-    if (c0 == 0xBE) {
-        s->calibrated = true;
-//        ctx->resp_len = 0;
-        ctx->resp[0]  = 0x08;
+    // Bare read poll: driver does Read-Start -> ReadByte -> Stop with no
+    // preceding write in that transaction.  cmd_len == 0 here because
+    // the core only accumulates bytes during write phases.
+    // The response was pre-loaded by the last write command (0xBE or 0xBA).
+    if (ctx->cmd_len == 0) {
+        ctx->resp[0]  = s->calibrated ? 0x08 : 0x00;
         ctx->resp_len = 1;
         return true;
     }
 
-    // Status read is triggered by a Read Start (no write command), but
-    // the driver polls via a bare Read Start after the init command.
-    // We handle it as a zero-length command producing 1 byte:
-    //   bit7=0 (not busy), bits[3]=1, bits[6:4]=000 -> 0x08 (calibrated, ready)
-    if (ctx->cmd_len == 0) {
-        ctx->resp[0]  = s->calibrated ? 0x08 : 0x00;
+    uint8_t c0 = ctx->cmd[0];
+
+    // Soft reset: mark uncalibrated; pre-load 0x00 status in case
+    // anything reads back (driver does not, but be safe)
+    if (c0 == 0xBA) {
+        s->calibrated     = false;
+        s->busy_countdown = 0;
+        ctx->resp[0]  = 0x00;
+        ctx->resp_len = 1;
+        return true;
+    }
+
+    // Initialise: mark calibrated and pre-load 0x08 into resp[] NOW.
+    // The driver immediately follows with a bare Read-Start poll loop;
+    // the core preserves resp[] from a write-Stop through to the next
+    // Read-Start, so the poll will pick up this byte without any
+    // separate cmd_len==0 transaction being needed.
+    if (c0 == 0xBE) {
+        s->calibrated = true;
+        ctx->resp[0]  = 0x08;   // bit7=0 not busy, bit3=1 calibrated
         ctx->resp_len = 1;
         return true;
     }
@@ -435,17 +442,46 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
     s->reg = reg;
 
     if (reg == 0xD0) {
-        // Chip ID
-        ctx->resp[0]  = s->is_bme280 ? 0x60 : 0x60;  // both are 0x60 in practice
+        // BMP280=0x58, BME280=0x60  (drv_bmpi2c.h BMP280_CHIP_ID / BME280_CHIP_ID)
+        ctx->resp[0]  = s->is_bme280 ? 0x60 : 0x58;
         ctx->resp_len = 1;
         return true;
     }
 
-    if (reg == 0x88) {
-        // Calibration data (24 bytes)
-        bmp280_pack_calib(ctx->resp);
-        ctx->resp_len = 24;
+    // Calibration registers: drv_bmpi2c.h calls BMP_Read16() for each one
+    // individually, so every address gets its own 2-byte transaction (LE).
+    // The 12 T/P words live at 0x88, 0x8A, 0x8C ... 0x9E (even addresses).
+    if (reg >= 0x88 && reg <= 0x9E && (reg & 1) == 0) {
+        static const uint16_t cal_words[] = {
+            // index = (reg - 0x88) / 2
+            // T1        T2              T3
+            BMP_DIG_T1, (uint16_t)BMP_DIG_T2, (uint16_t)BMP_DIG_T3,
+            // P1        P2              P3              P4
+            BMP_DIG_P1, (uint16_t)BMP_DIG_P2, (uint16_t)BMP_DIG_P3, (uint16_t)BMP_DIG_P4,
+            // P5              P6              P7              P8              P9
+            (uint16_t)BMP_DIG_P5, (uint16_t)BMP_DIG_P6, (uint16_t)BMP_DIG_P7,
+            (uint16_t)BMP_DIG_P8, (uint16_t)BMP_DIG_P9,
+        };
+        uint16_t v = cal_words[(reg - 0x88) / 2];
+        ctx->resp[0]  = (uint8_t)(v & 0xFF);   // LSB first (little-endian on wire)
+        ctx->resp[1]  = (uint8_t)(v >> 8);
+        ctx->resp_len = 2;
         return true;
+    }
+    // BME280 humidity calibration (individual byte/word reads)
+    if (s->is_bme280) {
+        // H1: single byte at 0xA1
+        if (reg == 0xA1) { ctx->resp[0] = 75;  ctx->resp_len = 1; return true; }
+        // H2: int16 LE at 0xE1
+        if (reg == 0xE1) { ctx->resp[0] = 0x58; ctx->resp[1] = 0x06; ctx->resp_len = 2; return true; }
+        // H3: byte at 0xE3
+        if (reg == 0xE3) { ctx->resp[0] = 0;   ctx->resp_len = 1; return true; }
+        // H4 high byte at 0xE4, shared byte at 0xE5, H5 high byte at 0xE6, H6 at 0xE7
+        if (reg == 0xE4) { ctx->resp[0] = 0x13; ctx->resp_len = 1; return true; } // H4=316>>4
+        if (reg == 0xE5) { ctx->resp[0] = 0xC3; ctx->resp_len = 1; return true; } // H4 low | H5 high
+        if (reg == 0xE6) { ctx->resp[0] = 0x03; ctx->resp_len = 1; return true; } // H5 high byte
+        if (reg == 0xE7) { ctx->resp[0] = 30;   ctx->resp_len = 1; return true; } // H6
+        if (reg == 0xF2) { ctx->resp[0] = 0x01; ctx->resp_len = 1; return true; } // ctrl_hum
     }
 
     if (reg == 0xF3) {
@@ -463,36 +499,43 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
     }
 
     if (reg == 0xF7) {
-        // Raw ADC data: press[19:0] @ F7-F9, temp[19:0] @ FA-FC
-        int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
-        int32_t p10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_PRESSURE);
+        // BMX280_Update() first transaction: pressure only, 3 bytes
+        // drv_bmpi2c.h reads 0xF7 separately then 0xFA separately.
+        int32_t  p10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_PRESSURE);
+        // Snapshot temperature for the 0xFA transaction without advancing it yet
+        int32_t  t10   = SoftI2C_Sim_PeekValue(ctx, SIM_Q_TEMPERATURE);
         uint32_t adc_P = bmp280_press_to_adc(p10, t10);
-        uint32_t adc_T = bmp280_temp_to_adc(t10);
-
-        // Pressure: [F7]=MSB [F8]=LSB [F9]=XLSB (bits 7:4 significant)
         ctx->resp[0] = (uint8_t)((adc_P >> 12) & 0xFF);
         ctx->resp[1] = (uint8_t)((adc_P >>  4) & 0xFF);
         ctx->resp[2] = (uint8_t)((adc_P <<  4) & 0xF0);
-        // Temperature: [FA]=MSB [FB]=LSB [FC]=XLSB
-        ctx->resp[3] = (uint8_t)((adc_T >> 12) & 0xFF);
-        ctx->resp[4] = (uint8_t)((adc_T >>  4) & 0xFF);
-        ctx->resp[5] = (uint8_t)((adc_T <<  4) & 0xF0);
+        ctx->resp_len = 3;
+        printf("[SIM][BMP280] P=%d.%d hPa  adc_P=0x%05X\n",
+               (int)(p10/10), (int)abs(p10%10), adc_P);
+        return true;
+    }
 
+    if (reg == 0xFA) {
+        // BMX280_Update() second transaction: temperature (3 bytes)
+        // For BME280, humidity (2 bytes) is read in the same session right after.
+        int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
+        uint32_t adc_T = bmp280_temp_to_adc(t10);
+        ctx->resp[0] = (uint8_t)((adc_T >> 12) & 0xFF);
+        ctx->resp[1] = (uint8_t)((adc_T >>  4) & 0xFF);
+        ctx->resp[2] = (uint8_t)((adc_T <<  4) & 0xF0);
         if (s->is_bme280) {
-            int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-            // raw_H = h_percent * 2^16 / 100  = h10 * 65536 / 1000
+            int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
             uint32_t raw_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
             if (raw_H > 0xFFFF) raw_H = 0xFFFF;
-            ctx->resp[6] = (uint8_t)(raw_H >> 8);
-            ctx->resp[7] = (uint8_t)(raw_H & 0xFF);
-            ctx->resp_len = 8;
+            ctx->resp[3] = (uint8_t)(raw_H >> 8);
+            ctx->resp[4] = (uint8_t)(raw_H & 0xFF);
+            ctx->resp_len = 5;
+            printf("[SIM][BME280] T=%d.%d C  H=%d.%d%%  adc_T=0x%05X\n",
+                   (int)(t10/10), (int)abs(t10%10), (int)(h10/10), (int)(h10%10), adc_T);
         } else {
-            ctx->resp_len = 6;
+            ctx->resp_len = 3;
+            printf("[SIM][BMP280] T=%d.%d C  adc_T=0x%05X\n",
+                   (int)(t10/10), (int)abs(t10%10), adc_T);
         }
-
-        printf("[SIM][BMP280] T=%d.%d C  P=%d.%d hPa  adc_T=0x%05X adc_P=0x%05X\n",
-               (int)(t10/10), (int)abs(t10%10),
-               (int)(p10/10), (int)(p10%10), adc_T, adc_P);
         return true;
     }
 
@@ -646,10 +689,6 @@ static const sim_sensor_ops_t g_cht83xx_ops = {
     .on_read_complete = NULL,
 };
 
-// ===================================================================
-// Convenience registration functions
-// ===================================================================
-
 
 commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
@@ -702,6 +741,12 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 	return CMD_RES_OK;
 }
 
+
+
+// ===================================================================
+// Convenience registration functions
+// ===================================================================
+
 int SoftI2C_Sim_AddSHT3x(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     return SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_sht3x_ops);
 }
@@ -715,7 +760,18 @@ int SoftI2C_Sim_AddAHT2x(uint8_t pin_data, uint8_t pin_clk) {
 }
 
 int SoftI2C_Sim_AddBMP280(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
-    return SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_bmp280_ops);
+    int slot = SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_bmp280_ops);
+    // is_bme280 already false from bmp280_init – nothing extra needed
+    return slot;
+}
+
+int SoftI2C_Sim_AddBME280(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
+    int slot = SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_bmp280_ops);
+    if (slot >= 0) {
+        bmp280_state_t *s = (bmp280_state_t *)SoftI2C_Sim_GetCtx(slot)->user;
+        s->is_bme280 = true;
+    }
+    return slot;
 }
 
 int SoftI2C_Sim_AddCHT83xx(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
