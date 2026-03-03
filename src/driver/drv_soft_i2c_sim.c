@@ -186,21 +186,22 @@ bool Soft_I2C_PreInit(softI2C_t *i2c) {
 // but in displaying / logging use "known" 7 bit address (like 0x44 for SHT3x)
 bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
     SoftI2C_Sim_Init();
-    bool    is_read = (addr & 0x01) != 0;
-    uint8_t addr7   = addr & 0xFE;
+    bool    is_read  = (addr & 0x01) != 0;
+    // Normalise to 8-bit wire address with R/W bit cleared, matching
+    // how SoftI2C_Sim_Register stores it.
+    uint8_t wire_addr = addr & 0xFE;
 
-    g_cur = sim_find(i2c->pin_data, i2c->pin_clk, addr7);
+    g_cur = sim_find(i2c->pin_data, i2c->pin_clk, wire_addr);
     if (!g_cur) {
-        printf("[SIM] Start: no device at addr=0x%02X pins(dat=%u,clk=%u)\n",
-               dispI2Cadress(addr7), i2c->pin_data, i2c->pin_clk);
-        return false;  // NACK
+        printf("[SIM] no device: address=0x%02X pins(dat=%u,clk=%u)\n",
+               dispI2Cadress(wire_addr), i2c->pin_data, i2c->pin_clk);
+        return false;
     }
-
     // Found – only log on write-start (R/W=0) to avoid flooding on every read
     g_cur_is_read = is_read;
     if (!is_read) {
-        printf("[SIM] found: wire=0x%02X (%s) pins(dat=%u,clk=%u)\n",
-               wire_addr, g_cur->ops->name ? g_cur->ops->name : "?",
+        printf("[SIM] found: address=0x%02X (%s) pins(dat=%u,clk=%u)\n",
+               dispI2Cadress(wire_addr), g_cur->ops->name ? g_cur->ops->name : "?",
                i2c->pin_data, i2c->pin_clk);
     }
 
