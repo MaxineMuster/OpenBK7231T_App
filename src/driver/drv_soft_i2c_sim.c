@@ -196,7 +196,13 @@ bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
         return false;  // NACK
     }
 
+    // Found – only log on write-start (R/W=0) to avoid flooding on every read
     g_cur_is_read = is_read;
+    if (!is_read) {
+        printf("[SIM] found: wire=0x%02X (%s) pins(dat=%u,clk=%u)\n",
+               wire_addr, g_cur->ops->name ? g_cur->ops->name : "?",
+               i2c->pin_data, i2c->pin_clk);
+    }
 
     if (is_read) {
         // Reading – response was prepared during the preceding write Stop.
