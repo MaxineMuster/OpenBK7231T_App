@@ -498,24 +498,53 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
         return true;
     }
 
+
     if (reg == 0xF7) {
-        // BMX280_Update() first transaction: pressure only, 3 bytes
-        // drv_bmpi2c.h reads 0xF7 separately then 0xFA separately.
+        // Two drivers use this register differently:
+        //
+        // drv_bmp280.c / BMP280.h (old driver, uses Start_Internal):
+        //   Reads ALL 6 bytes in one burst: press[0-2] + temp[3-5]
+        //   (and 8 bytes for BME280: + hum[6-7])
+        //
+        // drv_bmpi2c.h (new driver, uses Soft_I2C_Start directly):
+        //   Reads only 3 bytes (pressure) here, then issues a separate
+        //   transaction at 0xFA for temperature.
+        //
+        // Solution: always return all 6 (or 8) bytes from 0xF7.
+        // The old driver consumes all of them in one read.
+        // The new driver only reads 3 then stops - the extra bytes are
+        // simply ignored, which is harmless.
+        int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
         int32_t  p10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_PRESSURE);
-        // Snapshot temperature for the 0xFA transaction without advancing it yet
-        int32_t  t10   = SoftI2C_Sim_PeekValue(ctx, SIM_Q_TEMPERATURE);
         uint32_t adc_P = bmp280_press_to_adc(p10, t10);
+        uint32_t adc_T = bmp280_temp_to_adc(t10);
         ctx->resp[0] = (uint8_t)((adc_P >> 12) & 0xFF);
         ctx->resp[1] = (uint8_t)((adc_P >>  4) & 0xFF);
         ctx->resp[2] = (uint8_t)((adc_P <<  4) & 0xF0);
-        ctx->resp_len = 3;
-        printf("[SIM][BMP280] P=%d.%d hPa  adc_P=0x%05X\n",
-               (int)(p10/10), (int)abs(p10%10), adc_P);
+        ctx->resp[3] = (uint8_t)((adc_T >> 12) & 0xFF);
+        ctx->resp[4] = (uint8_t)((adc_T >>  4) & 0xFF);
+        ctx->resp[5] = (uint8_t)((adc_T <<  4) & 0xF0);
+        if (s->is_bme280) {
+            int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
+            uint32_t raw_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
+            if (raw_H > 0xFFFF) raw_H = 0xFFFF;
+            ctx->resp[6] = (uint8_t)(raw_H >> 8);
+            ctx->resp[7] = (uint8_t)(raw_H & 0xFF);
+            ctx->resp_len = 8;
+        } else {
+            ctx->resp_len = 6;
+        }
+        printf("[SIM][BMP280] T=%d.%d C  P=%d.%d hPa  adc_T=0x%05X adc_P=0x%05X\n",
+               (int)(t10/10), (int)abs(t10%10),
+               (int)(p10/10), (int)abs(p10%10), adc_T, adc_P);
         return true;
     }
 
     if (reg == 0xFA) {
-        // BMX280_Update() second transaction: temperature (3 bytes)
+        // drv_bmpi2c.h BMX280_Update() second transaction: temperature only (3 bytes).
+        // drv_bmp280.c never reaches here (it reads everything from 0xF7).
+        // We peek rather than next-value since 0xF7 already advanced both
+        // temperature and pressure in this measurement cycle.
         // For BME280, humidity (2 bytes) is read in the same session right after.
         int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
         uint32_t adc_T = bmp280_temp_to_adc(t10);
