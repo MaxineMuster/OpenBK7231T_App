@@ -218,6 +218,7 @@ bool Soft_I2C_Start(softI2C_t *i2c, uint8_t addr) {
     return true;  // ACK
 }
 
+/*
 // Identical to Soft_I2C_Start but without writing an address byte.
 // Used by BMP280 which calls Soft_I2C_Start_Internal() directly.
 void Soft_I2C_Start_Internal(softI2C_t *i2c) {
@@ -225,6 +226,28 @@ void Soft_I2C_Start_Internal(softI2C_t *i2c) {
     // so we can't resolve the device here.  We simply leave g_cur
     // as-is (the BMP280 shim handles it at the BMP280.h level).
     (void)i2c;
+}
+*/
+// Used by drv_bmp280.c / BMP280.h instead of Soft_I2C_Start.
+// On real hardware the caller clocks the address byte manually.
+// In simulation the address is already in i2c->address8bit, so
+// we resolve the device here exactly like a normal write Start.
+void Soft_I2C_Start_Internal(softI2C_t *i2c) {
+    SoftI2C_Sim_Init();
+    uint8_t wire_addr = i2c->address8bit & 0xFE;
+    g_cur_is_read = false;
+    g_cur = sim_find(i2c->pin_data, i2c->pin_clk, wire_addr);
+    if (!g_cur) {
+        printf("[SIM] no device (Internal): wire=0x%02X pins(dat=%u,clk=%u)\n",
+               wire_addr, i2c->pin_data, i2c->pin_clk);
+        return;
+    }
+    printf("[SIM] found (Internal): wire=0x%02X (%s) pins(dat=%u,clk=%u)\n",
+           wire_addr, g_cur->ops->name ? g_cur->ops->name : "?",
+           i2c->pin_data, i2c->pin_clk);
+    g_cur->ctx.cmd_len  = 0;
+    g_cur->ctx.resp_len = 0;
+    g_cur->ctx.resp_pos = 0;
 }
 
 bool Soft_I2C_WriteByte(softI2C_t *i2c, uint8_t value) {
