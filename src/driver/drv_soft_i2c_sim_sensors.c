@@ -719,7 +719,7 @@ static const sim_sensor_ops_t g_cht83xx_ops = {
     .on_read_complete = NULL,
 };
 */
-
+/*
 // ===================================================================
 // CHT83xx plugin  (CHT8305, CHT8310, CHT8315)
 // ===================================================================
@@ -832,6 +832,153 @@ serve_reg:
             uint16_t id = (s->reg == 0x0F) ? 0x5453 : s->sensor_id;
             ctx->resp[0] = (uint8_t)(id >> 8);
             ctx->resp[1] = (uint8_t)(id & 0xFF);
+            ctx->resp_len = 2;
+            return true;
+        }
+
+        if (s->reg == 0x02) {
+            // Status register (CHT831X) – no alerts active
+            ctx->resp[0]  = 0x00;
+            ctx->resp_len = 1;
+            return true;
+        }
+
+        // Unknown register
+        ctx->resp[0]  = 0x00;
+        ctx->resp[1]  = 0x00;
+        ctx->resp_len = 2;
+        return true;
+    }
+}
+
+static const sim_sensor_ops_t g_cht83xx_ops = {
+    .name             = "CHT83xx",
+    .init             = cht83xx_init,
+    .encode_response  = cht83xx_encode,
+    .on_read_complete = NULL,
+};
+*/
+
+// ===================================================================
+// CHT83xx plugin  (CHT8305, CHT8310, CHT8315)
+// ===================================================================
+// Protocol (from drv_cht8305.c + drv_cht83xx.h):
+//   Write 0x00          -> set register pointer to temp (CHT831X_REG_TEMP)
+//   Write 0x01          -> set register pointer to hum  (CHT831X_REG_HUM)
+//   Write 0x07 + 2B     -> write config register
+//   Write 0x0F          -> read manufacturer ID
+//   Write 0x11 + 2B     -> write one-shot register
+//   Read  4 bytes       -> [T_MSB T_LSB H_MSB H_LSB]  (from reg 0x00)
+//   Read  2 bytes       -> [H_MSB H_LSB]               (from reg 0x01)
+//   Read  2 bytes       -> [ID_MSB ID_LSB]             (from reg 0x0F)
+//
+// Physical encoding:
+//   CHT8305 (default):
+//     raw_T = (temp + 40) * 65535 / 165    (float path)
+//     raw_H = humid * 65535 / 100
+//   CHT831X (8310/8315):
+//     raw_T = temp / 0.03125               (13-bit, signed, >> 3)
+//     raw_H = humid * 32768 / 100          (15-bit, sign bit = parity)
+// ===================================================================
+
+typedef struct {
+    uint8_t  reg;        // current register pointer
+    uint16_t sensor_id;  // 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
+} cht83xx_state_t;
+
+static void cht83xx_init(sim_ctx_t *ctx) {
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 150, 400,  3);
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200, 900,  5);
+
+    cht83xx_state_t *s = (cht83xx_state_t *)malloc(sizeof(cht83xx_state_t));
+    s->reg       = 0x00;
+    s->sensor_id = 0x0000;  // CHT8305 default; driver reads REG_ID=0xFE to detect variant
+    ctx->user    = s;
+}
+
+static bool cht83xx_encode(sim_ctx_t *ctx) {
+    cht83xx_state_t *s = (cht83xx_state_t *)ctx->user;
+    if (!s) return false;
+
+    // Zero-length write = just a read Start, serve from current reg
+    if (ctx->cmd_len == 0) {
+        goto serve_reg;
+    }
+
+    uint8_t reg = ctx->cmd[0];
+    s->reg = reg;
+    // Multi-byte write (register write, e.g. config, one-shot)
+    if (ctx->cmd_len > 1) {
+        ctx->resp_len = 0;  // just ACK the write
+        return true;
+    }
+
+    // Single-byte write = register pointer set; data comes on next read
+    // fall through to serve_reg
+
+serve_reg:
+    {
+        int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
+        int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
+        bool is_831x = (s->sensor_id == 0x8215 || s->sensor_id == 0x8315);
+
+        if (s->reg == 0x00) {
+            // Temperature (+ humidity for CHT8305 combined read)
+            uint16_t raw_t, raw_h;
+            if (is_831x) {
+                // 13-bit signed, >>3 -> multiply back
+                int16_t t_13 = (int16_t)((float)(t10/10.0f) / 0.03125f);
+                raw_t = (uint16_t)(t_13 << 3);
+                // 15-bit humidity with parity in bit15
+                uint16_t h_15 = (uint16_t)((int64_t)h10 * 32768 / 1000);
+                // compute parity of bits[14:0]
+                uint8_t par = 0;
+                for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
+                raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
+            } else {
+                raw_t = (uint16_t)(((float)(t10/10.0f) + 40.0f) * 65535.0f / 165.0f);
+                raw_h = (uint16_t)((float)(h10/10.0f) * 65535.0f / 100.0f);
+            }
+            ctx->resp[0] = (uint8_t)(raw_t >> 8);
+            ctx->resp[1] = (uint8_t)(raw_t & 0xFF);
+            ctx->resp[2] = (uint8_t)(raw_h >> 8);
+            ctx->resp[3] = (uint8_t)(raw_h & 0xFF);
+            ctx->resp_len = 4;
+            printf("[SIM][CHT83xx] T=%d.%d C  H=%d.%d%%  raw_T=0x%04X raw_H=0x%04X\n",
+                   (int)(t10/10), (int)abs(t10%10),
+                   (int)(h10/10), (int)(h10%10), raw_t, raw_h);
+            return true;
+        }
+
+        if (s->reg == 0x01) {
+            // Humidity only (CHT831X separate read)
+            int32_t h10b = SoftI2C_Sim_PeekValue(ctx, SIM_Q_HUMIDITY); // don't advance again
+            uint16_t h_15 = (uint16_t)((int64_t)h10b * 32768 / 1000);
+            uint8_t par = 0;
+            for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
+            uint16_t raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
+            ctx->resp[0] = (uint8_t)(raw_h >> 8);
+            ctx->resp[1] = (uint8_t)(raw_h & 0xFF);
+            ctx->resp_len = 2;
+            return true;
+        }
+
+        // CHT831X_REG_ONESHOT = 0x0F: write-only trigger, no read response
+        if (s->reg == 0x0F) {
+            ctx->resp_len = 0;
+            return true;
+        }
+        // CHT831X_REG_ID = 0xFE: manufacturer ID (2 bytes)
+        // CHT831X_REG_ID+1 = 0xFF: sensor/chip ID (2 bytes) -> determines CHT8305 vs CHT831X
+        if (s->reg == 0xFE) {
+            ctx->resp[0] = 0x54; ctx->resp[1] = 0x53;  // manufacturer "TS"
+            ctx->resp_len = 2;
+            return true;
+        }
+        if (s->reg == 0xFF) {
+            // Return sensor_id so driver detects correct variant
+            ctx->resp[0] = (uint8_t)(s->sensor_id >> 8);
+            ctx->resp[1] = (uint8_t)(s->sensor_id & 0xFF);
             ctx->resp_len = 2;
             return true;
         }
