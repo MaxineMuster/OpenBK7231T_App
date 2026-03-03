@@ -24,6 +24,10 @@ unsigned short BMP280_Start(void) {
 	Soft_I2C_Start_Internal(&g_softI2C);
 	return 0;
 }
+unsigned short BMP280_Start_new(uint8_t addr) {
+	Soft_I2C_Start(&g_softI2C,addr);
+	return 0;
+}
 unsigned short BMP280_Write(byte data_) {
 	Soft_I2C_WriteByte(&g_softI2C, data_);
 	return 0;

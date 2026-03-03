@@ -238,12 +238,12 @@ void Soft_I2C_Start_Internal(softI2C_t *i2c) {
     g_cur_is_read = false;
     g_cur = sim_find(i2c->pin_data, i2c->pin_clk, wire_addr);
     if (!g_cur) {
-        printf("[SIM] no device (Internal): wire=0x%02X pins(dat=%u,clk=%u)\n",
-               wire_addr, i2c->pin_data, i2c->pin_clk);
+        printf("[SIM] no device (Internal): wire=0x%02X (address=0x%02X) pins(dat=%u,clk=%u)\n",
+               wire_addr, dispI2Cadress(wire_addr), i2c->pin_data, i2c->pin_clk);
         return;
     }
-    printf("[SIM] found (Internal): wire=0x%02X (%s) pins(dat=%u,clk=%u)\n",
-           wire_addr, g_cur->ops->name ? g_cur->ops->name : "?",
+    printf("[SIM] found (Internal): wire=0x%02X (address=0x%02X) (%s) pins(dat=%u,clk=%u)\n",
+           wire_addr, dispI2Cadress(wire_addr), g_cur->ops->name ? g_cur->ops->name : "?",
            i2c->pin_data, i2c->pin_clk);
     g_cur->ctx.cmd_len  = 0;
     g_cur->ctx.resp_len = 0;

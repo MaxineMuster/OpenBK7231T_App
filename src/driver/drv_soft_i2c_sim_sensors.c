@@ -723,7 +723,7 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 		} else if (wal_stricmp(type, "BMP280") == 0) {
 //			printf("Detected: BMP280\n");
 			sens_ops = &g_bmp280_ops;
-			def_addr = 0x58 << 1;		// to be dicussed, what is "default"
+			def_addr = 0x76 << 1;		// to be dicussed, what is "default"
 		} else {
 			ADDLOG_ERROR(LOG_FEATURE_SENSOR, "Unknown sensor type %s.",type);
 			return CMD_RES_BAD_ARGUMENT;
@@ -733,10 +733,10 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
         if (A != 0){
         	addr = A << 1;
         } else {
-        	ADDLOG_INFO(LOG_FEATURE_SENSOR, "No device address given, using default 0X%02X!",def_addr >> 1 );
+        	ADDLOG_INFO(LOG_FEATURE_SENSOR, "No device address given, using default 0x%02X!",def_addr >> 1 );
         	addr = def_addr; 
         }
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Adding %s sensor at address 0X%02X SDA=%i SCL=%i",type, addr >> 1, pin_data, pin_clk );
+	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Adding %s sensor at address 0x%02X SDA=%i SCL=%i",type, addr >> 1, pin_data, pin_clk );
 	SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
 	return CMD_RES_OK;
 }
