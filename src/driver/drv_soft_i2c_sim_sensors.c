@@ -411,8 +411,10 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
     if (reg == 0xF7) {
         int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
         int32_t  p10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_PRESSURE);
+        int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
         uint32_t adc_P = bmp280_press_to_adc(p10);
         uint32_t adc_T = bmp280_temp_to_adc(t10);
+        uint32_t adc_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
         ctx->resp[0] = (uint8_t)((adc_P>>12)&0xFF);
         ctx->resp[1] = (uint8_t)((adc_P>> 4)&0xFF);
         ctx->resp[2] = (uint8_t)((adc_P<< 4)&0xF0);
@@ -421,8 +423,6 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
         ctx->resp[5] = (uint8_t)((adc_T<< 4)&0xF0);
         ctx->resp_len = 6;
         if (s->is_bme280) {
-            int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-            uint32_t adc_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
             if (adc_H > 0xFFFF) adc_H = 0xFFFF;
             ctx->resp[6] = (uint8_t)(adc_H>>8);
             ctx->resp[7] = (uint8_t)(adc_H&0xFF);
