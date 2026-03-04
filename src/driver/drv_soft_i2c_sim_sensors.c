@@ -428,8 +428,14 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
             ctx->resp[7] = (uint8_t)(adc_H&0xFF);
             ctx->resp_len = 8;
         }
-        printf("[SIM][BMP280] T=%d.%d C  P=%d.%d hPa  adc_T=0x%05X adc_P=0x%05X\n",
-               t10/10, abs(t10%10), p10/10, abs(p10%10), adc_T, adc_P);
+        printf("[SIM][BMP280] T=%d.%d C  P=%d.%d hPa  ",
+               t10/10, abs(t10%10), p10/10, abs(p10%10));
+        if (s->is_bme280) { 
+        	printf("H=%d.%d %%  adc_H=0x%04X ",
+               		h10/10, abs(h10%10), adc_H);
+        }
+        printf("adc_T=0x%05X adc_P=0x%05X\n",
+                adc_T, adc_P);
         return true;
     }
     // 0xFD – humidity registers (BME280 only, 2 bytes)
