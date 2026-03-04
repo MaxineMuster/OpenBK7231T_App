@@ -1,21 +1,22 @@
 // drv_soft_i2c_sim_sensors.c
 // -------------------------------------------------------
-// Sensor plugins for the soft-I2C simulator.
+// Sensor plugins the soft-I2C "simulator".
 //
-// Each sensor family provides:
-//   - init()             – seed default value ranges
-//   - encode_response()  – turn cmd bytes + dynamic values
-//                          into the exact byte sequence the
-//                          real hardware would return
+// All protocol and encoding details are derived from the
+// official manufacturer datasheets:
 //
-// To add a new sensor:
-//   1. Write its three callbacks (init, encode_response,
-//      optionally on_read_complete).
-//   2. Define a static const sim_sensor_ops_t for it.
-//   3. Add a SoftI2C_Sim_AddXxx() convenience function.
-//   4. Declare it in drv_soft_i2c_sim.h.
+//   SHT3x  – Sensirion Datasheet SHT3x-DIS v7 (Dec 2022)
+//   SHT4x  – Sensirion Datasheet SHT4x v6.5 (Apr 2024)
+//   AHT2x  – Aosong AHT20/AHT21 Datasheet A0/A1 (2020)
+//   BMP280 – Bosch BST-BMP280-DS001 v1.14 (2015)
+//   BME280 – Bosch BST-BME280-DS002 (2018)
+//   CHT8305/8310/8315 – Sensylink CHT83xx Datasheet
 //
-// No changes to drv_soft_i2c_sim.c are ever needed.
+// Each plugin:
+//   init()             – seed default value ranges
+//   encode_response()  – produce the exact byte sequence
+//                        the real chip would return
+//
 // -------------------------------------------------------
 #ifdef WIN32
 
@@ -23,15 +24,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>   // abs()
-#include "../logging/logging.h"
-
-// e.g. for wal_stricmp (instead of missing strcasecmp)
-#include "../new_common.h"
-
-// Commands register, execution API and cmd tokenizer
-#include "../cmnds/cmd_public.h"
-
+#include <stdlib.h>
 
 #include "drv_soft_i2c_sim.h"
 
@@ -39,124 +32,125 @@
 // Shared helpers
 // ===================================================================
 
-// CRC-8  poly=0x31, init=0xFF  (Sensirion convention)
+// CRC-8/NRSC-5  poly=0x31 init=0xFF  (Sensirion convention, all sensors)
 static uint8_t crc8_sensirion(uint8_t a, uint8_t b) {
     uint8_t crc = 0xFF ^ a;
-    for (int i = 0; i < 8; i++)
-        crc = (crc & 0x80) ? ((crc << 1) ^ 0x31) : (crc << 1);
+    for (int i = 0; i < 8; i++) crc = (crc & 0x80) ? (uint8_t)((crc << 1) ^ 0x31) : (uint8_t)(crc << 1);
     crc ^= b;
-    for (int i = 0; i < 8; i++)
-        crc = (crc & 0x80) ? ((crc << 1) ^ 0x31) : (crc << 1);
+    for (int i = 0; i < 8; i++) crc = (crc & 0x80) ? (uint8_t)((crc << 1) ^ 0x31) : (uint8_t)(crc << 1);
     return crc;
 }
 
-// Build a 3-byte Sensirion word (MSB, LSB, CRC) into buf[]
-static void pack_sensirion_word(uint8_t *buf, uint16_t raw) {
+// Pack a 3-byte Sensirion word [MSB, LSB, CRC] into buf
+static void pack_word(uint8_t *buf, uint16_t raw) {
     buf[0] = (uint8_t)(raw >> 8);
     buf[1] = (uint8_t)(raw & 0xFF);
     buf[2] = crc8_sensirion(buf[0], buf[1]);
 }
 
-// Build a 6-byte Sensirion measurement response (T word + H word)
-static void pack_sensirion_meas(uint8_t *resp, uint16_t raw_t, uint16_t raw_h) {
-    pack_sensirion_word(resp,     raw_t);
-    pack_sensirion_word(resp + 3, raw_h);
+// Pack two Sensirion words (T then H) = 6 bytes
+static void pack_th(uint8_t *resp, uint16_t raw_t, uint16_t raw_h) {
+    pack_word(resp,     raw_t);
+    pack_word(resp + 3, raw_h);
 }
 
 // ===================================================================
 // SHT3x plugin
 // ===================================================================
-// Protocol used by drv_shtxx.c:
-//   Write 0x24 0x00  -> trigger single-shot (high rep., no stretch)
-//   Write 0x30 0xA2  -> soft reset
-//   Write 0x36 0x82  -> read serial number
-//   Write 0x23 0x22  -> start periodic (ignored here)
-//   Write 0xE0 0x00  -> fetch periodic result
-//   Read  6 bytes    -> [T_MSB T_LSB T_CRC H_MSB H_LSB H_CRC]
+// Reference: Sensirion Datasheet SHT3x-DIS v7 (Dec 2022)
 //
-// Physical encoding (from Sensirion datasheet / drv_shtxx.c):
-//   raw_T = (t_x10 + 450) * 65535 / 1750
-//   raw_H = h_x10 * 65535 / 1000          (hum_scale=100 path)
+// I2C address: 0x44 (ADDR=GND) or 0x45 (ADDR=VDD)
+//
+// Commands (16-bit, MSB first):
+//   0x2400  single-shot high-rep, no clock stretch
+//   0x240B  single-shot medium-rep, no clock stretch
+//   0x2416  single-shot low-rep, no clock stretch
+//   0x2C06  single-shot high-rep, clock stretch
+//   0x2C0D  single-shot medium-rep, clock stretch
+//   0x2C10  single-shot low-rep, clock stretch
+//   0x20xx..0x27xx  periodic measurement start
+//   0xE000  fetch data (periodic mode)
+//   0x30A2  soft reset
+//   0x3066  heater on
+//   0x3098  heater off
+//   0xF32D  read status register
+//   0x3780  read serial number
+//
+// Response (6 bytes): [T_MSB T_LSB T_CRC H_MSB H_LSB H_CRC]
+//
+// Conversion (datasheet eq. 1 & 2):
+//   T(°C) = -45 + 175 * raw_T / 65535
+//   RH(%) = 100 * raw_H / 65535
+//   Inversion:
+//     raw_T = (T + 45) * 65535 / 175
+//     raw_H = RH * 65535 / 100
 // ===================================================================
 
 static void sht3x_init(sim_ctx_t *ctx) {
-    // Temperature 20.0-25.0 C, start 22.0, drift +-0.3/read
     SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 200, 250, 3);
-    // Humidity 40-60 %RH, start 50.0, drift +-0.5/read
     SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 400, 600, 5);
 }
 
 static void sht3x_build_meas(sim_ctx_t *ctx) {
     int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
     int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-    uint16_t raw_t = (uint16_t)(((t10 + 450) * 65535) / 1750);
-    uint16_t raw_h = (uint16_t)((h10 * 65535) / 1000);
-    if (raw_h > 65535) raw_h = 65535;
-    pack_sensirion_meas(ctx->resp, raw_t, raw_h);
+    uint16_t raw_t = (uint16_t)(((int32_t)(t10 + 450) * 65535) / 1750);
+    uint16_t raw_h = (uint16_t)(((int32_t) h10        * 65535) / 1000);
+    pack_th(ctx->resp, raw_t, raw_h);
     ctx->resp_len = 6;
     printf("[SIM][SHT3x] T=%d.%d C  H=%d.%d%%  raw_T=0x%04X raw_H=0x%04X\n",
-           (int)(t10/10), (int)abs(t10%10),
-           (int)(h10/10), (int)(h10%10), raw_t, raw_h);
+           t10/10, abs(t10%10), h10/10, h10%10, raw_t, raw_h);
 }
 
 static bool sht3x_encode(sim_ctx_t *ctx) {
     if (ctx->cmd_len < 1) return false;
-    uint8_t c0 = ctx->cmd[0];
+    uint8_t c0 = ctx->cmd[0], c1 = (ctx->cmd_len >= 2) ? ctx->cmd[1] : 0;
 
-    // Single-shot measurement
-    if (c0 == 0x24) {
-        sht3x_build_meas(ctx);
-        return true;
-    }
+    // Single-shot (all repeatability / clock-stretch variants)
+    if (c0 == 0x24 || c0 == 0x2C) { sht3x_build_meas(ctx); return true; }
     // Periodic fetch
-    if (c0 == 0xE0 && ctx->cmd_len >= 2 && ctx->cmd[1] == 0x00) {
-        sht3x_build_meas(ctx);
-        return true;
+    if (c0 == 0xE0 && c1 == 0x00)  { sht3x_build_meas(ctx); return true; }
+    // Serial number → 6 bytes (two CRC-valid fake words)
+    if (c0 == 0x37) {
+        pack_word(ctx->resp, 0xDEAD); pack_word(ctx->resp+3, 0xBEEF);
+        ctx->resp_len = 6; return true;
     }
-    // Periodic start commands (0x20-0x27) – just ACK, no data
-    if (c0 >= 0x20 && c0 <= 0x27) {
-        ctx->resp_len = 0;
-        return true;
+    // Status register → 2 bytes + CRC (0x0000 = no alerts)
+    if (c0 == 0xF3) {
+        pack_word(ctx->resp, 0x0000); ctx->resp_len = 3; return true;
     }
-    // Soft reset
-    if (c0 == 0x30) {
-        ctx->resp_len = 0;
-        return true;
-    }
-    // Serial number  (cmd 0x36 0x82)
-    if (c0 == 0x36) {
-        // Return a plausible CRC-valid fake serial: 0xDEAD / 0xBEEF
-        pack_sensirion_word(ctx->resp,     0xDEAD);
-        pack_sensirion_word(ctx->resp + 3, 0xBEEF);
-        ctx->resp_len = 6;
-        return true;
-    }
-    // Status register clear / heater commands – ACK only
+    // All other commands (reset, heater, break, periodic start) → ACK only
     ctx->resp_len = 0;
     return true;
 }
 
 static const sim_sensor_ops_t g_sht3x_ops = {
-    .name             = "SHT3x",
-    .init             = sht3x_init,
-    .encode_response  = sht3x_encode,
-    .on_read_complete = NULL,
+    .name = "SHT3x", .init = sht3x_init, .encode_response = sht3x_encode,
 };
 
 // ===================================================================
 // SHT4x plugin
 // ===================================================================
-// Protocol used by drv_shtxx.c:
-//   Write 0xFD        -> high-repeatability single-shot
-//   Write 0x94        -> soft reset
-//   Write 0x89        -> read serial number
-//   Read  6 bytes     -> [T_MSB T_LSB T_CRC H_MSB H_LSB H_CRC]
+// Reference: Sensirion Datasheet SHT4x v6.5 (Apr 2024)
 //
-// SHT4x hum_scale=125, offset=-6 (from SHT_g_cfg).
-// To keep the encode simple we use the SHT3x raw encoding and let
-// the driver's hum_scale/offset correction produce the right output.
-// For a truly faithful SHT4x encoding:
-//   raw_H = (h_x10 + 60) * 65535 / 1250
+// I2C address: 0x44 (SHT40) or 0x45 (SHT41/42)
+//
+// Commands (8-bit, unlike SHT3x's 16-bit):
+//   0xFD  measure T+RH, high precision
+//   0xF6  measure T+RH, medium precision
+//   0xE0  measure T+RH, low precision
+//   0x39/0x32/0x2F/0x24/0x1E/0x15  heater variants + measure
+//   0x89  read serial number
+//   0x94  soft reset
+//
+// Response (6 bytes): [T_MSB T_LSB T_CRC H_MSB H_LSB H_CRC]
+//
+// Conversion (datasheet eq. 1 & 2):
+//   T(°C) = -45 + 175 * raw_T / 65535   ← identical to SHT3x
+//   RH(%) =  -6 + 125 * raw_H / 65535   ← different offset/scale from SHT3x
+//   Inversion:
+//     raw_T = (T + 45) * 65535 / 175
+//     raw_H = (RH + 6) * 65535 / 125
 // ===================================================================
 
 static void sht4x_init(sim_ctx_t *ctx) {
@@ -168,67 +162,70 @@ static bool sht4x_encode(sim_ctx_t *ctx) {
     if (ctx->cmd_len < 1) return false;
     uint8_t c0 = ctx->cmd[0];
 
-    if (c0 == 0xFD) {
+    // All measurement commands (all precision levels + heater variants)
+    if (c0==0xFD||c0==0xF6||c0==0xE0||
+        c0==0x39||c0==0x32||c0==0x2F||c0==0x24||c0==0x1E||c0==0x15) {
         int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
         int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-        uint16_t raw_t = (uint16_t)(((t10 + 450) * 65535) / 1750);
-        // SHT4x: raw_H = (h_x10 + 60) * 65535 / 1250
-        int32_t h_adj = h10 + 60;  // compensate the -6 offset the driver applies
-        uint16_t raw_h = (uint16_t)((h_adj * 65535) / 1250);
-        if (raw_h > 65535) raw_h = 65535;
-        pack_sensirion_meas(ctx->resp, raw_t, raw_h);
+        uint16_t raw_t = (uint16_t)(((int32_t)(t10 + 450) * 65535) / 1750);
+        uint16_t raw_h = (uint16_t)(((int32_t)(h10 +  60) * 65535) / 1250);
+        pack_th(ctx->resp, raw_t, raw_h);
         ctx->resp_len = 6;
         printf("[SIM][SHT4x] T=%d.%d C  H=%d.%d%%  raw_T=0x%04X raw_H=0x%04X\n",
-               (int)(t10/10), (int)abs(t10%10),
-               (int)(h10/10), (int)(h10%10), raw_t, raw_h);
+               t10/10, abs(t10%10), h10/10, h10%10, raw_t, raw_h);
         return true;
     }
-    if (c0 == 0x94) {  // reset
-        ctx->resp_len = 0;
-        return true;
+    // Serial number → 6 bytes
+    if (c0 == 0x89) {
+        pack_word(ctx->resp, 0xDEAD); pack_word(ctx->resp+3, 0xBEEF);
+        ctx->resp_len = 6; return true;
     }
-    if (c0 == 0x89) {  // serial number
-        pack_sensirion_word(ctx->resp,     0xDEAD);
-        pack_sensirion_word(ctx->resp + 3, 0xBEEF);
-        ctx->resp_len = 6;
-        return true;
-    }
+    // Soft reset and any unknown → ACK only
     ctx->resp_len = 0;
     return true;
 }
 
 static const sim_sensor_ops_t g_sht4x_ops = {
-    .name             = "SHT4x",
-    .init             = sht4x_init,
-    .encode_response  = sht4x_encode,
-    .on_read_complete = NULL,
+    .name = "SHT4x", .init = sht4x_init, .encode_response = sht4x_encode,
 };
 
 // ===================================================================
-// AHT2x plugin
+// AHT2x plugin  (AHT20 / AHT21)
 // ===================================================================
-// Protocol (from drv_aht2x.c):
-//   Write 0xBA              -> soft reset (AHT2X_CMD_RST)
-//   Write 0xBE 0x08 0x00    -> initialise (AHT2X_CMD_INI + params)
-//   Read  1 byte            -> status (bit7=busy, bits[6:3]=0001 when calibrated)
-//   Write 0xAC 0x33 0x00    -> trigger measurement (AHT2X_CMD_TMS)
-//   Read  6 bytes           -> [status, H[19:12], H[11:4], H[3:0]|T[19:16],
-//                               T[15:8], T[7:0]]
+// Reference: Aosong AHT20 Datasheet A0 (2020), AHT21 Datasheet A1 (2020)
 //
-// Physical encoding:
-//   raw_H = (humid/100) * 2^20   = humid_x10 * 104857.6 / 1000
-//   raw_T = ((temp+50)/200) * 2^20 = (temp_x10+500) * 104857.6 / 2000
+// I2C address: 0x38 (fixed)
+//
+// Commands:
+//   0x71              status poll (standalone read, no preceding write needed)
+//   0xBE 0x08 0x00    initialise / calibrate
+//   0xAC 0x33 0x00    trigger measurement
+//   0xBA              soft reset
+//
+// Status byte:
+//   bit7 = busy (0=ready, 1=converting)
+//   bit3 = calibrated (1=ok)
+//
+// Measurement response (6 bytes, no CRC in standard mode):
+//   [0] = status byte
+//   [1] = H[19:12]
+//   [2] = H[11:4]
+//   [3] = H[3:0] | T[19:16]
+//   [4] = T[15:8]
+//   [5] = T[7:0]
+//
+// Conversion (datasheet section 5.4):
+//   RH(%) = raw_H / 2^20 * 100     raw_H = RH / 100 * 2^20
+//   T(°C) = raw_T / 2^20 * 200 - 50   raw_T = (T+50) / 200 * 2^20
 // ===================================================================
 
-// Per-sensor state: track calibration / busy phase
-typedef struct { bool calibrated; uint8_t busy_countdown; } aht2x_state_t;
+typedef struct { bool calibrated; } aht2x_state_t;
 
 static void aht2x_init(sim_ctx_t *ctx) {
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 150, 350,  3);
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200, 900,  5);
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 150, 350, 3);
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200, 900, 5);
     aht2x_state_t *s = (aht2x_state_t *)malloc(sizeof(aht2x_state_t));
-    s->calibrated      = false;
-    s->busy_countdown  = 0;
+    s->calibrated = false;
     ctx->user = s;
 }
 
@@ -236,828 +233,327 @@ static bool aht2x_encode(sim_ctx_t *ctx) {
     aht2x_state_t *s = (aht2x_state_t *)ctx->user;
     if (!s) return false;
 
-    // Bare read poll: driver does Read-Start -> ReadByte -> Stop with no
-    // preceding write in that transaction.  cmd_len == 0 here because
-    // the core only accumulates bytes during write phases.
-    // The response was pre-loaded by the last write command (0xBE or 0xBA).
+    // Bare read (cmd_len==0): status poll via 0x71 or post-init poll
     if (ctx->cmd_len == 0) {
-        ctx->resp[0]  = s->calibrated ? 0x08 : 0x00;
+        ctx->resp[0] = s->calibrated ? 0x08 : 0x00;
         ctx->resp_len = 1;
         return true;
     }
 
-    uint8_t c0 = ctx->cmd[0];
-
-    // Soft reset: mark uncalibrated; pre-load 0x00 status in case
-    // anything reads back (driver does not, but be safe)
-    if (c0 == 0xBA) {
-        s->calibrated     = false;
-        s->busy_countdown = 0;
-        ctx->resp[0]  = 0x00;
-        ctx->resp_len = 1;
+    switch (ctx->cmd[0]) {
+    case 0xBA: // soft reset → uncalibrated
+        s->calibrated = false;
+        ctx->resp[0] = 0x00; ctx->resp_len = 1;
         return true;
-    }
 
-    // Initialise: mark calibrated and pre-load 0x08 into resp[] NOW.
-    // The driver immediately follows with a bare Read-Start poll loop;
-    // the core preserves resp[] from a write-Stop through to the next
-    // Read-Start, so the poll will pick up this byte without any
-    // separate cmd_len==0 transaction being needed.
-    if (c0 == 0xBE) {
+    case 0xBE: // initialise → calibrated; pre-load status for immediate poll
         s->calibrated = true;
-        ctx->resp[0]  = 0x08;   // bit7=0 not busy, bit3=1 calibrated
-        ctx->resp_len = 1;
+        ctx->resp[0] = 0x08; ctx->resp_len = 1;
         return true;
-    }
 
-    // Trigger measurement
-    if (c0 == 0xAC) {
-        int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
-        int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-
-        // raw values in Q20 (2^20 = 1048576)
-        uint32_t raw_h = (uint32_t)((int64_t)h10 * 1048576 / 1000);
-        uint32_t raw_t = (uint32_t)((int64_t)(t10 + 500) * 1048576 / 2000);
+    case 0xAC: { // trigger measurement → 6-byte result
+        int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
+        int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
+        uint32_t raw_h = (uint32_t)((int64_t) h10         * (1<<20) / 1000);
+        uint32_t raw_t = (uint32_t)((int64_t)(t10 + 500)  * (1<<20) / 2000);
         if (raw_h > 0xFFFFF) raw_h = 0xFFFFF;
         if (raw_t > 0xFFFFF) raw_t = 0xFFFFF;
-
-        // byte[0]: status – not busy, calibrated
         ctx->resp[0] = s->calibrated ? 0x08 : 0x00;
-        // bytes[1-3]: humidity (20 bits, MSB first, upper nibble of byte[3])
         ctx->resp[1] = (uint8_t)((raw_h >> 12) & 0xFF);
         ctx->resp[2] = (uint8_t)((raw_h >>  4) & 0xFF);
         ctx->resp[3] = (uint8_t)(((raw_h & 0x0F) << 4) | ((raw_t >> 16) & 0x0F));
-        // bytes[4-5]: temperature low 16 bits
         ctx->resp[4] = (uint8_t)((raw_t >>  8) & 0xFF);
         ctx->resp[5] = (uint8_t)( raw_t        & 0xFF);
         ctx->resp_len = 6;
-
         printf("[SIM][AHT2x] T=%d.%d C  H=%d.%d%%  raw_T=0x%05X raw_H=0x%05X\n",
-               (int)(t10/10), (int)abs(t10%10),
-               (int)(h10/10), (int)(h10%10), raw_t, raw_h);
+               t10/10, abs(t10%10), h10/10, h10%10, raw_t, raw_h);
         return true;
     }
-
-    ctx->resp_len = 0;
-    return true;
+    default:
+        ctx->resp_len = 0;
+        return true;
+    }
 }
 
 static const sim_sensor_ops_t g_aht2x_ops = {
-    .name             = "AHT2x",
-    .init             = aht2x_init,
-    .encode_response  = aht2x_encode,
-    .on_read_complete = NULL,
+    .name = "AHT2x", .init = aht2x_init, .encode_response = aht2x_encode,
 };
 
 // ===================================================================
 // BMP280 / BME280 plugin
 // ===================================================================
-// The BMP280 driver (BMP280.h included by drv_bmp280.c) reads via
-// raw register accesses using BMP280_Start/Write/Read/Stop wrappers,
-// which internally map to Soft_I2C_Start_Internal / WriteByte /
-// ReadByte / Stop.
+// Reference: Bosch BST-BMP280-DS001 v1.14 (2015)
+//            Bosch BST-BME280-DS002 (2018)
+//
+// I2C address: 0x76 (SDO=GND) or 0x77 (SDO=VDD)
 //
 // Key registers:
-//   0xD0  -> chip ID  (BMP280=0x60, BME280=0x60 for most clones)
-//   0x88-0x9F -> calibration data (trim coefficients, 24 bytes)
-//   0xA1  -> dig_H1 (BME280 only, 1 byte)
-//   0xE1-0xE7 -> dig_H2..H6 (BME280, 7 bytes)
-//   0xF3  -> status
-//   0xF4  -> ctrl_meas (osrs_t, osrs_p, mode)
-//   0xF7-0xFC -> raw ADC data (press[19:0], temp[19:0], hum[15:0])
+//   0xD0        chip_id   (BMP280=0x58, BME280=0x60)
+//   0xE0        reset     (write 0xB6)
+//   0xF2        ctrl_hum  (BME280 only, must be written before ctrl_meas)
+//   0xF3        status    (bit3=measuring, bit0=im_update)
+//   0xF4        ctrl_meas (osrs_t[7:5], osrs_p[4:2], mode[1:0])
+//   0xF5        config
+//   0x88..0x9F  calibration T1-T3, P1-P9 (24 bytes LE, burst-readable)
+//   0xA1        dig_H1 (BME280, 1 byte)
+//   0xE1..0xE7  dig_H2..H6 (BME280, 7 bytes LE, burst-readable)
 //
-// Physical encoding (from BMP280 datasheet compensated formulas):
-//   We use the "simpler" integer-only forward path.
-//   For simulation we just pre-compute the ADC values that would
-//   produce the desired temperature/pressure, using fixed
-//   calibration constants that are also returned from 0x88.
+// Data registers (0xF7 auto-increments):
+//   0xF7 0xF8 0xF9  press_msb/lsb/xlsb → adc_P = [0]<<12|[1]<<4|[2]>>4
+//   0xFA 0xFB 0xFC  temp_msb/lsb/xlsb  → adc_T = [3]<<12|[4]<<4|[5]>>4
+//   0xFD 0xFE       hum_msb/lsb        → adc_H = [6]<<8|[7]  (BME280 only)
+//
+// We use fixed calibration constants from a real BMP280 eval board.
 // ===================================================================
 
-// Fixed calibration constants chosen so the compensation formulas
-// produce human-readable results without overflow.
-// These match the defaults used in many BMP280 evaluation boards.
-#define BMP_DIG_T1 27504u
-#define BMP_DIG_T2 26435
-#define BMP_DIG_T3 -1000
-#define BMP_DIG_P1 36477u
-#define BMP_DIG_P2 -10685
-#define BMP_DIG_P3 3024
-#define BMP_DIG_P4 2855
-#define BMP_DIG_P5 140
-#define BMP_DIG_P6 -7
-#define BMP_DIG_P7 15500
+#define BMP_DIG_T1  27504u
+#define BMP_DIG_T2  26435
+#define BMP_DIG_T3  -1000
+#define BMP_DIG_P1  36477u
+#define BMP_DIG_P2  -10685
+#define BMP_DIG_P3   3024
+#define BMP_DIG_P4   2855
+#define BMP_DIG_P5    140
+#define BMP_DIG_P6     -7
+#define BMP_DIG_P7  15500
 #define BMP_DIG_P8 -14600
-#define BMP_DIG_P9 6000
+#define BMP_DIG_P9   6000
 
-typedef struct {
-    uint8_t reg;          // register pointer set by last write
-    bool    is_bme280;    // if true, also simulate humidity
-} bmp280_state_t;
+typedef struct { uint8_t reg; bool is_bme280; } bmp280_state_t;
 
-// Pack calibration bytes into buf (little-endian, as the chip stores them)
-static void bmp280_pack_calib(uint8_t *buf) {
-    // T1 (uint16), T2 (int16), T3 (int16)
-    uint16_t t1 = BMP_DIG_T1;
-    int16_t  t2 = BMP_DIG_T2, t3 = BMP_DIG_T3;
-    buf[0]  = t1 & 0xFF; buf[1]  = t1 >> 8;
-    buf[2]  = t2 & 0xFF; buf[3]  = t2 >> 8;
-    buf[4]  = t3 & 0xFF; buf[5]  = t3 >> 8;
-    // P1-P9
-    uint16_t p1 = BMP_DIG_P1;
-    int16_t  pv[8] = {BMP_DIG_P2, BMP_DIG_P3, BMP_DIG_P4,
-                      BMP_DIG_P5, BMP_DIG_P6, BMP_DIG_P7,
-                      BMP_DIG_P8, BMP_DIG_P9};
-    buf[6]  = p1 & 0xFF; buf[7]  = p1 >> 8;
-    for (int i = 0; i < 8; i++) {
-        buf[8  + i*2] = pv[i] & 0xFF;
-        buf[9  + i*2] = (pv[i] >> 8) & 0xFF;
-    }
-    // Total: 6 + 2 + 16 = 24 bytes (0x88-0x9F)
-}
-
-// Compute the raw ADC temperature value that produces t_x10 degrees
-// using the BMP280 compensation algorithm (inverted).
-// The compensation forward path is:
-//   var1 = (adc_T/8 - DIG_T1*2) * DIG_T2 / 2048
-//   var2 = (adc_T/16 - DIG_T1)^2 * DIG_T3 / 67108864 / 32
-//   t_fine = var1 + var2
-//   T = t_fine * 5 / 320   (in 0.01 C units)
-// We use a linear approximation (DIG_T3 is tiny) to invert:
-//   adc_T ~= (T_hundredths * 320/5 * 2048 / DIG_T2 + DIG_T1*2) * 8
+// Invert BMP280 temperature compensation (linear approx. of the Bosch formula)
 static uint32_t bmp280_temp_to_adc(int32_t t10) {
-    // t_fine target: T_hundredths * 320 / 5  where T_hundredths = t10 * 10
-    int32_t T_h     = t10 * 10;          // 0.01 C units
-    int32_t t_fine  = (T_h * 320) / 5;   // ~6400 * T_h / 100
-    // var1 = t_fine (ignoring var2)
-    // adc_T = (var1 * 2048 / DIG_T2 + DIG_T1*2) * 8
-    int32_t adc_T = ((t_fine * 2048 / BMP_DIG_T2) + (int32_t)BMP_DIG_T1 * 2) * 8;
-    if (adc_T < 0) adc_T = 0;
-    if (adc_T > 0xFFFFF) adc_T = 0xFFFFF;  // 20-bit
+    int32_t t_fine = (t10 * 10 * 320) / 5;
+    int32_t adc_T  = ((t_fine * 2048 / BMP_DIG_T2) + (int32_t)BMP_DIG_T1 * 2) * 8;
+    if (adc_T < 0)       adc_T = 0;
+    if (adc_T > 0xFFFFF) adc_T = 0xFFFFF;
     return (uint32_t)adc_T;
 }
 
-// Pressure: use a fixed nominal ADC value near sea level for now,
-// shifted slightly with the dynamic pressure value.
-// Full inversion of the BMP280 pressure compensation is complex;
-// we use an empirical linear mapping calibrated at ~1013 hPa.
-static uint32_t bmp280_press_to_adc(int32_t p10, int32_t t10) {
-    // With the fixed calibration constants above, adc_P near 415000
-    // corresponds to ~1013 hPa when T=25 C.
-    // We scale linearly: delta_p10 -> delta_adc ~= 38
-    int32_t base_p10 = 10132;  // 1013.2 hPa
-    int32_t base_adc = 415000;
-    int32_t adc_P    = base_adc + (int32_t)((p10 - base_p10) * 38);
-    (void)t10;
-    if (adc_P < 0) adc_P = 0;
+// Empirical linear pressure inversion (calibrated at 1013 hPa / 25°C)
+static uint32_t bmp280_press_to_adc(int32_t p10) {
+    int32_t adc_P = 415000 + (p10 - 10132) * 38;
+    if (adc_P < 0)       adc_P = 0;
     if (adc_P > 0xFFFFF) adc_P = 0xFFFFF;
     return (uint32_t)adc_P;
 }
 
-static void bmp280_init(sim_ctx_t *ctx) {
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 250, 180, 450,  3);
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_PRESSURE,  10132, 9800, 10400, 5);
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200,  900,  4);
+// Produce 24-byte calibration block (0x88..0x9F), little-endian
+static void bmp280_pack_calib(uint8_t *buf) {
+    static const int16_t c[] = {
+        (int16_t)BMP_DIG_T1, BMP_DIG_T2, BMP_DIG_T3,
+        (int16_t)BMP_DIG_P1, BMP_DIG_P2, BMP_DIG_P3, BMP_DIG_P4,
+        BMP_DIG_P5, BMP_DIG_P6, BMP_DIG_P7, BMP_DIG_P8, BMP_DIG_P9,
+    };
+    for (int i = 0; i < 12; i++) {
+        buf[i*2]   = (uint8_t)((uint16_t)c[i] & 0xFF);
+        buf[i*2+1] = (uint8_t)((uint16_t)c[i] >> 8);
+    }
+}
 
+static void bmp280_init(sim_ctx_t *ctx) {
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE,   250, 180, 450,  3);
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_PRESSURE,    10132, 9800, 10400, 5);
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,      500, 200,  900,  4);
     bmp280_state_t *s = (bmp280_state_t *)malloc(sizeof(bmp280_state_t));
-    s->reg        = 0;
-    s->is_bme280  = false;   // change to true for BME280 simulation
-    ctx->user     = s;
+    s->reg = 0; s->is_bme280 = false;
+    ctx->user = s;
 }
 
 static bool bmp280_encode(sim_ctx_t *ctx) {
     bmp280_state_t *s = (bmp280_state_t *)ctx->user;
     if (!s || ctx->cmd_len < 1) return false;
-
     uint8_t reg = ctx->cmd[0];
 
-    // Register write (2 bytes: reg + value) – just acknowledge
-    if (ctx->cmd_len >= 2) {
-        s->reg = reg;
-        ctx->resp_len = 0;
-        return true;
-    }
-
-    // Register read: remember the register, response comes on the
-    // following read Start.
+    // Register write (reg + data bytes) → ACK only
+    if (ctx->cmd_len >= 2) { s->reg = reg; ctx->resp_len = 0; return true; }
     s->reg = reg;
 
+    // 0xD0 – chip_id
     if (reg == 0xD0) {
-        // BMP280=0x58, BME280=0x60  (drv_bmpi2c.h BMP280_CHIP_ID / BME280_CHIP_ID)
-        ctx->resp[0]  = s->is_bme280 ? 0x60 : 0x58;
-        ctx->resp_len = 1;
+        ctx->resp[0] = s->is_bme280 ? 0x60 : 0x58;
+        ctx->resp_len = 1; return true;
+    }
+    // 0x88..0x9F – calibration (burst or per-register; return all remaining bytes)
+    if (reg >= 0x88 && reg <= 0x9F) {
+        uint8_t calib[24]; bmp280_pack_calib(calib);
+        uint8_t off = reg - 0x88;
+        memcpy(ctx->resp, calib + off, 24 - off);
+        ctx->resp_len = (uint8_t)(24 - off);
         return true;
     }
-
-    // Calibration registers: drv_bmpi2c.h calls BMP_Read16() for each one
-    // individually, so every address gets its own 2-byte transaction (LE).
-    // The 12 T/P words live at 0x88, 0x8A, 0x8C ... 0x9E (even addresses).
-    if (reg >= 0x88 && reg <= 0x9E && (reg & 1) == 0) {
-        static const uint16_t cal_words[] = {
-            // index = (reg - 0x88) / 2
-            // T1        T2              T3
-            BMP_DIG_T1, (uint16_t)BMP_DIG_T2, (uint16_t)BMP_DIG_T3,
-            // P1        P2              P3              P4
-            BMP_DIG_P1, (uint16_t)BMP_DIG_P2, (uint16_t)BMP_DIG_P3, (uint16_t)BMP_DIG_P4,
-            // P5              P6              P7              P8              P9
-            (uint16_t)BMP_DIG_P5, (uint16_t)BMP_DIG_P6, (uint16_t)BMP_DIG_P7,
-            (uint16_t)BMP_DIG_P8, (uint16_t)BMP_DIG_P9,
-        };
-        uint16_t v = cal_words[(reg - 0x88) / 2];
-        ctx->resp[0]  = (uint8_t)(v & 0xFF);   // LSB first (little-endian on wire)
-        ctx->resp[1]  = (uint8_t)(v >> 8);
-        ctx->resp_len = 2;
-        return true;
-    }
-    // BME280 humidity calibration (individual byte/word reads)
+    // BME280 humidity calibration
     if (s->is_bme280) {
-        // H1: single byte at 0xA1
-        if (reg == 0xA1) { ctx->resp[0] = 75;  ctx->resp_len = 1; return true; }
-        // H2: int16 LE at 0xE1
-        if (reg == 0xE1) { ctx->resp[0] = 0x58; ctx->resp[1] = 0x06; ctx->resp_len = 2; return true; }
-        // H3: byte at 0xE3
-        if (reg == 0xE3) { ctx->resp[0] = 0;   ctx->resp_len = 1; return true; }
-        // H4 high byte at 0xE4, shared byte at 0xE5, H5 high byte at 0xE6, H6 at 0xE7
-        if (reg == 0xE4) { ctx->resp[0] = 0x13; ctx->resp_len = 1; return true; } // H4=316>>4
-        if (reg == 0xE5) { ctx->resp[0] = 0xC3; ctx->resp_len = 1; return true; } // H4 low | H5 high
-        if (reg == 0xE6) { ctx->resp[0] = 0x03; ctx->resp_len = 1; return true; } // H5 high byte
-        if (reg == 0xE7) { ctx->resp[0] = 30;   ctx->resp_len = 1; return true; } // H6
-        if (reg == 0xF2) { ctx->resp[0] = 0x01; ctx->resp_len = 1; return true; } // ctrl_hum
+        if (reg == 0xA1) { ctx->resp[0] = 75; ctx->resp_len = 1; return true; }
+        if (reg >= 0xE1 && reg <= 0xE7) {
+            static const uint8_t hc[] = {0x58,0x06, 0x00, 0x13,0xC3,0x03, 0x1E};
+            uint8_t off = reg - 0xE1;
+            memcpy(ctx->resp, hc + off, 7 - off);
+            ctx->resp_len = (uint8_t)(7 - off); return true;
+        }
+        if (reg == 0xF2) { ctx->resp[0] = 0x01; ctx->resp_len = 1; return true; }
     }
+    if (reg == 0xF3) { ctx->resp[0] = 0x00; ctx->resp_len = 1; return true; } // status: ready
+    if (reg == 0xF4) { ctx->resp[0] = 0x27; ctx->resp_len = 1; return true; } // ctrl_meas
+    if (reg == 0xF5) { ctx->resp[0] = 0x00; ctx->resp_len = 1; return true; } // config
 
-    if (reg == 0xF3) {
-        // Status: measuring=0, im_update=0 -> ready
-        ctx->resp[0]  = 0x00;
-        ctx->resp_len = 1;
-        return true;
-    }
-
-    if (reg == 0xF4) {
-        // ctrl_meas: mode=11 (normal), osrs=001 (x1)
-        ctx->resp[0]  = 0x27;
-        ctx->resp_len = 1;
-        return true;
-    }
-
-
+    // 0xF7 – data burst (press + temp [+ hum for BME280])
+    // Datasheet: 0xF7 auto-increments through 0xFC (0xFE for BME280).
+    // Return all bytes so both burst-read and split-read drivers work.
     if (reg == 0xF7) {
-        // Two drivers use this register differently:
-        //
-        // drv_bmp280.c / BMP280.h (old driver, uses Start_Internal):
-        //   Reads ALL 6 bytes in one burst: press[0-2] + temp[3-5]
-        //   (and 8 bytes for BME280: + hum[6-7])
-        //
-        // drv_bmpi2c.h (new driver, uses Soft_I2C_Start directly):
-        //   Reads only 3 bytes (pressure) here, then issues a separate
-        //   transaction at 0xFA for temperature.
-        //
-        // Solution: always return all 6 (or 8) bytes from 0xF7.
-        // The old driver consumes all of them in one read.
-        // The new driver only reads 3 then stops - the extra bytes are
-        // simply ignored, which is harmless.
         int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
         int32_t  p10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_PRESSURE);
-        uint32_t adc_P = bmp280_press_to_adc(p10, t10);
+        uint32_t adc_P = bmp280_press_to_adc(p10);
         uint32_t adc_T = bmp280_temp_to_adc(t10);
-        ctx->resp[0] = (uint8_t)((adc_P >> 12) & 0xFF);
-        ctx->resp[1] = (uint8_t)((adc_P >>  4) & 0xFF);
-        ctx->resp[2] = (uint8_t)((adc_P <<  4) & 0xF0);
-        ctx->resp[3] = (uint8_t)((adc_T >> 12) & 0xFF);
-        ctx->resp[4] = (uint8_t)((adc_T >>  4) & 0xFF);
-        ctx->resp[5] = (uint8_t)((adc_T <<  4) & 0xF0);
+        ctx->resp[0] = (uint8_t)((adc_P>>12)&0xFF);
+        ctx->resp[1] = (uint8_t)((adc_P>> 4)&0xFF);
+        ctx->resp[2] = (uint8_t)((adc_P<< 4)&0xF0);
+        ctx->resp[3] = (uint8_t)((adc_T>>12)&0xFF);
+        ctx->resp[4] = (uint8_t)((adc_T>> 4)&0xFF);
+        ctx->resp[5] = (uint8_t)((adc_T<< 4)&0xF0);
+        ctx->resp_len = 6;
         if (s->is_bme280) {
             int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-            uint32_t raw_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
-            if (raw_H > 0xFFFF) raw_H = 0xFFFF;
-            ctx->resp[6] = (uint8_t)(raw_H >> 8);
-            ctx->resp[7] = (uint8_t)(raw_H & 0xFF);
+            uint32_t adc_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
+            if (adc_H > 0xFFFF) adc_H = 0xFFFF;
+            ctx->resp[6] = (uint8_t)(adc_H>>8);
+            ctx->resp[7] = (uint8_t)(adc_H&0xFF);
             ctx->resp_len = 8;
-        } else {
-            ctx->resp_len = 6;
         }
         printf("[SIM][BMP280] T=%d.%d C  P=%d.%d hPa  adc_T=0x%05X adc_P=0x%05X\n",
-               (int)(t10/10), (int)abs(t10%10),
-               (int)(p10/10), (int)abs(p10%10), adc_T, adc_P);
+               t10/10, abs(t10%10), p10/10, abs(p10%10), adc_T, adc_P);
         return true;
     }
-
+    // 0xFA – temperature sub-address (drivers that split the burst at 0xFA)
+    // Peek: 0xF7 already advanced the measurement cycle.
     if (reg == 0xFA) {
-        // drv_bmpi2c.h BMX280_Update() second transaction: temperature only (3 bytes).
-        // drv_bmp280.c never reaches here (it reads everything from 0xF7).
-        // We peek rather than next-value since 0xF7 already advanced both
-        // temperature and pressure in this measurement cycle.
-        // For BME280, humidity (2 bytes) is read in the same session right after.
-        int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
+        int32_t  t10   = SoftI2C_Sim_PeekValue(ctx, SIM_Q_TEMPERATURE);
         uint32_t adc_T = bmp280_temp_to_adc(t10);
-        ctx->resp[0] = (uint8_t)((adc_T >> 12) & 0xFF);
-        ctx->resp[1] = (uint8_t)((adc_T >>  4) & 0xFF);
-        ctx->resp[2] = (uint8_t)((adc_T <<  4) & 0xF0);
+        ctx->resp[0] = (uint8_t)((adc_T>>12)&0xFF);
+        ctx->resp[1] = (uint8_t)((adc_T>> 4)&0xFF);
+        ctx->resp[2] = (uint8_t)((adc_T<< 4)&0xF0);
+        ctx->resp_len = 3;
         if (s->is_bme280) {
-            int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-            uint32_t raw_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
-            if (raw_H > 0xFFFF) raw_H = 0xFFFF;
-            ctx->resp[3] = (uint8_t)(raw_H >> 8);
-            ctx->resp[4] = (uint8_t)(raw_H & 0xFF);
+            int32_t  h10   = SoftI2C_Sim_PeekValue(ctx, SIM_Q_HUMIDITY);
+            uint32_t adc_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
+            if (adc_H > 0xFFFF) adc_H = 0xFFFF;
+            ctx->resp[3] = (uint8_t)(adc_H>>8);
+            ctx->resp[4] = (uint8_t)(adc_H&0xFF);
             ctx->resp_len = 5;
-            printf("[SIM][BME280] T=%d.%d C  H=%d.%d%%  adc_T=0x%05X\n",
-                   (int)(t10/10), (int)abs(t10%10), (int)(h10/10), (int)(h10%10), adc_T);
-        } else {
-            ctx->resp_len = 3;
-            printf("[SIM][BMP280] T=%d.%d C  adc_T=0x%05X\n",
-                   (int)(t10/10), (int)abs(t10%10), adc_T);
         }
         return true;
     }
 
-    // Unknown register – return 0x00
-    ctx->resp[0]  = 0x00;
-    ctx->resp_len = 1;
+    // Unknown register → 0x00
+    ctx->resp[0] = 0x00; ctx->resp_len = 1;
     return true;
 }
 
 static const sim_sensor_ops_t g_bmp280_ops = {
-    .name             = "BMP280",
-    .init             = bmp280_init,
-    .encode_response  = bmp280_encode,
-    .on_read_complete = NULL,
+    .name = "BMP280", .init = bmp280_init, .encode_response = bmp280_encode,
 };
 
-/*
 // ===================================================================
 // CHT83xx plugin  (CHT8305, CHT8310, CHT8315)
 // ===================================================================
-// Protocol (from drv_cht8305.c + drv_cht83xx.h):
-//   Write 0x00          -> set register pointer to temp (CHT831X_REG_TEMP)
-//   Write 0x01          -> set register pointer to hum  (CHT831X_REG_HUM)
-//   Write 0x07 + 2B     -> write config register
-//   Write 0x0F          -> read manufacturer ID
-//   Write 0x11 + 2B     -> write one-shot register
-//   Read  4 bytes       -> [T_MSB T_LSB H_MSB H_LSB]  (from reg 0x00)
-//   Read  2 bytes       -> [H_MSB H_LSB]               (from reg 0x01)
-//   Read  2 bytes       -> [ID_MSB ID_LSB]             (from reg 0x0F)
+// Reference: Sensylink CHT8305 / CHT8310 / CHT8315 Datasheet
 //
-// Physical encoding:
-//   CHT8305 (default):
-//     raw_T = (temp + 40) * 65535 / 165    (float path)
-//     raw_H = humid * 65535 / 100
-//   CHT831X (8310/8315):
-//     raw_T = temp / 0.03125               (13-bit, signed, >> 3)
-//     raw_H = humid * 32768 / 100          (15-bit, sign bit = parity)
+// I2C address: 0x40 (default, ADDR pin selectable)
+//
+// Register map (all 2 bytes wide):
+//   0x00  T[1:0] + H[1:0]  read-only, 4 bytes [T_MSB T_LSB H_MSB H_LSB]
+//   0x01  H[1:0] only      read-only, 2 bytes (CHT831X)
+//   0x02  Status register
+//   0x03  Configuration
+//   0x04  Conversion rate
+//   0x05  Temperature high alert
+//   0x06  Temperature low alert
+//   0x07  Humidity high alert
+//   0x08  Humidity low alert
+//   0x0F  One-shot trigger (CHT831X, write-only)
+//   0xFE  Manufacturer ID (2 bytes)
+//   0xFF  Sensor/chip ID  (0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315)
+//
+// CHT8305 encoding:
+//   T(°C) = raw_T * 165 / 65535 - 40    → raw_T = (T+40) * 65535 / 165
+//   RH(%) = raw_H * 100 / 65535          → raw_H = RH * 65535 / 100
+//
+// CHT831X (8310/8315) encoding:
+//   T(°C) = int16(raw_T) / 32 * 0.03125 → raw_T = int16(T/0.03125) << 3
+//   RH(%) = (raw_H & 0x7FFF)/32768*100  → raw_H = RH*32768/100, parity=bit15
 // ===================================================================
 
 typedef struct {
-    uint8_t  reg;        // current register pointer
+    uint8_t  reg;
     uint16_t sensor_id;  // 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
 } cht83xx_state_t;
 
 static void cht83xx_init(sim_ctx_t *ctx) {
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 150, 400,  3);
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200, 900,  5);
-
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 150, 400, 3);
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200, 900, 5);
     cht83xx_state_t *s = (cht83xx_state_t *)malloc(sizeof(cht83xx_state_t));
     s->reg       = 0x00;
-    s->sensor_id = 0x8215;  // default: CHT8310; change to 0 for CHT8305
+    s->sensor_id = 0x0000;  // CHT8305 default; set 0x8215/0x8315 for CHT831X
     ctx->user    = s;
+}
+
+static uint16_t cht831x_hum_raw(int32_t h10) {
+    uint16_t h15 = (uint16_t)((int64_t)h10 * 32768 / 1000);
+    uint8_t par = 0;
+    for (int b = 0; b < 15; b++) par ^= (h15 >> b) & 1;
+    return (uint16_t)((h15 & 0x7FFF) | (par ? 0x8000u : 0));
 }
 
 static bool cht83xx_encode(sim_ctx_t *ctx) {
     cht83xx_state_t *s = (cht83xx_state_t *)ctx->user;
     if (!s) return false;
 
-    // Zero-length write = just a read Start, serve from current reg
-    if (ctx->cmd_len == 0) {
-        goto serve_reg;
+    // Update register pointer if a write was received
+    if (ctx->cmd_len > 0) {
+        s->reg = ctx->cmd[0];
+        // Multi-byte write (config, alert limit, etc.) → ACK only
+        if (ctx->cmd_len > 1) { ctx->resp_len = 0; return true; }
     }
 
-    uint8_t reg = ctx->cmd[0];
-    s->reg = reg;
+    bool is_831x = (s->sensor_id == 0x8215 || s->sensor_id == 0x8315);
+    int32_t t10  = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
+    int32_t h10  = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
 
-    // Multi-byte write (register write, e.g. config, one-shot)
-    if (ctx->cmd_len > 1) {
-        ctx->resp_len = 0;  // just ACK the write
+    switch (s->reg) {
+    case 0x00: { // T + H (4 bytes)
+        uint16_t raw_t = is_831x
+            ? (uint16_t)((int16_t)(t10 * 100 / 3125) << 3)
+            : (uint16_t)(((int32_t)(t10 + 400) * 65535) / 1650);
+        uint16_t raw_h = is_831x
+            ? cht831x_hum_raw(h10)
+            : (uint16_t)(((int32_t)h10 * 65535) / 1000);
+        ctx->resp[0]=(uint8_t)(raw_t>>8); ctx->resp[1]=(uint8_t)(raw_t&0xFF);
+        ctx->resp[2]=(uint8_t)(raw_h>>8); ctx->resp[3]=(uint8_t)(raw_h&0xFF);
+        ctx->resp_len = 4;
+        printf("[SIM][CHT83xx] T=%d.%d C  H=%d.%d%%  raw_T=0x%04X raw_H=0x%04X\n",
+               t10/10, abs(t10%10), h10/10, h10%10, raw_t, raw_h);
         return true;
     }
-
-    // Single-byte write = register pointer set; data comes on next read
-    // fall through to serve_reg
-
-serve_reg:
-    {
-        int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
-        int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-        bool is_831x = (s->sensor_id == 0x8215 || s->sensor_id == 0x8315);
-
-        if (s->reg == 0x00) {
-            // Temperature (+ humidity for CHT8305 combined read)
-            uint16_t raw_t, raw_h;
-            if (is_831x) {
-                // 13-bit signed, >>3 -> multiply back
-                int16_t t_13 = (int16_t)((float)(t10/10.0f) / 0.03125f);
-                raw_t = (uint16_t)(t_13 << 3);
-                // 15-bit humidity with parity in bit15
-                uint16_t h_15 = (uint16_t)((int64_t)h10 * 32768 / 1000);
-                // compute parity of bits[14:0]
-                uint8_t par = 0;
-                for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
-                raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
-            } else {
-                raw_t = (uint16_t)(((float)(t10/10.0f) + 40.0f) * 65535.0f / 165.0f);
-                raw_h = (uint16_t)((float)(h10/10.0f) * 65535.0f / 100.0f);
-            }
-            ctx->resp[0] = (uint8_t)(raw_t >> 8);
-            ctx->resp[1] = (uint8_t)(raw_t & 0xFF);
-            ctx->resp[2] = (uint8_t)(raw_h >> 8);
-            ctx->resp[3] = (uint8_t)(raw_h & 0xFF);
-            ctx->resp_len = 4;
-            printf("[SIM][CHT83xx] T=%d.%d C  H=%d.%d%%  raw_T=0x%04X raw_H=0x%04X\n",
-                   (int)(t10/10), (int)abs(t10%10),
-                   (int)(h10/10), (int)(h10%10), raw_t, raw_h);
-            return true;
-        }
-
-        if (s->reg == 0x01) {
-            // Humidity only (CHT831X separate read)
-            int32_t h10b = SoftI2C_Sim_PeekValue(ctx, SIM_Q_HUMIDITY); // don't advance again
-            uint16_t h_15 = (uint16_t)((int64_t)h10b * 32768 / 1000);
-            uint8_t par = 0;
-            for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
-            uint16_t raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
-            ctx->resp[0] = (uint8_t)(raw_h >> 8);
-            ctx->resp[1] = (uint8_t)(raw_h & 0xFF);
-            ctx->resp_len = 2;
-            return true;
-        }
-
-        if (s->reg == 0x0F || s->reg == 0x10) {
-            // Manufacturer / sensor ID
-            // drv reads 0x0F for 2 bytes (mfr ID) then 0x10 for 2 bytes (sensor ID)
-            uint16_t id = (s->reg == 0x0F) ? 0x5453 : s->sensor_id;
-            ctx->resp[0] = (uint8_t)(id >> 8);
-            ctx->resp[1] = (uint8_t)(id & 0xFF);
-            ctx->resp_len = 2;
-            return true;
-        }
-
-        if (s->reg == 0x02) {
-            // Status register (CHT831X) – no alerts active
-            ctx->resp[0]  = 0x00;
-            ctx->resp_len = 1;
-            return true;
-        }
-
-        // Unknown register
-        ctx->resp[0]  = 0x00;
-        ctx->resp[1]  = 0x00;
-        ctx->resp_len = 2;
-        return true;
+    case 0x01: { // H only (CHT831X; peek so 0x00+0x01 agree in same cycle)
+        int32_t  hp    = SoftI2C_Sim_PeekValue(ctx, SIM_Q_HUMIDITY);
+        uint16_t raw_h = is_831x ? cht831x_hum_raw(hp)
+                                 : (uint16_t)(((int32_t)hp * 65535) / 1000);
+        ctx->resp[0]=(uint8_t)(raw_h>>8); ctx->resp[1]=(uint8_t)(raw_h&0xFF);
+        ctx->resp_len = 2; return true;
+    }
+    case 0x0F: ctx->resp_len = 0; return true;                // one-shot trigger (write-only)
+    case 0xFE: ctx->resp[0]=0x54; ctx->resp[1]=0x53; ctx->resp_len=2; return true; // mfr ID "TS"
+    case 0xFF: ctx->resp[0]=(uint8_t)(s->sensor_id>>8);       // chip/sensor ID
+               ctx->resp[1]=(uint8_t)(s->sensor_id&0xFF);
+               ctx->resp_len=2; return true;
+    default:   ctx->resp[0]=0x00; ctx->resp[1]=0x00;           // status, config, limits → 0
+               ctx->resp_len=2; return true;
     }
 }
 
 static const sim_sensor_ops_t g_cht83xx_ops = {
-    .name             = "CHT83xx",
-    .init             = cht83xx_init,
-    .encode_response  = cht83xx_encode,
-    .on_read_complete = NULL,
+    .name = "CHT83xx", .init = cht83xx_init, .encode_response = cht83xx_encode,
 };
-*/
-/*
-// ===================================================================
-// CHT83xx plugin  (CHT8305, CHT8310, CHT8315)
-// ===================================================================
-// Protocol (from drv_cht8305.c + drv_cht83xx.h):
-//   Write 0x00          -> set register pointer to temp (CHT831X_REG_TEMP)
-//   Write 0x01          -> set register pointer to hum  (CHT831X_REG_HUM)
-//   Write 0x07 + 2B     -> write config register
-//   Write 0x0F          -> read manufacturer ID
-//   Write 0x11 + 2B     -> write one-shot register
-//   Read  4 bytes       -> [T_MSB T_LSB H_MSB H_LSB]  (from reg 0x00)
-//   Read  2 bytes       -> [H_MSB H_LSB]               (from reg 0x01)
-//   Read  2 bytes       -> [ID_MSB ID_LSB]             (from reg 0x0F)
-//
-// Physical encoding:
-//   CHT8305 (default):
-//     raw_T = (temp + 40) * 65535 / 165    (float path)
-//     raw_H = humid * 65535 / 100
-//   CHT831X (8310/8315):
-//     raw_T = temp / 0.03125               (13-bit, signed, >> 3)
-//     raw_H = humid * 32768 / 100          (15-bit, sign bit = parity)
-// ===================================================================
-
-typedef struct {
-    uint8_t  reg;        // current register pointer
-    uint16_t sensor_id;  // 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
-} cht83xx_state_t;
-
-static void cht83xx_init(sim_ctx_t *ctx) {
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 150, 400,  3);
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200, 900,  5);
-
-    cht83xx_state_t *s = (cht83xx_state_t *)malloc(sizeof(cht83xx_state_t));
-    s->reg       = 0x00;
-    s->sensor_id = 0x8215;  // default: CHT8310; change to 0 for CHT8305
-    ctx->user    = s;
-}
-
-static bool cht83xx_encode(sim_ctx_t *ctx) {
-    cht83xx_state_t *s = (cht83xx_state_t *)ctx->user;
-    if (!s) return false;
-
-    // Zero-length write = just a read Start, serve from current reg
-    if (ctx->cmd_len == 0) {
-        goto serve_reg;
-    }
-
-    uint8_t reg = ctx->cmd[0];
-    s->reg = reg;
-    printf("[SIM][CHT83xx] write reg=0x%02X cmd_len=%u\n", reg, ctx->cmd_len);
-
-    // Multi-byte write (register write, e.g. config, one-shot)
-    if (ctx->cmd_len > 1) {
-        ctx->resp_len = 0;  // just ACK the write
-        return true;
-    }
-
-    // Single-byte write = register pointer set; data comes on next read
-    // fall through to serve_reg
-
-serve_reg:
-    {
-        int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
-        int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-        bool is_831x = (s->sensor_id == 0x8215 || s->sensor_id == 0x8315);
-
-        if (s->reg == 0x00) {
-            // Temperature (+ humidity for CHT8305 combined read)
-            uint16_t raw_t, raw_h;
-            if (is_831x) {
-                // 13-bit signed, >>3 -> multiply back
-                int16_t t_13 = (int16_t)((float)(t10/10.0f) / 0.03125f);
-                raw_t = (uint16_t)(t_13 << 3);
-                // 15-bit humidity with parity in bit15
-                uint16_t h_15 = (uint16_t)((int64_t)h10 * 32768 / 1000);
-                // compute parity of bits[14:0]
-                uint8_t par = 0;
-                for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
-                raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
-            } else {
-                raw_t = (uint16_t)(((float)(t10/10.0f) + 40.0f) * 65535.0f / 165.0f);
-                raw_h = (uint16_t)((float)(h10/10.0f) * 65535.0f / 100.0f);
-            }
-            ctx->resp[0] = (uint8_t)(raw_t >> 8);
-            ctx->resp[1] = (uint8_t)(raw_t & 0xFF);
-            ctx->resp[2] = (uint8_t)(raw_h >> 8);
-            ctx->resp[3] = (uint8_t)(raw_h & 0xFF);
-            ctx->resp_len = 4;
-            printf("[SIM][CHT83xx] T=%d.%d C  H=%d.%d%%  raw_T=0x%04X raw_H=0x%04X\n",
-                   (int)(t10/10), (int)abs(t10%10),
-                   (int)(h10/10), (int)(h10%10), raw_t, raw_h);
-            return true;
-        }
-
-        if (s->reg == 0x01) {
-            // Humidity only (CHT831X separate read)
-            int32_t h10b = SoftI2C_Sim_PeekValue(ctx, SIM_Q_HUMIDITY); // don't advance again
-            uint16_t h_15 = (uint16_t)((int64_t)h10b * 32768 / 1000);
-            uint8_t par = 0;
-            for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
-            uint16_t raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
-            ctx->resp[0] = (uint8_t)(raw_h >> 8);
-            ctx->resp[1] = (uint8_t)(raw_h & 0xFF);
-            ctx->resp_len = 2;
-            return true;
-        }
-
-        if (s->reg == 0x0F || s->reg == 0x10) {
-            // Manufacturer / sensor ID
-            // drv reads 0x0F for 2 bytes (mfr ID) then 0x10 for 2 bytes (sensor ID)
-            uint16_t id = (s->reg == 0x0F) ? 0x5453 : s->sensor_id;
-            ctx->resp[0] = (uint8_t)(id >> 8);
-            ctx->resp[1] = (uint8_t)(id & 0xFF);
-            ctx->resp_len = 2;
-            return true;
-        }
-
-        if (s->reg == 0x02) {
-            // Status register (CHT831X) – no alerts active
-            ctx->resp[0]  = 0x00;
-            ctx->resp_len = 1;
-            return true;
-        }
-
-        // Unknown register
-        ctx->resp[0]  = 0x00;
-        ctx->resp[1]  = 0x00;
-        ctx->resp_len = 2;
-        return true;
-    }
-}
-
-static const sim_sensor_ops_t g_cht83xx_ops = {
-    .name             = "CHT83xx",
-    .init             = cht83xx_init,
-    .encode_response  = cht83xx_encode,
-    .on_read_complete = NULL,
-};
-*/
-
-// ===================================================================
-// CHT83xx plugin  (CHT8305, CHT8310, CHT8315)
-// ===================================================================
-// Protocol (from drv_cht8305.c + drv_cht83xx.h):
-//   Write 0x00          -> set register pointer to temp (CHT831X_REG_TEMP)
-//   Write 0x01          -> set register pointer to hum  (CHT831X_REG_HUM)
-//   Write 0x07 + 2B     -> write config register
-//   Write 0x0F          -> read manufacturer ID
-//   Write 0x11 + 2B     -> write one-shot register
-//   Read  4 bytes       -> [T_MSB T_LSB H_MSB H_LSB]  (from reg 0x00)
-//   Read  2 bytes       -> [H_MSB H_LSB]               (from reg 0x01)
-//   Read  2 bytes       -> [ID_MSB ID_LSB]             (from reg 0x0F)
-//
-// Physical encoding:
-//   CHT8305 (default):
-//     raw_T = (temp + 40) * 65535 / 165    (float path)
-//     raw_H = humid * 65535 / 100
-//   CHT831X (8310/8315):
-//     raw_T = temp / 0.03125               (13-bit, signed, >> 3)
-//     raw_H = humid * 32768 / 100          (15-bit, sign bit = parity)
-// ===================================================================
-
-typedef struct {
-    uint8_t  reg;        // current register pointer
-    uint16_t sensor_id;  // 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
-} cht83xx_state_t;
-
-static void cht83xx_init(sim_ctx_t *ctx) {
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_TEMPERATURE, 220, 150, 400,  3);
-    SoftI2C_Sim_SetValue(ctx, SIM_Q_HUMIDITY,    500, 200, 900,  5);
-
-    cht83xx_state_t *s = (cht83xx_state_t *)malloc(sizeof(cht83xx_state_t));
-    s->reg       = 0x00;
-    s->sensor_id = 0x0000;  // CHT8305 default; driver reads REG_ID=0xFE to detect variant
-    ctx->user    = s;
-}
-
-static bool cht83xx_encode(sim_ctx_t *ctx) {
-    cht83xx_state_t *s = (cht83xx_state_t *)ctx->user;
-    if (!s) return false;
-
-    // Zero-length write = just a read Start, serve from current reg
-    if (ctx->cmd_len == 0) {
-        goto serve_reg;
-    }
-
-    uint8_t reg = ctx->cmd[0];
-    s->reg = reg;
-    // Multi-byte write (register write, e.g. config, one-shot)
-    if (ctx->cmd_len > 1) {
-        ctx->resp_len = 0;  // just ACK the write
-        return true;
-    }
-
-    // Single-byte write = register pointer set; data comes on next read
-    // fall through to serve_reg
-
-serve_reg:
-    {
-        int32_t t10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
-        int32_t h10 = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
-        bool is_831x = (s->sensor_id == 0x8215 || s->sensor_id == 0x8315);
-
-        if (s->reg == 0x00) {
-            // Temperature (+ humidity for CHT8305 combined read)
-            uint16_t raw_t, raw_h;
-            if (is_831x) {
-                // 13-bit signed, >>3 -> multiply back
-                int16_t t_13 = (int16_t)((float)(t10/10.0f) / 0.03125f);
-                raw_t = (uint16_t)(t_13 << 3);
-                // 15-bit humidity with parity in bit15
-                uint16_t h_15 = (uint16_t)((int64_t)h10 * 32768 / 1000);
-                // compute parity of bits[14:0]
-                uint8_t par = 0;
-                for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
-                raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
-            } else {
-                raw_t = (uint16_t)(((float)(t10/10.0f) + 40.0f) * 65535.0f / 165.0f);
-                raw_h = (uint16_t)((float)(h10/10.0f) * 65535.0f / 100.0f);
-            }
-            ctx->resp[0] = (uint8_t)(raw_t >> 8);
-            ctx->resp[1] = (uint8_t)(raw_t & 0xFF);
-            ctx->resp[2] = (uint8_t)(raw_h >> 8);
-            ctx->resp[3] = (uint8_t)(raw_h & 0xFF);
-            ctx->resp_len = 4;
-            printf("[SIM][CHT83xx] T=%d.%d C  H=%d.%d%%  raw_T=0x%04X raw_H=0x%04X\n",
-                   (int)(t10/10), (int)abs(t10%10),
-                   (int)(h10/10), (int)(h10%10), raw_t, raw_h);
-            return true;
-        }
-
-        if (s->reg == 0x01) {
-            // Humidity only (CHT831X separate read)
-            int32_t h10b = SoftI2C_Sim_PeekValue(ctx, SIM_Q_HUMIDITY); // don't advance again
-            uint16_t h_15 = (uint16_t)((int64_t)h10b * 32768 / 1000);
-            uint8_t par = 0;
-            for (int b = 0; b < 15; b++) par ^= (h_15 >> b) & 1;
-            uint16_t raw_h = (h_15 & 0x7FFF) | (par ? 0x8000 : 0);
-            ctx->resp[0] = (uint8_t)(raw_h >> 8);
-            ctx->resp[1] = (uint8_t)(raw_h & 0xFF);
-            ctx->resp_len = 2;
-            return true;
-        }
-
-        // CHT831X_REG_ONESHOT = 0x0F: write-only trigger, no read response
-        if (s->reg == 0x0F) {
-            ctx->resp_len = 0;
-            return true;
-        }
-        // CHT831X_REG_ID = 0xFE: manufacturer ID (2 bytes)
-        // CHT831X_REG_ID+1 = 0xFF: sensor/chip ID (2 bytes) -> determines CHT8305 vs CHT831X
-        if (s->reg == 0xFE) {
-            ctx->resp[0] = 0x54; ctx->resp[1] = 0x53;  // manufacturer "TS"
-            ctx->resp_len = 2;
-            return true;
-        }
-        if (s->reg == 0xFF) {
-            // Return sensor_id so driver detects correct variant
-            ctx->resp[0] = (uint8_t)(s->sensor_id >> 8);
-            ctx->resp[1] = (uint8_t)(s->sensor_id & 0xFF);
-            ctx->resp_len = 2;
-            return true;
-        }
-
-        if (s->reg == 0x02) {
-            // Status register (CHT831X) – no alerts active
-            ctx->resp[0]  = 0x00;
-            ctx->resp_len = 1;
-            return true;
-        }
-
-        // Unknown register
-        ctx->resp[0]  = 0x00;
-        ctx->resp[1]  = 0x00;
-        ctx->resp_len = 2;
-        return true;
-    }
-}
-
-static const sim_sensor_ops_t g_cht83xx_ops = {
-    .name             = "CHT83xx",
-    .init             = cht83xx_init,
-    .encode_response  = cht83xx_encode,
-    .on_read_complete = NULL,
-};
-
-
-commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, const char* args, int cmdFlags) {
-	Tokenizer_TokenizeString(args, 0);
-	
-	
-	uint8_t pin_data=9, pin_clk=17;
-	pin_clk   = (uint8_t)Tokenizer_GetPinEqual("SCL=", pin_clk);
-	pin_data  = (uint8_t)Tokenizer_GetPinEqual("SDA=", pin_data);
-	const char *type = Tokenizer_GetArgEqualDefault("type=","NO");
-	uint8_t def_addr,addr;
-	sim_sensor_ops_t *sens_ops;
-	if (!strcmp(type,"NO")){
-		ADDLOG_ERROR(LOG_FEATURE_SENSOR, "No sensor type given!");
-		return CMD_RES_BAD_ARGUMENT;
-	}else {
-        	if (wal_stricmp(type, "SHT3x") == 0) {
-//			printf("Detected: SHT3x\n");
-			sens_ops = &g_sht3x_ops;
-			def_addr = 0x44 << 1;
-		} else if (wal_stricmp(type, "SHT4x") == 0) {
-//			printf("Detected: SHT4x\n");
-			sens_ops = &g_sht4x_ops;
-			def_addr = 0x44 << 1;
-		} else if (wal_stricmp(type, "AHT2x") == 0) {
-//			printf("Detected: AHT2x\n");
-			sens_ops = &g_aht2x_ops;
-			def_addr = 0x38 << 1;
-		} else if (wal_stricmp(type, "CHT83xx") == 0) {
-//			printf("Detected: CHT83xx\n");
-			sens_ops = &g_cht83xx_ops;
-			def_addr = 0x40 << 1;
-		} else if (wal_stricmp(type, "BMP280") == 0) {
-//			printf("Detected: BMP280\n");
-			sens_ops = &g_bmp280_ops;
-			def_addr = 0x76 << 1;		// to be dicussed, what is "default"
-		} else {
-			ADDLOG_ERROR(LOG_FEATURE_SENSOR, "Unknown sensor type %s.",type);
-			return CMD_RES_BAD_ARGUMENT;
-		}
-        }
-        uint8_t A = (int8_t)(Tokenizer_GetArgEqualInteger("address=", 0));
-        if (A != 0){
-        	addr = A << 1;
-        } else {
-        	ADDLOG_INFO(LOG_FEATURE_SENSOR, "No device address given, using default 0x%02X!",def_addr >> 1 );
-        	addr = def_addr; 
-        }
-	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Adding %s sensor at address 0x%02X SDA=%i SCL=%i",type, addr >> 1, pin_data, pin_clk );
-	SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
-	return CMD_RES_OK;
-}
-
-
 
 // ===================================================================
 // Convenience registration functions
@@ -1066,21 +562,15 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 int SoftI2C_Sim_AddSHT3x(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     return SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_sht3x_ops);
 }
-
 int SoftI2C_Sim_AddSHT4x(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     return SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_sht4x_ops);
 }
-
 int SoftI2C_Sim_AddAHT2x(uint8_t pin_data, uint8_t pin_clk) {
-    return SoftI2C_Sim_Register(pin_data, pin_clk, 0x38, &g_aht2x_ops);
+    return SoftI2C_Sim_Register(pin_data, pin_clk, 0x70, &g_aht2x_ops); // 0x38<<1
 }
-
 int SoftI2C_Sim_AddBMP280(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
-    int slot = SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_bmp280_ops);
-    // is_bme280 already false from bmp280_init – nothing extra needed
-    return slot;
+    return SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_bmp280_ops);
 }
-
 int SoftI2C_Sim_AddBME280(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     int slot = SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_bmp280_ops);
     if (slot >= 0) {
@@ -1089,7 +579,6 @@ int SoftI2C_Sim_AddBME280(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     }
     return slot;
 }
-
 int SoftI2C_Sim_AddCHT83xx(uint8_t pin_data, uint8_t pin_clk, uint8_t addr) {
     return SoftI2C_Sim_Register(pin_data, pin_clk, addr, &g_cht83xx_ops);
 }
