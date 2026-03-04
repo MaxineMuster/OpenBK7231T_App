@@ -612,16 +612,16 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 	int slot = SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
 	if (slot >= 0){ 
 		if (wal_stricmp(type, "BME280") == 0) {
-        		(bmp280_state_t *)SoftI2C_Sim_GetCtx(slot)->user->is_bme280 = true;
+        		((bmp280_state_t *)SoftI2C_Sim_GetCtx(slot)->user)->is_bme280 = true;
         	} else if (wal_stricmp(type, "CHT8305") == 0) {
 		//Sensor/chip ID CHT83xx: 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
-			(cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user->sensor_id = 0x0000;
+			((cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user)->sensor_id = 0x0000;
         	} else if (wal_stricmp(type, "CHT8310") == 0) {
 		//Sensor/chip ID CHT83xx: 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
-			(cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user->sensor_id = 0x8215;
+			((cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user)->sensor_id = 0x8215;
         	} else if (wal_stricmp(type, "CHT8315") == 0) {
 		//Sensor/chip ID CHT83xx: 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
-			(cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user->sensor_id = 0x8315;
+			((cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user)->sensor_id = 0x8315;
         	}
         }
 	
