@@ -432,6 +432,18 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
                t10/10, abs(t10%10), p10/10, abs(p10%10), adc_T, adc_P);
         return true;
     }
+    // 0xFD – humidity registers (BME280 only, 2 bytes)
+    // Some drivers issue a separate Write(0xFD)+Read(2) transaction for humidity
+    // instead of relying on the 0xF7 burst. Peek: 0xF7 already advanced the cycle.
+    if (reg == 0xFD && s->is_bme280) {
+        int32_t  h10   = SoftI2C_Sim_PeekValue(ctx, SIM_Q_HUMIDITY);
+        uint32_t adc_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
+        if (adc_H > 0xFFFF) adc_H = 0xFFFF;
+        ctx->resp[0] = (uint8_t)(adc_H >> 8);
+        ctx->resp[1] = (uint8_t)(adc_H & 0xFF);
+        ctx->resp_len = 2;
+        return true;
+    }
     // 0xFA – temperature sub-address (drivers that split the burst at 0xFA)
     // Peek: 0xF7 already advanced the measurement cycle.
     if (reg == 0xFA) {
@@ -530,7 +542,7 @@ static bool cht83xx_encode(sim_ctx_t *ctx) {
     switch (s->reg) {
     case 0x00: { // T + H (4 bytes)
         uint16_t raw_t = is_831x
-            ? (uint16_t)((int16_t)(t10 * 100 / 3125) << 3)
+            ? (uint16_t)((int16_t)(t10 * 10000 / 3125) << 3)
             : (uint16_t)(((int32_t)(t10 + 400) * 65535) / 1650);
         uint16_t raw_h = is_831x
             ? cht831x_hum_raw(h10)
