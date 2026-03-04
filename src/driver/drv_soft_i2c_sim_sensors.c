@@ -588,11 +588,11 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 //			printf("Detected: AHT2x\n");
 			sens_ops = &g_aht2x_ops;
 			def_addr = 0x38 << 1;
-		} else if (wal_stricmp(type, "CHT83xx") == 0) {
+		} else if (wal_stricmp(type, "CHT83xx") == 0 || wal_stricmp(type, "CHT8305") == 0 || wal_stricmp(type, "CHT8310") == 0 || wal_stricmp(type, "CHT8315") == 0) {
 //			printf("Detected: CHT83xx\n");
 			sens_ops = &g_cht83xx_ops;
 			def_addr = 0x40 << 1;
-		} else if (wal_stricmp(type, "BMP280") == 0) {
+		} else if (wal_stricmp(type, "BMP280") == 0 || wal_stricmp(type, "BME280") == 0) {
 //			printf("Detected: BMP280\n");
 			sens_ops = &g_bmp280_ops;
 			def_addr = 0x76 << 1;		// to be dicussed, what is "default"
@@ -609,7 +609,22 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
         	addr = def_addr; 
         }
 	ADDLOG_INFO(LOG_FEATURE_SENSOR, "Adding %s sensor at address 0x%02X SDA=%i SCL=%i",type, addr >> 1, pin_data, pin_clk );
-	SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
+	int slot = SoftI2C_Sim_Register(pin_data, pin_clk, addr, sens_ops);
+	if (slot >= 0){ 
+		if (wal_stricmp(type, "BME280") == 0) {
+        		(bmp280_state_t *)SoftI2C_Sim_GetCtx(slot)->user->is_bme280 = true;
+        	} else if (wal_stricmp(type, "CHT8305") == 0) {
+		//Sensor/chip ID CHT83xx: 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
+			(cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user->sensor_id = 0x0000;
+        	} else if (wal_stricmp(type, "CHT8310") == 0) {
+		//Sensor/chip ID CHT83xx: 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
+			(cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user->sensor_id = 0x8215;
+        	} else if (wal_stricmp(type, "CHT8315") == 0) {
+		//Sensor/chip ID CHT83xx: 0x0000=CHT8305, 0x8215=CHT8310, 0x8315=CHT8315
+			(cht83xx_state_t *)SoftI2C_Sim_GetCtx(slot)->user->sensor_id = 0x8315;
+        	}
+        }
+	
 	return CMD_RES_OK;
 }
 
