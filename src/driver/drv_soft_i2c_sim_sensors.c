@@ -392,9 +392,14 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
     }
     // BME280 humidity calibration
     if (s->is_bme280) {
-        if (reg == 0xA1) { ctx->resp[0] = 75; ctx->resp_len = 1; return true; }
+        // Humidity calibration chosen so the Bosch formula decodes trivially:
+        //   adc_H = RH * 65536 / 100  (our encoding, see 0xF7/0xFD handlers)
+        // With H1=0, H2=100, H3=H4=H5=H6=0 the compensation reduces to:
+        //   RH% = adc_H * 100 / 65536
+        if (reg == 0xA1) { ctx->resp[0] = 0x00; ctx->resp_len = 1; return true; } // dig_H1=0
         if (reg >= 0xE1 && reg <= 0xE7) {
-            static const uint8_t hc[] = {0x58,0x06, 0x00, 0x13,0xC3,0x03, 0x1E};
+            // E1,E2=dig_H2=100(0x0064 LE), E3=H3=0, E4=H4=0, E5=H5=0, E6=H5=0, E7=H6=0
+            static const uint8_t hc[] = {0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
             uint8_t off = reg - 0xE1;
             memcpy(ctx->resp, hc + off, 7 - off);
             ctx->resp_len = (uint8_t)(7 - off); return true;
@@ -411,10 +416,8 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
     if (reg == 0xF7) {
         int32_t  t10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_TEMPERATURE);
         int32_t  p10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_PRESSURE);
-        int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
         uint32_t adc_P = bmp280_press_to_adc(p10);
         uint32_t adc_T = bmp280_temp_to_adc(t10);
-        uint32_t adc_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
         ctx->resp[0] = (uint8_t)((adc_P>>12)&0xFF);
         ctx->resp[1] = (uint8_t)((adc_P>> 4)&0xFF);
         ctx->resp[2] = (uint8_t)((adc_P<< 4)&0xF0);
@@ -423,19 +426,19 @@ static bool bmp280_encode(sim_ctx_t *ctx) {
         ctx->resp[5] = (uint8_t)((adc_T<< 4)&0xF0);
         ctx->resp_len = 6;
         if (s->is_bme280) {
+            int32_t  h10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_HUMIDITY);
+            uint32_t adc_H = (uint32_t)((int64_t)h10 * 65536 / 1000);
             if (adc_H > 0xFFFF) adc_H = 0xFFFF;
             ctx->resp[6] = (uint8_t)(adc_H>>8);
             ctx->resp[7] = (uint8_t)(adc_H&0xFF);
             ctx->resp_len = 8;
+            printf("[SIM][BME280] T=%d.%d C  P=%d.%d hPa  H=%d.%d%%  adc_T=0x%05X adc_P=0x%05X adc_H=0x%04X\n",
+                   t10/10, abs(t10%10), p10/10, abs(p10%10),
+                   h10/10, abs(h10%10), adc_T, adc_P, adc_H);
+        } else {
+            printf("[SIM][BMP280] T=%d.%d C  P=%d.%d hPa  adc_T=0x%05X adc_P=0x%05X\n",
+                   t10/10, abs(t10%10), p10/10, abs(p10%10), adc_T, adc_P);
         }
-        printf("[SIM][BMP280] T=%d.%d C  P=%d.%d hPa  ",
-               t10/10, abs(t10%10), p10/10, abs(p10%10));
-        if (s->is_bme280) { 
-        	printf("H=%d.%d %%  adc_H=0x%04X ",
-               		h10/10, abs(h10%10), adc_H);
-        }
-        printf("adc_T=0x%05X adc_P=0x%05X\n",
-                adc_T, adc_P);
         return true;
     }
     // 0xFD – humidity registers (BME280 only, 2 bytes)
