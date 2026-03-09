@@ -199,10 +199,10 @@
 #define ENABLE_DRIVER_DS1820_FULL				1
 #define ENABLE_DRIVER_DMX						1
 #define ENABLE_DRIVER_MQTTSERVER				1
+//#define ENABLE_DRIVER_ARISTON					1
 #define ENABLE_DRIVER_AHT2X				1
 #define ENABLE_DRIVER_CHT83XX				1
 #define ENABLE_DRIVER_BMP280				1
-
 
 
 #elif PLATFORM_BL602
@@ -309,6 +309,9 @@
 // #define ENABLE_DRIVER_BMPI2C					1
 #define ENABLE_DRIVER_DDP						1
 #define ENABLE_DRIVER_SSDP						1
+#if PLATFORM_BK7231N || PLATFORM_BK7231T
+#define ENABLE_DRIVER_MDNS						1
+#endif
 #define ENABLE_DRIVER_IR						1
 #define ENABLE_DRIVER_RC						1
 // #define ENABLE_DRIVER_IR2					1
@@ -321,7 +324,9 @@
 #if PLATFORM_BEKEN_NEW
 #define NEW_TCP_SERVER							1
 #endif
-//#define ENABLE_DRIVER_NEO6M						1
+//#define ENABLE_DRIVER_NEO6M					1
+//#define ENABLE_DRIVER_ARISTON					1
+//#define ENABLE_DRIVER_ROOMBA				    1
 
 // ENABLE_I2C_ is a syntax for
 // our I2C system defines for drv_i2c_main.c
@@ -450,6 +455,7 @@
 #define ENABLE_TASMOTA_JSON						1
 #define ENABLE_CALENDAR_EVENTS					1
 #define ENABLE_DRIVER_DDP						1
+//#define ENABLE_DRIVER_ARISTON					1
 #define ENABLE_DRIVER_SSDP						1
 #define ENABLE_DRIVER_CHT83XX					1
 //#define ENABLE_DRIVER_CSE7761					1
