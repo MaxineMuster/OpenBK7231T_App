@@ -618,6 +618,9 @@ void SHTXX_Init()
 
     Soft_I2C_PreInit(&dev->i2c);
     rtos_delay_milliseconds(50);
+    
+    setPinUsedString(dev->i2c.pin_clk, "SHTXX SCL");
+    setPinUsedString(dev->i2c.pin_data, "SHTXX SDA");
 
 #ifdef ENABLE_SERIAL_READ
     dev->serial = 0;

@@ -89,5 +89,9 @@ bool TuyaMCU_IsLEDRunning();
 
 void Shutter_MoveByIndex(int index, float frac, bool bStopOnDuplicate);
 
+// show pins w/o own IORole as "used" in config page
+// implemented in http_fns.c
+int setPinUsedString(int index, const char *str);
+
 #endif /* __DRV_PUBLIC_H__ */
 
