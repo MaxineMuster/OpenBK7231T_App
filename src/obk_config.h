@@ -677,6 +677,7 @@
 #endif
 
 #define ENABLE_DRIVER_SHTXX						1
+#define ENABLE_DRIVER_VEML7700						1
 
 
 // closing OBK_CONFIG_H

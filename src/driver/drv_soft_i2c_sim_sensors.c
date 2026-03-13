@@ -12,6 +12,8 @@
 //   BME280 – Bosch BST-BME280-DS002 (2018)
 //   CHT8305/8310/8315 – Sensylink CHT83xx Datasheet
 //
+//   VEML7700 - Vishay VEML7700 Datasheet Rev. 1.8, 28-Nov-2024 (Doc 84286)
+//
 // Each plugin:
 //   init()             – seed default value ranges
 //   encode_response()  – produce the exact byte sequence
@@ -583,6 +585,136 @@ static bool cht83xx_encode(sim_ctx_t *ctx) {
 static const sim_sensor_ops_t g_cht83xx_ops = {
     .name = "CHT83xx", .init = cht83xx_init, .encode_response = cht83xx_encode,
 };
+
+// ===================================================================
+// VEML7700 plugin
+// ===================================================================
+// Reference: Vishay VEML7700 Datasheet Rev. 1.8, 28-Nov-2024 (Doc 84286)
+//
+// I2C address: 7-bit = 0x10, 8-bit wire = 0x20 (write) / 0x21 (read)
+//
+// Protocol (datasheet Fig. 3 / Fig. 4):
+//   Write: S | 0x20 | A | cmd | A | LSB | A | MSB | A | P
+//   Read:  S | 0x20 | A | cmd | A | S | 0x21 | A | LSB | A | MSB | N | P
+//   All 16-bit registers are transmitted LSB first.
+//
+// Register map (datasheet table p.7):
+//   0x00  ALS_CONF  R/W  gain[12:11], IT[9:6], INT_EN[1], SD[0]
+//   0x01  ALS_WH    R/W  high threshold
+//   0x02  ALS_WL    R/W  low threshold
+//   0x03  PSM       R/W  power saving mode
+//   0x04  ALS       R    16-bit ALS output
+//   0x05  WHITE     R    16-bit WHITE output
+//   0x06  ALS_INT   R    interrupt status
+//   0x07  ID        R    [15:8]=0xC4 (addr 0x20), [7:0]=0x81
+//
+// ALS_CONF default (POR) = 0x0001 → ALS_SD=1 (shutdown)
+// Driver writes 0x0000 to power on with gain x1, IT 100ms.
+//
+// Lux conversion at default settings (gain x1, IT 100ms):
+//   lux = raw_ALS * 0.0042 * 2 * 8 = raw_ALS * 0.0672
+//   Inverse: raw_ALS = lux / 0.0672 = lux * 10000 / 672 = lux * 125 / 84
+//
+// SIM_Q_LIGHT is in x10 units: 3000 = 300.0 lux
+// raw_ALS = lux10 * 125 / 84  (integer arithmetic, < 0.1% error)
+// raw_WHITE ≈ raw_ALS * 11 / 10  (WHITE is ~10% higher than ALS)
+// ===================================================================
+
+typedef struct {
+    uint8_t  reg;          // last written command/register address
+    uint16_t conf;         // shadow of ALS_CONF (to echo back writes)
+    uint16_t wh;           // high threshold shadow
+    uint16_t wl;           // low threshold shadow
+} veml7700_state_t;
+
+static void veml7700_init(sim_ctx_t *ctx) {
+    // Indoor office default: 300 lux, drifts between 50 and 5000 lux
+    SoftI2C_Sim_SetValue(ctx, SIM_Q_LIGHT, 3000, 500, 50000, 200);
+    veml7700_state_t *s = (veml7700_state_t *)malloc(sizeof(veml7700_state_t));
+    s->reg  = 0x04;   // after power-on read, most drivers go straight for ALS
+    s->conf = 0x0001; // POR default: shutdown
+    s->wh   = 0xFFFF;
+    s->wl   = 0x0000;
+    ctx->user = s;
+}
+
+static bool veml7700_encode(sim_ctx_t *ctx) {
+    veml7700_state_t *s = (veml7700_state_t *)ctx->user;
+    if (!s) return false;
+
+    // A write transaction sets the register pointer and optionally
+    // writes data bytes (16-bit, LSB first).
+    // cmd[0] = command code, cmd[1]=LSB, cmd[2]=MSB (if present)
+    if (ctx->cmd_len >= 1) {
+        s->reg = ctx->cmd[0];
+        if (ctx->cmd_len >= 3) {
+            // Data write: shadow the register
+            uint16_t val = (uint16_t)((ctx->cmd[2] << 8) | ctx->cmd[1]);
+            switch (s->reg) {
+                case 0x00: s->conf = val; break;
+                case 0x01: s->wh   = val; break;
+                case 0x02: s->wl   = val; break;
+                default: break;
+            }
+            ctx->resp_len = 0; // write-only transaction, no read data queued
+            return true;
+        }
+    }
+
+    // Now serve the read (the master will issue a repeated-start after setting reg)
+    uint16_t val = 0;
+    switch (s->reg) {
+    case 0x00:  // ALS_CONF – echo back the shadow
+        val = s->conf;
+        break;
+    case 0x01:  // ALS_WH
+        val = s->wh;
+        break;
+    case 0x02:  // ALS_WL
+        val = s->wl;
+        break;
+    case 0x04: { // ALS – advance light value, convert to raw counts
+        int32_t lux10   = SoftI2C_Sim_NextValue(ctx, SIM_Q_LIGHT);
+        uint32_t raw_als = (uint32_t)((int64_t)lux10 * 125 / 84);
+        if (raw_als > 0xFFFF) raw_als = 0xFFFF;
+        val = (uint16_t)raw_als;
+        printf("[SIM][VEML7700] Lux=%d.%d  raw_ALS=0x%04X",
+               (int)(lux10/10), (int)abs(lux10%10), val);
+        break;
+    }
+    case 0x05: { // WHITE – peek same cycle, add ~10%
+        int32_t lux10    = SoftI2C_Sim_PeekValue(ctx, SIM_Q_LIGHT);
+        uint32_t raw_als = (uint32_t)((int64_t)lux10 * 125 / 84);
+        uint32_t raw_w   = raw_als * 11 / 10;   // WHITE ~10% above ALS
+        if (raw_w > 0xFFFF) raw_w = 0xFFFF;
+        val = (uint16_t)raw_w;
+        break;
+    }
+    case 0x06:  // ALS_INT – no interrupt pending
+        val = 0x0000;
+        break;
+    case 0x07:  // ID – low byte 0x81 (fixed), high byte 0xC4 (addr 0x20)
+        val = (uint16_t)((0xC4u << 8) | 0x81u);
+        break;
+    default:
+        val = 0x0000;
+        break;
+    }
+
+    // Return LSB first (datasheet Fig. 4)
+    ctx->resp[0] = (uint8_t)(val & 0xFF);
+    ctx->resp[1] = (uint8_t)(val >> 8);
+    ctx->resp_len = 2;
+    return true;
+}
+
+static const sim_sensor_ops_t g_veml7700_ops = {
+    .name = "VEML7700", .init = veml7700_init, .encode_response = veml7700_encode,
+};
+
+
+
+
 commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
 	
@@ -617,6 +749,10 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 //			printf("Detected: BMP280\n");
 			sens_ops = &g_bmp280_ops;
 			def_addr = 0x76 << 1;		// to be dicussed, what is "default"
+		} else if (wal_stricmp(type, "VEML7700") == 0 ) {
+//			printf("Detected: VEML7700\n");
+			sens_ops = &g_veml7700_ops;
+			def_addr = 0x10 << 1;
 		} else {
 			ADDLOG_ERROR(LOG_FEATURE_SENSOR, "Unknown sensor type %s.",type);
 			return CMD_RES_BAD_ARGUMENT;
@@ -648,6 +784,8 @@ commandResult_t CMD_SoftI2C_simAddSensor(const void* context, const char* cmd, c
 	
 	return CMD_RES_OK;
 }
+
+
 
 
 // ===================================================================

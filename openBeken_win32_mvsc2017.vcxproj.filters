@@ -73,6 +73,7 @@
     <ClCompile Include="src\driver\drv_shtxx.c" />
     <ClCompile Include="src\driver\drv_soft_i2c_sim.c" />
     <ClCompile Include="src\driver\drv_soft_i2c_sim_sensors.c" />
+    <ClCompile Include="src\driver\drv_veml7700.c" />
     <ClCompile Include="src\driver\drv_sm2135.c" />
     <ClCompile Include="src\driver\drv_sm2235.c" />
     <ClCompile Include="src\driver\drv_soft_i2c.c" />
@@ -447,6 +448,7 @@
     <ClInclude Include="src\driver\drv_sht3x.h" />
     <ClInclude Include="src\driver\drv_shtxx.h" />
     <ClInclude Include="src\driver\drv_soft_i2c_sim.h" />
+    <ClInclude Include="src\driver\drv_veml7700.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
     <ClInclude Include="src\driver\drv_test_drivers.h" />
     <ClInclude Include="src\driver\drv_tm1637.h" />
