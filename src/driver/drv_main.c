@@ -22,6 +22,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_i2c_slave.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -505,6 +506,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	NULL,                                    // runQuickTick
 	DRV_I2C_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_I2C_SLAVE
+	//drvdetail:{"name":"I2C_slave",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"I2C device simulator, act as I2C sensor like SHT3x / SHT4x / AHT2x / BMP280 / BME280 / CHT83xx / VEML7700",
+	//drvdetail:"requires":""}
+	{ "I2CSlave",                            // Driver Name
+	DRV_I2CSlave_Init,                       // Init
+	DRV_I2CSlave_OnEverySecond,              // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_I2CSlave_Stop,                       // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded

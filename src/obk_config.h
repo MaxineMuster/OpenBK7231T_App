@@ -120,6 +120,12 @@
 #define ENABLE_DRIVER_PIXELANIM					1
 #define ENABLE_DRIVER_TINYIR_NEC				1
 
+
+#define ENABLE_DRIVER_I2C_SLAVE					1
+
+
+
+
 #elif WINDOWS
 
 #if LINUX
