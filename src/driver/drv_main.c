@@ -22,6 +22,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_veml7700.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -1189,6 +1190,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
 	},
+#endif
+#if ENABLE_DRIVER_VEML7700
+       //drvdetail:{"name":"VEML7700",
+       //drvdetail:"title":"TODO",
+       //drvdetail:"descr":"Ambient Light Sensor. Testing for unknown sensor on 0x20",
+       //drvdetail:"requires":""}
+       { "VEML7700",                               // Driver Name
+       VEML7700_Init,                              // Init
+       VEML7700_OnEverySecond,                     // onEverySecond
+       VEML7700_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+       NULL,                                       // runQuickTick
+       NULL,                                       // stopFunction
+       NULL,                                       // onChannelChanged
+       NULL,                                       // onHassDiscovery
+       false,                                      // loaded
+       },
 #endif
 #if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
