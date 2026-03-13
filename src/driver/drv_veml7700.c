@@ -154,10 +154,7 @@ static void VEML7700_Measure(veml7700_dev_t *dev)
 // VEML7700_ALS [gain] [it]
 // Gain: 0=x1 1=x2 2=x1/8 3=x1/4
 // IT:   0=100ms 1=200ms 2=400ms 3=800ms 8=50ms 12=25ms
-//cmddetail:{"name":"VEML7700_ALS","args":"[gain] [it]",
-//cmddetail:"descr":"ALS gain and integration time. Gain: 0=x1 1=x2 2=x1/8 3=x1/4. IT: 0=100ms 1=200ms 2=400ms 3=800ms 8=50ms 12=25ms.",
-//cmddetail:"fn":"VEML7700_CMD_ALS","file":"driver/drv_veml7700.c","requires":"",
-//cmddetail:"examples":"VEML7700_ALS 1 3 <br /> gain x2, IT 800ms - best resolution 0.0042 lx/ct"}
+//	VEML7700: ALS gain and integration time. Gain: 0=x1 1=x2 2=x1/8 3=x1/4. IT: 0=100ms 1=200ms 2=400ms 3=800ms 8=50ms 12=25ms
 commandResult_t VEML7700_CMD_ALS(const void *context, const char *cmd,
                                   const char *args, int flags)
 {
@@ -176,10 +173,7 @@ commandResult_t VEML7700_CMD_ALS(const void *context, const char *cmd,
 
 // VEML7700_INT [enable] [als_low] [als_high] [persist]
 // enable=0/1, als_low/als_high=raw thresholds (0-65535), persist=0..3 (1/2/4/8 samples)
-//cmddetail:{"name":"VEML7700_INT","args":"[enable] [als_low] [als_high] [persist]",
-//cmddetail:"descr":"Interrupt config. enable=0/1. als_low/als_high raw thresholds (0-65535). persist=0..3 (1/2/4/8 samples).",
-//cmddetail:"fn":"VEML7700_CMD_INT","file":"driver/drv_veml7700.c","requires":"",
-//cmddetail:"examples":"VEML7700_INT 1 500 8000 1 <br /> enable interrupt, trigger when ALS < 500 or > 8000 for 2 samples"}
+//	VEML7700 Interrupt config. enable=0/1. als_low/als_high raw thresholds (0-65535). persist=0..3 (1/2/4/8 samples)
 commandResult_t VEML7700_CMD_INT(const void *context, const char *cmd,
                                   const char *args, int flags)
 {
@@ -204,10 +198,7 @@ commandResult_t VEML7700_CMD_INT(const void *context, const char *cmd,
 }
 
 // VEML7700_Cycle [seconds]
-//cmddetail:{"name":"VEML7700_Cycle","args":"[IntervalSeconds]",
-//cmddetail:"descr":"Measurement interval in seconds (min 1, max 255).",
-//cmddetail:"fn":"VEML7700_CMD_Cycle","file":"driver/drv_veml7700.c","requires":"",
-//cmddetail:"examples":"VEML7700_Cycle 10"}
+//	VEML7700 Measurement interval in seconds (min 1, max 255)
 commandResult_t VEML7700_CMD_Cycle(const void *context, const char *cmd,
                                     const char *args, int flags)
 {
@@ -221,10 +212,7 @@ commandResult_t VEML7700_CMD_Cycle(const void *context, const char *cmd,
 }
 
 // VEML7700_Measure – immediate on-demand read
-//cmddetail:{"name":"VEML7700_Measure","args":"",
-//cmddetail:"descr":"Trigger an immediate ALS + WHITE measurement.",
-//cmddetail:"fn":"VEML7700_CMD_Measure","file":"driver/drv_veml7700.c","requires":"",
-//cmddetail:"examples":"VEML7700_Measure"}
+//	VEML7700: Trigger an immediate ALS + WHITE measurement
 commandResult_t VEML7700_CMD_Measure(const void *context, const char *cmd,
                                       const char *args, int flags)
 {
@@ -234,11 +222,8 @@ commandResult_t VEML7700_CMD_Measure(const void *context, const char *cmd,
     return CMD_RES_OK;
 }
 
-// VEML7700_Reinit – soft reinitialise (mirrors SHTXX_CMD_Reinit)
-//cmddetail:{"name":"VEML7700_Reinit","args":"",
-//cmddetail:"descr":"Re-run sensor initialisation (power-on and ID check).",
-//cmddetail:"fn":"VEML7700_CMD_Reinit","file":"driver/drv_veml7700.c","requires":"",
-//cmddetail:"examples":"VEML7700_Reinit"}
+// VEML7700_Reinit – soft reinitialise
+//	VEML7700: Re-run sensor initialisation (power-on and ID check)
 commandResult_t VEML7700_CMD_Reinit(const void *context, const char *cmd,
                                      const char *args, int flags)
 {

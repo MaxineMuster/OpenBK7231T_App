@@ -649,15 +649,15 @@ int __cdecl main(int argc, char **argv)
 #endif
 
 	CMD_ExecuteCommand("startDriver MQTTServer", 0);
-#if 1
+#ifndef LINUX
 	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
 	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
 	CMD_ExecuteCommand("MqttClient WindowsOBK", 0);
 	CMD_ExecuteCommand("MqttUser homeassistant", 0);
 #else
-	CMD_ExecuteCommand("MQTTHost 192.168.0.118", 0);
-	CMD_ExecuteCommand("MqttPassword Test1", 0);
-	CMD_ExecuteCommand("MqttClient WindowsOBK", 0);
+	CMD_ExecuteCommand("MQTTHost 192.168.0.113", 0);
+	CMD_ExecuteCommand("MqttPassword ma1oovoo0pooTie7koa8Eiwae9vohth1vool8ekaej8Voohi7beif5uMuph9Diex", 0);
+	CMD_ExecuteCommand("MqttClient LinuxOBK", 0);
 	CMD_ExecuteCommand("MqttUser homeassistant", 0);
 #endif
 	CMD_ExecuteCommand("reboot", 0);
