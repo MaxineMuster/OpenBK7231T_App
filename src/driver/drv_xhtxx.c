@@ -167,14 +167,14 @@ static bool XHTXX_SHT_CRC8(const uint8_t *data, uint8_t expected)
     return crc == expected;
 }
 
-// Send a 1- or 2-byte SHT command, wait delay_ms, read 6 bytes, verify CRCs.
+// Send a 1- or 2-byte SHT command, wait ms_delay, read 6 bytes, verify CRCs.
 static bool XHTXX_SHT_CmdRead6(xhtxx_dev_t *dev,
                                 uint8_t b0, uint8_t b1, uint8_t cmdlen,
-                                uint8_t delay_ms, uint8_t *out,
+                                uint8_t ms_delay, uint8_t *out,
                                 const char* func)
 {
     I2C_Write(dev, b0, b1, 0, cmdlen);
-    if(delay_ms) rtos_delay_milliseconds(delay_ms);
+    if(ms_delay) rtos_delay_milliseconds(ms_delay);
     I2C_Read(dev, out, 6);
     if(!XHTXX_SHT_CRC8(&out[0], out[2]) || !XHTXX_SHT_CRC8(&out[3], out[5]))
     {
