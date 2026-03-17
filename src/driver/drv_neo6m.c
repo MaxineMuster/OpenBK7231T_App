@@ -284,13 +284,14 @@ uint8_t cfg_cfg_save_all[] ={ 0xB5,0x62,0x06,0x09,0x0D,0x00,0x00,0x00,0x00,0x00,
 
 
 static void UART_WriteEnableRMC(void) {
-    char send[][26]={
+    char send[][30]={
     	"$PUBX,40,RMC,0,1,0,0*46\r\n",   // Enable RMC
     	"$PUBX,40,RMC,0,1,0,0*46\r\n"   // Enable RMC
     	};
     byte b;
-    for (int i = 0; i < 7; i++) {
-	    for (int j = 0; j < sizeof(send[i]); j++) {
+    const int numRows = sizeof(send) / sizeof(send[0]); // Correctly get number of rows
+    for (int i = 0; i < numRows; i++) {
+	    for (int j = 0; j < strlen(send[i]); j++) {
 	    	b = (byte)send[i][j];
         	UART_SendByte(b);
             }
@@ -314,57 +315,40 @@ void NEO6M_UART_Init(void) {
 #endif
 	setclock2gps = false;
 	fakelat[0]='\0';
+	fakelat[sizeof(fakelat)-1]='\0';
 	fakelong[0]='\0';
+	fakelong[sizeof(fakelong)-1]='\0';
 	bool savecfg=0;
-	for (int i=1; i<=temp; i++) {
-		arg = Tokenizer_GetArg(i);
-		
-		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: argument %i/%i is %s",i,temp,arg);		
 
-		if ( arg && !stricmp(arg,"setclock")) {
-		setclock2gps=true;
+
+	if ( (setclock2gps=Tokenizer_IsStringPresent("setclock")) )
 		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: setting local clock to UTC time read if GPS is synched");
-		} 
-		if ( arg && !stricmp(arg,"setlatlong")) {
+	if ( (setlatlong2gps=Tokenizer_IsStringPresent("setlatlong")) )
 #if ENABLE_TIME_SUNRISE_SUNSET
-		setlatlong2gps=true;
 		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: setting lat/long to values read by GPS");
 #else
 		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: local clock and/or SUNRISE_SUNSET not enabled - ignoring \"setlatlong\"");
 #endif
-		}
-		fake=strstr(arg, "fakelat=");
-		if ( arg && fake ) {
-			int i=0;
-			fake += 8;
-//			ADDLOG_INFO(LOG_FEATURE_DRV,"fake=%s fakelat=%s",fake,fakelat);
-			while(fake[i]){
-				fakelat[i]=fake[i];
-				i++;
-			};
-			fakelat[i]='\0';
-			ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: fakelat=%s",fakelat);
-		} 
-		fake=NULL;
-		fake=strstr(arg, "fakelong=");
-		if ( arg && (fake=strstr(arg, "fakelong=")) ) {
-			int i=0;
-			fake +=9;
-//			ADDLOG_INFO(LOG_FEATURE_DRV,"fake=%s fakelong=%s",fake,fakelong);
-			while(fake[i]){
-				fakelong[i]=fake[i];
-				i++;
-			};
-			fakelong[i]='\0';
-			ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: fakelong=%s",fakelong);
-		} 
-		
-		fake=NULL;
-		fake=strstr(arg, "savecfg");
-		if ( arg && fake ) {
-			savecfg=1;
-		} 
+	fake=Tokenizer_GetArgEqualDefault("fakelat", NULL);
+	if ( fake ) {
+		strncpy(fakelat,fake,sizeof(fakelat)-1);
+		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: fakelat=%s",fakelat);
+	}
 
+	fake=Tokenizer_GetArgEqualDefault("fakelong", NULL);
+	if ( fake ) {
+		strncpy(fakelong,fake,sizeof(fakelong)-1);
+		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: fakelong=%s",fakelong);
+	}
+
+	savecfg=Tokenizer_IsStringPresent("savecfg");
+	
+
+
+	for (int i=1; i<=temp; i++) {
+		arg = Tokenizer_GetArg(i);
+		
+		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: argument %i/%i is %s",i,temp,arg);		
 		if (Tokenizer_IsArgInteger(i)){
 			NEO6M_baudRate = Tokenizer_GetArgInteger(i);
 			ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: baudrate set to %i",NEO6M_baudRate);
