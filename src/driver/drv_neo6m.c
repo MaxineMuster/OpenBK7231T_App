@@ -323,10 +323,11 @@ void NEO6M_UART_Init(void) {
 
 	if ( (setclock2gps=Tokenizer_IsStringPresent("setclock")) )
 		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: setting local clock to UTC time read if GPS is synched");
-	if ( (setlatlong2gps=Tokenizer_IsStringPresent("setlatlong")) )
 #if ENABLE_TIME_SUNRISE_SUNSET
+	if ( (setlatlong2gps=Tokenizer_IsStringPresent("setlatlong")) )
 		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: setting lat/long to values read by GPS");
 #else
+	if ( Tokenizer_IsStringPresent("setlatlong") )
 		ADDLOG_INFO(LOG_FEATURE_DRV,"NEO6M: local clock and/or SUNRISE_SUNSET not enabled - ignoring \"setlatlong\"");
 #endif
 	fake=Tokenizer_GetArgEqualDefault("fakelat", NULL);
