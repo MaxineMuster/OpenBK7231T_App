@@ -98,6 +98,15 @@ static int DR_LedOnTimeout(http_request_t* request) {
 	g_on_timeout_ms = atoi(tmp);
 	return 0;
 }
+
+//drvinitdetail:{"init":"Drawers_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_numLEDs", "type": "Integer", "value": "128"},
+//drvinitdetail:{"index": 2, "name": "g_on_timeout_ms", "type": "Integer", "value": "1000"},
+//drvinitdetail:{"index": 3, "name": "g_on_color", "type": "Integer", "value": "8900331"},
+//drvinitdetail:{"index": 4, "name": "g_off_color", "type": "Integer", "value": "0"},
+//drvinitdetail:{"index": 5, "name": "g_ambient_color", "type": "Integer", "value": "0"}
+//drvinitdetail:]}
 void Drawers_Init() {
 
 	/*

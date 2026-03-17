@@ -156,6 +156,12 @@ commandResult_t LTR_Cycle(const void* ctx, const char* cmd, const char* args, in
 	return CMD_RES_OK;
 }
 
+//drvinitdetail:{"init":"LTR_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_softI2C.pin_clk", "type": "Pinindex", "value": "9"},
+//drvinitdetail:{"index": 2, "name": "g_softI2C.pin_data", "type": "Pinindex", "value": "14"},
+//drvinitdetail:{"index": 3, "name": "ch_lux", "type": "Integer", "value": "-1"}
+//drvinitdetail:]}
 void LTR_Init()
 {
 	g_softI2C.pin_clk = Tokenizer_GetPin(1, 9);

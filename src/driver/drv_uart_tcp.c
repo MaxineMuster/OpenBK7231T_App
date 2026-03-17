@@ -297,6 +297,13 @@ void Start_UART_TCP(void* arg)
 // Then connect to 8888
 
 // backlog stopDriver UartTCP; startDriver UartTCP 115200 8192
+
+//drvinitdetail:{"init":"UART_TCP_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_baudRate", "type": "Integer", "value": "115200"},
+//drvinitdetail:{"index": 2, "name": "reqbufsize", "type": "Integer", "value": "512 (max 16384)"},
+//drvinitdetail:{"index": 3, "name": "g_conn_channel", "type": "Integer", "value": "-1"}
+//drvinitdetail:]}
 void UART_TCP_Init()
 {
 	g_baudRate = Tokenizer_GetArgIntegerDefault(1, g_baudRate);

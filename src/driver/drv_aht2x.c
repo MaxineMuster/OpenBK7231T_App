@@ -181,6 +181,13 @@ commandResult_t AHT2X_Reinit(const void* context, const char* cmd, const char* a
 }
 
 // startDriver AHT2X 4 5 3 4
+//drvinitdetail:{"init":"AHT2X_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_softI2C.pin_clk", "type": "Pinindex", "value": "9"},
+//drvinitdetail:{"index": 2, "name": "g_softI2C.pin_data", "type": "Pinindex", "value": "14"},
+//drvinitdetail:{"index": 3, "name": "channel_temp", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 4, "name": "channel_humid", "type": "Integer", "value": "-1"}
+//drvinitdetail:]}
 void AHT2X_Init()
 {
 	g_softI2C.pin_clk = Tokenizer_GetPin(1, 9);

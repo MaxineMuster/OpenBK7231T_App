@@ -8,6 +8,7 @@ let ios = [];
 let ioindex = {};
 let drvs = [];
 let drvindex = {};
+let drvInitindex = {};
 let drvdefines = {};	// drv.name -> [#if lines], keeps duplicates/variants
 let flags = [];
 let flagindex = {};
@@ -359,6 +360,129 @@ function getFolder(name, cb) {
 						}
 						i = j;
 					}
+
+/*
+							if (line2.startsWith('//drvdetail:')) {
+								let commentlines = [];
+								let j2;
+								for (j2 = j; j2 < lines.length; j2++) {
+									let l = lines[j2].trim();
+									if (l.startsWith('//drvdetail:')) {
+										l = l.slice('//drvdetail:'.length);
+										commentlines.push(l);
+										newlines.push(lines[j2]);
+									} else {
+										break;
+									}
+								}
+								// move our parsing forward to skip all found
+								// we are allready BEHIND comments when we used break, 
+								// so we need to skip to j2-1 to handle the line in next loop 
+								j = j2 - 1;
+								let json = commentlines.join('\n');
+								try {
+									let drv = JSON.parse(json);
+
+									if (drvindex[drv.name]) {
+										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
+										console.error('\tlast "#if" statement: "' + lasthash + '"' + '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] + '"');
+										// Compare without mutating the stored object (otherwise "define" can get deleted and leak as "undefined" into docs).
+										let tmpcmd = Object.assign({}, drvindex[drv.name]);
+										delete tmpcmd.define;
+										let drvNoDefine = Object.assign({}, drv);
+										delete drvNoDefine.define;
+										if (JSON.stringify(tmpcmd) == JSON.stringify(drvNoDefine)) {
+											console.error('\tshould be safe to ignore, because documentation is equal!');
+											// Add new defines, so the docs remain accurate.
+											if (!drvdefines[drv.name]) drvdefines[drv.name] = [];	// this should never happen, but just in case ...
+											drvdefines[drv.name].push(...def2text(lasthash));	// makeDriverDefineText will take care of possible duplicates, so just add all defines
+											drvindex[drv.name].define = makeDriverDefineText(drvdefines[drv.name]);
+										} else {
+											console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(drvNoDefine).replace(/,\"/g, "\n\t\t\t\"") + '"');
+										}
+										//console.error(line);
+									} else { // so we found first/only driver
+										drvdefines[drv.name] = [];
+										drvdefines[drv.name].push(...def2text(lasthash));
+										drv.define = makeDriverDefineText(drvdefines[drv.name]);
+										drvs.push(drv);
+										drvindex[drv.name] = drv;
+									}
+
+
+
+									if (drvInitindex[drv.name]) {
+										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
+										console.error('\tlast "#if" statement: "' + lasthash + '"' + '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] + '"');
+										// Compare without mutating the stored object (otherwise "define" can get deleted and leak as "undefined" into docs).
+										let tmpcmd = Object.assign({}, drvInitindex[drv.name]);
+										delete tmpcmd.define;
+										let drvNoDefine = Object.assign({}, drv);
+										delete drvNoDefine.define;
+										if (JSON.stringify(tmpcmd) == JSON.stringify(drvNoDefine)) {
+											console.error('\tshould be safe to ignore, because documentation is equal!');
+											// Add new defines, so the docs remain accurate.
+											if (!drvdefines[drv.name]) drvdefines[drv.name] = [];	// this should never happen, but just in case ...
+											drvdefines[drv.name].push(...def2text(lasthash));	// makeDriverDefineText will take care of possible duplicates, so just add all defines
+											drvInitindex[drv.name].define = makeDriverDefineText(drvdefines[drv.name]);
+										} else {
+											console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(drvNoDefine).replace(/,\"/g, "\n\t\t\t\"") + '"');
+										}
+										//console.error(line);
+									} else { // so we found first/only driver
+										drvdefines[drv.name] = [];
+										drvdefines[drv.name].push(...def2text(lasthash));
+										drv.define = makeDriverDefineText(drvdefines[drv.name]);
+										drvs.push(drv);
+										drvInitindex[drv.name] = drv;
+									}
+
+
+
+
+
+
+*/
+
+					if (sourceFile && line.startsWith('//drvinitdetail:')) {
+						let commentlines = [];
+						let j;
+						for (j = i; j < lines.length; j++) {
+							let l = lines[j].trim();
+							// console.log("l " + l);
+							if (l.startsWith('//drvinitdetail:')) {
+								l = l.slice('//drvinitdetail:'.length);
+								commentlines.push(l);
+								newlines.push(lines[j]);
+							} else {
+								break;
+							}
+						}
+						i = j;
+						let json = commentlines.join('\n');
+						try {
+							let drv = JSON.parse(json);
+//							console.error('\tdrvinitdetail found:\n\t' + JSON.stringify(drv));
+							if (drvInitindex[drv.init]) {
+								console.error('duplicate driver Init docs (in "' + line + '") for drv.init="' + drv.init + '" at file: ' + file );
+								//console.error(line);
+							} else { // so we found first/only driver
+								drvInitindex[drv.init] = drv;
+//								console.error('Set driver Init drv.init="' + drv.init + '" at file: ' + file );
+							}
+						} catch (e) {
+									console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
+									console.error(json);
+						}
+
+
+
+
+
+
+						i = j;
+					}
+
 					if (headerFile && line.startsWith('#define')) {
 						const parts = line.split(/[\s\t]+/);
 
@@ -605,6 +729,8 @@ function getFolder(name, cb) {
 										// insert CR at "fn":
 										json = json.split('"title":');
 										json = json.join('\n"title":');
+										json = json.split('"init":');
+										json = json.join('\n"init":');
 										json = json.split('"descr":');
 										json = json.join('\n"descr":');
 										json = json.split('"requires":');
@@ -1001,7 +1127,7 @@ Remember that some drivers might not be yet enabled on certain platforms,
 but we can enable them for you per request. Some drivers might also be WIP.
 Do not add anything here, as it will overwritten with next rebuild.
 | Driver        | Description  |
-|:------------- |:----- |
+|:------------- |:------------ |
 `;
 
 let constantsmdshort =
@@ -1246,12 +1372,22 @@ for (let i = 0; i < cnsts.length; i++) {
 	constantsmdshort += '\n';
 }
 
+//	console.error('drv = ' + JSON.stringify(drv) + '\n\n');
+
+
+
 for (let i = 0; i < drvs.length; i++) {
 	let drv = drvs[i];
-
+//find corresponding arguments (if present) from driver
+	let init = drvInitindex[drv.init];
+	let argstr = " - ";
+	if (init) {
+		argstr = `\n\nArguments:${init.args.map(arg => ` <${arg.name} &emsp;(${arg.type}, default ${arg.value})>`).join("&emsp;")}`;
+		
+	}
 	let descMore = "<br/>" + genReadMore(drv.name);
 	let descBasic = formatDesc(drv.descr);
-	let textshort = `| ${drv.name} |  ${descBasic}\n${drv.define}(for Details see [here](https://www.elektroda.com/rtvforum/topic4033833.html)).${descMore} |`;
+	let textshort = `| ${drv.name} |  ${descBasic}\n${drv.define}(for Details see [here](https://www.elektroda.com/rtvforum/topic4033833.html)).${descMore} ${argstr} |`;
 
 	// allow multi-row entries in table entries.
 	textshort = textshort.replace(/\n/g, '<br/>');

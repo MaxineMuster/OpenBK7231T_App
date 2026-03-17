@@ -43,6 +43,16 @@ void BMP280_Stop(void) {		//manufacturer ID
 // startDriver BMP280 8 14 1 2 3 236
 // startDriver BMP280 [CLK] [DATA] [ChannelForTemp] [ChannelForPressure] [ChannelForHumidity] [Adr8bit]
 // Adr8bit 236 for 0x76, 238 for 0x77
+
+//drvinitdetail:{"init":"BMP280_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_softI2C.pin_clk", "type": "Pinindex", "value": "8"},
+//drvinitdetail:{"index": 2, "name": "g_softI2C.pin_data", "type": "Pinindex", "value": "14"},
+//drvinitdetail:{"index": 3, "name": "g_targetChannelTemperature", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 4, "name": "g_targetChannelPressure", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 5, "name": "g_targetChannelHumidity", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 6, "name": "g_softI2C.address8bit", "type": "Integer", "value": "236"}
+//drvinitdetail:]}
 void BMP280_Init() {
 
 	g_softI2C.pin_clk = Tokenizer_GetPin(1, 8);

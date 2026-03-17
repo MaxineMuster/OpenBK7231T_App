@@ -1,6 +1,7 @@
 [
   {
     "name": "TuyaMCU",
+    "init": "TuyaMCU_Init",
     "title": "TODO",
     "descr": "TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
     "requires": "",
@@ -8,13 +9,23 @@
   },
   {
     "name": "tmSensor",
+    "init": "TuyaMCU_Sensor_Init",
     "title": "TODO",
     "descr": "The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_TUYAMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "Roomba",
+    "init": "Roomba_Init",
+    "title": "Roomba",
+    "descr": "Roomba OI Driver",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ROOMBA</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "GirierMCU",
+    "init": "GirierMCU_Init",
     "title": "GirierMCU",
     "descr": "TODO",
     "requires": "",
@@ -22,6 +33,7 @@
   },
   {
     "name": "TCA9554",
+    "init": "TCA9554_Init",
     "title": "TODO",
     "descr": "TCA9554.",
     "requires": "",
@@ -29,6 +41,7 @@
   },
   {
     "name": "DMX",
+    "init": "DMX_Init",
     "title": "TODO",
     "descr": "DMX.",
     "requires": "",
@@ -36,13 +49,23 @@
   },
   {
     "name": "Freeze",
+    "init": "Freeze_Init",
     "title": "TODO",
     "descr": "Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_FREEZE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "ESPHomeAPI",
+    "init": "DRV_ESPHome_API_Init",
+    "title": "ESPHome Protocol Bridge",
+    "descr": "Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
+    "requires": "BT Proxy",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ESPHOME_API</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "TESTSPIFLASH",
+    "init": "DRV_InitFlashMemoryTestFunctions",
     "title": "TODO",
     "descr": "TESTSPIFLASH",
     "requires": "",
@@ -50,6 +73,7 @@
   },
   {
     "name": "PIR",
+    "init": "PIR_Init",
     "title": "TODO",
     "descr": "PIR",
     "requires": "",
@@ -57,6 +81,7 @@
   },
   {
     "name": "PixelAnim",
+    "init": "PixelAnim_Init",
     "title": "TODO",
     "descr": "PixelAnim provides a simple set of WS2812B animations",
     "requires": "",
@@ -64,6 +89,7 @@
   },
   {
     "name": "Drawers",
+    "init": "Drawers_Init",
     "title": "TODO",
     "descr": "WS2812B driver wrapper with REST API for [smart drawers project](https://www.elektroda.com/rtvforum/topic4054134.html)",
     "requires": "",
@@ -71,6 +97,7 @@
   },
   {
     "name": "HGS02",
+    "init": "HGS02_Init",
     "title": "TODO",
     "descr": "[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
     "requires": "",
@@ -78,6 +105,7 @@
   },
   {
     "name": "PinMutex",
+    "init": "DRV_PinMutex_Init",
     "title": "TODO",
     "descr": "PinMutex.",
     "requires": "",
@@ -85,6 +113,7 @@
   },
   {
     "name": "GosundSW2",
+    "init": "DRV_GosundSW2_Init",
     "title": "TODO",
     "descr": "GosundSW2",
     "requires": "",
@@ -92,6 +121,7 @@
   },
   {
     "name": "TCL",
+    "init": "TCL_Init",
     "title": "TCL",
     "descr": "Driver for TCL-based air conditioners",
     "requires": "",
@@ -99,6 +129,7 @@
   },
   {
     "name": "OpenWeatherMap",
+    "init": "DRV_OpenWeatherMap_Init",
     "title": "TODO",
     "descr": "OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
     "requires": "",
@@ -106,6 +137,7 @@
   },
   {
     "name": "Widget",
+    "init": "DRV_Widget_Init",
     "title": "TODO",
     "descr": "Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
     "requires": "",
@@ -113,6 +145,7 @@
   },
   {
     "name": "TestCharts",
+    "init": "Charts_Init",
     "title": "TODO",
     "descr": "Development only driver - a sample of chart generation with chart.js.",
     "requires": "",
@@ -120,6 +153,7 @@
   },
   {
     "name": "Charts",
+    "init": "Charts_Init",
     "title": "TODO",
     "descr": "Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "requires": "",
@@ -127,6 +161,7 @@
   },
   {
     "name": "NTP",
+    "init": "NTP_Init",
     "title": "TODO",
     "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
     "requires": "",
@@ -134,6 +169,7 @@
   },
   {
     "name": "DS3231",
+    "init": "DS3231_Init",
     "title": "TODO",
     "descr": "Driver for DS3231 RTC.\nStart with \"startdriver DS3231 &lt;CLK-Pin&gt; &lt;DATA-Pin&gt; [&lt;optional sync&gt;]\".\nSync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
     "requires": "",
@@ -141,6 +177,7 @@
   },
   {
     "name": "HTTPButtons",
+    "init": "DRV_InitHTTPButtons",
     "title": "TODO",
     "descr": "This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
     "requires": "",
@@ -148,6 +185,7 @@
   },
   {
     "name": "TESTPOWER",
+    "init": "Test_Power_Init",
     "title": "TODO",
     "descr": "This is a fake POWER measuring socket driver, only for testing",
     "requires": "",
@@ -155,6 +193,7 @@
   },
   {
     "name": "TESTLED",
+    "init": "Test_LED_Driver_Init",
     "title": "TODO",
     "descr": "This is a fake I2C LED driver, only for testing",
     "requires": "",
@@ -162,6 +201,7 @@
   },
   {
     "name": "TESTUART",
+    "init": "Test_UART_Init",
     "title": "TODO",
     "descr": "g",
     "requires": "",
@@ -169,6 +209,7 @@
   },
   {
     "name": "Test",
+    "init": "Test_Init",
     "title": "TODO",
     "descr": "Self test of the device",
     "requires": "",
@@ -176,6 +217,7 @@
   },
   {
     "name": "SimpleEEPROM",
+    "init": "EEPROM_Init",
     "title": "TODO",
     "descr": "SimpleEEPROM",
     "requires": "",
@@ -183,6 +225,7 @@
   },
   {
     "name": "MultiPinI2CScanner",
+    "init": "MultiPinI2CScanner_Init",
     "title": "TODO",
     "descr": "qq.",
     "requires": "",
@@ -190,6 +233,7 @@
   },
   {
     "name": "I2C",
+    "init": "DRV_I2C_Init",
     "title": "TODO",
     "descr": "Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C.",
     "requires": "",
@@ -197,6 +241,7 @@
   },
   {
     "name": "RN8209",
+    "init": "RN8209_Init",
     "title": "TODO",
     "descr": "WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
     "requires": "",
@@ -204,6 +249,7 @@
   },
   {
     "name": "BL0942",
+    "init": "BL0942_UART_Init",
     "title": "TODO",
     "descr": "BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). By default, it uses 4800 baud, but you can also enable it with baud 9600 by using 'startDriver BL0942 9600', see [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20957896#20957896)",
     "requires": "",
@@ -211,6 +257,7 @@
   },
   {
     "name": "PWMG",
+    "init": "PWMG_Init",
     "title": "TODO",
     "descr": "PWM Groups (synchronized PWMs) driver for OpenBeken.",
     "requires": "",
@@ -218,6 +265,7 @@
   },
   {
     "name": "BL0942SPI",
+    "init": "BL0942_SPI_Init",
     "title": "TODO",
     "descr": "BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
     "requires": "",
@@ -225,6 +273,7 @@
   },
   {
     "name": "HLW8112SPI",
+    "init": "HLW8112SPI_Init",
     "title": "TODO",
     "descr": "TODO",
     "requires": "",
@@ -232,6 +281,7 @@
   },
   {
     "name": "ChargingLimit",
+    "init": "ChargingLimit_Init",
     "title": "TODO",
     "descr": "Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
     "requires": "",
@@ -239,6 +289,7 @@
   },
   {
     "name": "BL0937",
+    "init": "BL0937_Init",
     "title": "TODO",
     "descr": "BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
     "requires": "",
@@ -246,6 +297,7 @@
   },
   {
     "name": "CSE7761",
+    "init": "CSE7761_Init",
     "title": "CSE7761",
     "descr": "Unfinished driver for CSE7761, a single-phase multi-purpose electric energy metering chip that incorporates three sigma delta ADCs, a power calculator, an energy frequency converter, one SPI interface, and one UART interface",
     "requires": "",
@@ -253,6 +305,7 @@
   },
   {
     "name": "CSE7766",
+    "init": "CSE7766_Init",
     "title": "TODO",
     "descr": "CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
     "requires": "",
@@ -260,6 +313,7 @@
   },
   {
     "name": "MAX6675",
+    "init": "MAX6675_Init",
     "title": "TODO",
     "descr": "Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
     "requires": "",
@@ -267,6 +321,7 @@
   },
   {
     "name": "MAX31855",
+    "init": "MAX31855_Init",
     "title": "TODO",
     "descr": "T",
     "requires": "",
@@ -274,6 +329,7 @@
   },
   {
     "name": "PT6523",
+    "init": "PT6523_Init",
     "title": "TODO",
     "descr": "Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
     "requires": "",
@@ -281,6 +337,7 @@
   },
   {
     "name": "TextScroller",
+    "init": "TS_Init",
     "title": "TODO",
     "descr": "Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
     "requires": "",
@@ -288,6 +345,7 @@
   },
   {
     "name": "SM16703P",
+    "init": "SM16703P_Init",
     "title": "TODO",
     "descr": "SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
     "requires": "",
@@ -295,6 +353,7 @@
   },
   {
     "name": "SM15155E",
+    "init": "SM15155E_Init",
     "title": "TODO",
     "descr": "SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
     "requires": "",
@@ -302,6 +361,7 @@
   },
   {
     "name": "IR",
+    "init": "DRV_IR_Init",
     "title": "TODO",
     "descr": "IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
     "requires": "",
@@ -309,6 +369,7 @@
   },
   {
     "name": "RC",
+    "init": "DRV_RC_Init",
     "title": "TODO",
     "descr": "",
     "requires": "",
@@ -316,6 +377,7 @@
   },
   {
     "name": "IR2",
+    "init": "DRV_IR2_Init",
     "title": "TODO",
     "descr": "simple IR2 driver for sending captures from flipper zero",
     "requires": "",
@@ -323,20 +385,39 @@
   },
   {
     "name": "DDPSend",
+    "init": "DRV_DDPSend_Init",
     "title": "TODO",
     "descr": "DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDPSEND</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "Shutters",
+    "init": "DRV_Shutters_Init",
+    "title": "TODO",
+    "descr": "ShutterShutters",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHUTTERS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "DDP",
+    "init": "DRV_DDP_Init",
     "title": "TODO",
     "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "MDNS",
+    "init": "DRV_MDNS_Init",
+    "title": "TODO",
+    "descr": "mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MDNS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "SSDP",
+    "init": "DRV_SSDP_Init",
     "title": "TODO",
     "descr": "SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section",
     "requires": "",
@@ -344,6 +425,7 @@
   },
   {
     "name": "DGR",
+    "init": "DRV_DGR_Init",
     "title": "TODO",
     "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
     "requires": "",
@@ -351,6 +433,7 @@
   },
   {
     "name": "Wemo",
+    "init": "WEMO_Init",
     "title": "TODO",
     "descr": "Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": "",
@@ -358,6 +441,7 @@
   },
   {
     "name": "Hue",
+    "init": "HUE_Init",
     "title": "TODO",
     "descr": "Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": "",
@@ -365,6 +449,7 @@
   },
   {
     "name": "PWMToggler",
+    "init": "DRV_InitPWMToggler",
     "title": "TODO",
     "descr": "PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html).",
     "requires": "",
@@ -372,6 +457,7 @@
   },
   {
     "name": "DoorSensor",
+    "init": "DoorDeepSleep_Init",
     "title": "TODO",
     "descr": "DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
     "requires": "",
@@ -379,6 +465,7 @@
   },
   {
     "name": "ADCButton",
+    "init": "DRV_ADCButton_Init",
     "title": "TODO",
     "descr": "This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
     "requires": "",
@@ -386,6 +473,7 @@
   },
   {
     "name": "MAX72XX_Clock",
+    "init": "DRV_MAX72XX_Clock_Init",
     "title": "TODO",
     "descr": "Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
     "requires": "",
@@ -393,6 +481,7 @@
   },
   {
     "name": "SM2135",
+    "init": "SM2135_Init",
     "title": "TODO",
     "descr": "SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command",
     "requires": "",
@@ -400,6 +489,7 @@
   },
   {
     "name": "BP5758D",
+    "init": "BP5758D_Init",
     "title": "TODO",
     "descr": "BP5758D custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP5758D pin roles. This may need you to remap the RGBCW indexes with BP5758D_Map command. This driver is used in some of BL602/Sonoff bulbs, see [video flashing tutorial here](https://www.youtube.com/watch?v=L6d42IMGhHw)",
     "requires": "",
@@ -407,6 +497,7 @@
   },
   {
     "name": "BP1658CJ",
+    "init": "BP1658CJ_Init",
     "title": "TODO",
     "descr": "BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command",
     "requires": "",
@@ -414,6 +505,7 @@
   },
   {
     "name": "SM2235",
+    "init": "SM2235_Init",
     "title": "TODO",
     "descr": "SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
     "requires": "",
@@ -421,6 +513,7 @@
   },
   {
     "name": "SSD1306",
+    "init": "SSD1306_DRV_Init",
     "title": "TODO",
     "descr": "SSD1306 OLEd 128x32 I2C display driver.",
     "requires": "",
@@ -428,6 +521,7 @@
   },
   {
     "name": "BMP280",
+    "init": "BMP280_Init",
     "title": "TODO",
     "descr": "BMP280 is a Temperature and Pressure sensor with I2C interface.",
     "requires": "",
@@ -435,6 +529,7 @@
   },
   {
     "name": "MAX72XX",
+    "init": "DRV_MAX72XX_Init",
     "title": "TODO",
     "descr": "MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
     "requires": "",
@@ -442,6 +537,7 @@
   },
   {
     "name": "BMPI2C",
+    "init": "BMPI2C_Init",
     "title": "TODO",
     "descr": "Driver for BMP085, BMP180, BMP280, BME280, BME68X sensors with I2C interface.",
     "requires": "",
@@ -449,6 +545,7 @@
   },
   {
     "name": "CHT83XX",
+    "init": "CHT83XX_Init",
     "title": "TODO",
     "descr": "CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
     "requires": "",
@@ -456,6 +553,7 @@
   },
   {
     "name": "MCP9808",
+    "init": "MCP9808_Init",
     "title": "TODO",
     "descr": "MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
     "requires": "",
@@ -463,6 +561,7 @@
   },
   {
     "name": "KP18058",
+    "init": "KP18058_Init",
     "title": "TODO",
     "descr": "KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
     "requires": "",
@@ -470,6 +569,7 @@
   },
   {
     "name": "ADCSmoother",
+    "init": "DRV_ADCSmoother_Init",
     "title": "TODO",
     "descr": "ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
     "requires": "",
@@ -477,6 +577,7 @@
   },
   {
     "name": "SHT3X",
+    "init": "SHT3X_Init",
     "title": "TODO",
     "descr": "Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
     "requires": "",
@@ -484,6 +585,7 @@
   },
   {
     "name": "SGP",
+    "init": "SGP_Init",
     "title": "TODO",
     "descr": "SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
     "requires": "",
@@ -491,6 +593,7 @@
   },
   {
     "name": "ShiftRegister",
+    "init": "Shift_Init",
     "title": "TODO",
     "descr": "Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
     "requires": "",
@@ -498,6 +601,7 @@
   },
   {
     "name": "AHT2X",
+    "init": "AHT2X_Init",
     "title": "TODO",
     "descr": "AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
     "requires": "",
@@ -505,6 +609,7 @@
   },
   {
     "name": "DS1820",
+    "init": "DS1820_driver_Init",
     "title": "TODO",
     "descr": "Very simple driver for oneWire temperature sensor DS1820.",
     "requires": "",
@@ -512,6 +617,7 @@
   },
   {
     "name": "DS1820_FULL",
+    "init": "DS1820_full_driver_Init",
     "title": "TODO",
     "descr": "Driver for oneWire temperature sensor DS18(B)20.",
     "requires": "",
@@ -519,6 +625,7 @@
   },
   {
     "name": "HT16K33",
+    "init": "HT16K33_Init",
     "title": "TODO",
     "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
     "requires": "",
@@ -526,6 +633,7 @@
   },
   {
     "name": "TM1637",
+    "init": "TM1637_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK interface. See [TM1637 information](https://www.elektroda.com/rtvforum/viewtopic.php?p=20468593#20468593)",
     "requires": "",
@@ -533,6 +641,7 @@
   },
   {
     "name": "GN6932",
+    "init": "GN6932_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
     "requires": "",
@@ -540,6 +649,7 @@
   },
   {
     "name": "TM1638",
+    "init": "TM1638_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
     "requires": "",
@@ -547,6 +657,7 @@
   },
   {
     "name": "HD2015",
+    "init": "HD2015_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
     "requires": "",
@@ -554,6 +665,7 @@
   },
   {
     "name": "Battery",
+    "init": "Batt_Init",
     "title": "TODO",
     "descr": "Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
     "requires": "",
@@ -561,6 +673,7 @@
   },
   {
     "name": "BKPartitions",
+    "init": "BKPartitions_Init",
     "title": "TODO",
     "descr": "o.",
     "requires": "",
@@ -568,6 +681,7 @@
   },
   {
     "name": "Bridge",
+    "init": "Bridge_driver_Init",
     "title": "TODO",
     "descr": "A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
     "requires": "",
@@ -575,6 +689,7 @@
   },
   {
     "name": "UartTCP",
+    "init": "UART_TCP_Init",
     "title": "TODO",
     "descr": "UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
     "requires": "",
@@ -582,6 +697,7 @@
   },
   {
     "name": "TXWCAM",
+    "init": "TXW_Cam_Init",
     "title": "TODO",
     "descr": "TXW81X Camera.",
     "requires": "",
@@ -589,6 +705,7 @@
   },
   {
     "name": "NEO6M",
+    "init": "NEO6M_UART_Init",
     "title": "TODO",
     "descr": "NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
     "requires": "",
@@ -596,13 +713,23 @@
   },
   {
     "name": "LTR_ALS",
+    "init": "LTR_Init",
     "title": "TODO",
     "descr": "LTR-303/329 ambient light sensor driver.",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_LTR_ALS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
   },
   {
+    "name": "TinyIR_NEC",
+    "init": "TinyIR_NEC_Init",
+    "title": "TODO",
+    "descr": "NEC-only IR receiver",
+    "requires": "",
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TINYIR_NEC</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+  },
+  {
     "name": "mqttServer",
+    "init": "DRV_MQTTServer_Init",
     "title": "TODO",
     "descr": "MQTT Server driver.",
     "requires": "",

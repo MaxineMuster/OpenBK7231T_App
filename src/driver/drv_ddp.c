@@ -212,6 +212,10 @@ void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreS
 	}
 	hprintf255(request, "<h2>DDP received: %i packets, %i bytes</h2>", stat_ddpPacketsReceived, stat_ddpBytesReceived);
 }
+//drvinitdetail:{"init":"DRV_DDP_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_ddp_bufferSize", "type": "Integer", "value": "512"}
+//drvinitdetail:]}
 void DRV_DDP_Init()
 {
 	g_ddp_bufferSize = Tokenizer_GetArgIntegerDefault(1, 512);

@@ -159,6 +159,11 @@ commandResult_t EEPROM_DumpCmd(const void*ctx, const char*cmd, const char*args, 
 // startDriver SimpleEEPROM 5 4
 // EEPROM_Write 0 AABBCC
 // EEPROM_Read 0 16
+//drvinitdetail:{"init":"EEPROM_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_eepI2C.pin_clk", "type": "Pinindex", "value": "NO default! "},
+//drvinitdetail:{"index": 2, "name": "g_eepI2C.pin_data", "type": "Pinindex", "value": "NO default!"}
+//drvinitdetail:]}
 void EEPROM_Init() {
 //	g_eepI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, g_eepI2C.pin_clk); 
 //	g_eepI2C.pin_data = Tokenizer_GetArgIntegerDefault(2, g_eepI2C.pin_data);

@@ -704,6 +704,10 @@ commandResult_t CMD_DS18B20_scansensors(const void *context, const char *cmd, co
 
 
 // startDriver DS1820_full [conversionPeriod (seconds) - default 15]
+//drvinitdetail:{"init":"DS1820_full_driver_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "ds18_conversionPeriod", "type": "Integer", "value": "15"}
+//drvinitdetail:]}
 void DS1820_full_driver_Init()
 {
 	ds18_conversionPeriod = Tokenizer_GetArgIntegerDefault(1, 15);

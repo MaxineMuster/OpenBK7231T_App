@@ -65,6 +65,10 @@ static commandResult_t Cmd_SetResolution(const void* context, const char* cmd, c
 }
 
 // startDriver DS1820 [conversionPeriod (seconds) - default 15]
+//drvinitdetail:{"init":"DS1820_driver_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "ds18_conversionPeriod", "type": "Integer", "value": "15"}
+//drvinitdetail:]}
 void DS1820_driver_Init()
 {
 	ds18_conversionPeriod = Tokenizer_GetArgIntegerDefault(1, 15);

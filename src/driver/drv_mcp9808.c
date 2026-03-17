@@ -237,6 +237,12 @@ startDriver MCP9808 7 8 1
 MCP9808_Adr 0x30
 MCP9808_Cycle 1
 */
+//drvinitdetail:{"init":"MCP9808_Init",
+//drvinitdetail:"args":[
+//drvinitdetail:{"index": 1, "name": "g_softI2C.pin_clk", "type": "Pinindex", "value": "26"},
+//drvinitdetail:{"index": 2, "name": "g_softI2C.pin_data", "type": "Pinindex", "value": "24"},
+//drvinitdetail:{"index": 3, "name": "g_targetChannel", "type": "Integer", "value": "-1"}
+//drvinitdetail:]}
 void MCP9808_Init() {
 
 	//uint8_t buff[4];
