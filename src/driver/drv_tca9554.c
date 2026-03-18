@@ -36,10 +36,10 @@ setChannelType 7 Toggle
 */
 //drvinitdetail:{"init":"TCA9554_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "tcI2C.pin_clk", "type": "Pinindex", "value": "41"},
-//drvinitdetail:{"index": 2, "name": "tcI2C.pin_data", "type": "Pinindex", "value": "42"},
-//drvinitdetail:{"index": 3, "name": "tca_firstChannel", "type": "Integer", "value": "8"},
-//drvinitdetail:{"index": 4, "name": "tca_adr", "type": "Integer", "value": "(0x20 << 1)"}
+//drvinitdetail:{"index": 1, "name": "SCL", "type": "Pin", "value": "41"},
+//drvinitdetail:{"index": 2, "name": "SDA", "type": "Pin", "value": "42"},
+//drvinitdetail:{"index": 3, "name": "firstChannel", "type": "Integer", "value": "8"},
+//drvinitdetail:{"index": 4, "name": "I2C_Addr8bit", "type": "Integer", "value": "64 (0x20 << 1)"}
 //drvinitdetail:]}
 void TCA9554_Init() {
 //	tcI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, 41);

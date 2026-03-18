@@ -1,738 +1,1214 @@
 [
   {
     "name": "TuyaMCU",
-    "init": "TuyaMCU_Init",
     "title": "TODO",
     "descr": "TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TUYAMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TUYAMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TuyaMCU_Init",
+    "args": []
   },
   {
     "name": "tmSensor",
-    "init": "TuyaMCU_Sensor_Init",
     "title": "TODO",
     "descr": "The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TUYAMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TUYAMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TuyaMCU_Sensor_Init",
+    "args": []
   },
   {
     "name": "Roomba",
-    "init": "Roomba_Init",
     "title": "Roomba",
     "descr": "Roomba OI Driver",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ROOMBA</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ROOMBA</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Roomba_Init",
+    "args": []
   },
   {
     "name": "GirierMCU",
-    "init": "GirierMCU_Init",
     "title": "GirierMCU",
     "descr": "TODO",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_GIRIERMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_GIRIERMCU</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "GirierMCU_Init",
+    "args": []
   },
   {
     "name": "TCA9554",
-    "init": "TCA9554_Init",
     "title": "TODO",
     "descr": "TCA9554.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TCA9554</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TCA9554</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TCA9554_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "41"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "42"
+      },
+      {
+        "index": 3,
+        "name": "firstChannel",
+        "type": "Integer",
+        "value": "8"
+      },
+      {
+        "index": 4,
+        "name": "I2C_Addr8bit",
+        "type": "Integer",
+        "value": "64 (0x20 << 1)"
+      }
+    ]
   },
   {
     "name": "DMX",
-    "init": "DMX_Init",
     "title": "TODO",
     "descr": "DMX.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DMX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DMX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DMX_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "Pin",
+        "type": "Pin",
+        "value": "22"
+      }
+    ]
   },
   {
     "name": "Freeze",
-    "init": "Freeze_Init",
     "title": "TODO",
     "descr": "Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_FREEZE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_FREEZE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Freeze_Init",
+    "args": []
   },
   {
     "name": "ESPHomeAPI",
-    "init": "DRV_ESPHome_API_Init",
     "title": "ESPHome Protocol Bridge",
     "descr": "Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
     "requires": "BT Proxy",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ESPHOME_API</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ESPHOME_API</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_ESPHome_API_Init",
+    "args": []
   },
   {
     "name": "TESTSPIFLASH",
-    "init": "DRV_InitFlashMemoryTestFunctions",
     "title": "TODO",
     "descr": "TESTSPIFLASH",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTSPIFLASH</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTSPIFLASH</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_InitFlashMemoryTestFunctions",
+    "args": []
   },
   {
     "name": "PIR",
-    "init": "PIR_Init",
     "title": "TODO",
     "descr": "PIR",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PIR</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PIR</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "PIR_Init",
+    "args": []
   },
   {
     "name": "PixelAnim",
-    "init": "PixelAnim_Init",
     "title": "TODO",
     "descr": "PixelAnim provides a simple set of WS2812B animations",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PIXELANIM</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PIXELANIM</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "PixelAnim_Init",
+    "args": []
   },
   {
     "name": "Drawers",
-    "init": "Drawers_Init",
     "title": "TODO",
     "descr": "WS2812B driver wrapper with REST API for [smart drawers project](https://www.elektroda.com/rtvforum/topic4054134.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DRAWERS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DRAWERS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Drawers_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "numLEDs",
+        "type": "Integer",
+        "value": "128"
+      },
+      {
+        "index": 2,
+        "name": "on_timeout (ms)",
+        "type": "Integer",
+        "value": "1000"
+      },
+      {
+        "index": 3,
+        "name": "on_color",
+        "type": "Integer",
+        "value": "8900331"
+      },
+      {
+        "index": 4,
+        "name": "off_color",
+        "type": "Integer",
+        "value": "0"
+      },
+      {
+        "index": 5,
+        "name": "ambient_color",
+        "type": "Integer",
+        "value": "0"
+      }
+    ]
   },
   {
     "name": "HGS02",
-    "init": "HGS02_Init",
     "title": "TODO",
     "descr": "[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HGS02</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HGS02</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "HGS02_Init",
+    "args": []
   },
   {
     "name": "PinMutex",
-    "init": "DRV_PinMutex_Init",
     "title": "TODO",
     "descr": "PinMutex.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PINMUTEX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PINMUTEX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_PinMutex_Init",
+    "args": []
   },
   {
     "name": "GosundSW2",
-    "init": "DRV_GosundSW2_Init",
     "title": "TODO",
     "descr": "GosundSW2",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_GOSUNDSW2</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_GOSUNDSW2</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_GosundSW2_Init",
+    "args": []
   },
   {
     "name": "TCL",
-    "init": "TCL_Init",
     "title": "TCL",
     "descr": "Driver for TCL-based air conditioners",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TCL</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TCL</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TCL_Init",
+    "args": []
   },
   {
     "name": "OpenWeatherMap",
-    "init": "DRV_OpenWeatherMap_Init",
     "title": "TODO",
     "descr": "OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_OPENWEATHERMAP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_OPENWEATHERMAP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_OpenWeatherMap_Init",
+    "args": []
   },
   {
     "name": "Widget",
-    "init": "DRV_Widget_Init",
     "title": "TODO",
     "descr": "Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_WIDGET</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_WIDGET</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_Widget_Init",
+    "args": []
   },
   {
     "name": "TestCharts",
-    "init": "Charts_Init",
     "title": "TODO",
     "descr": "Development only driver - a sample of chart generation with chart.js.",
     "requires": "",
-    "define": "Enabled by defining \"<b>WINDOWS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>WINDOWS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TODO",
+    "args": []
   },
   {
     "name": "Charts",
-    "init": "Charts_Init",
     "title": "TODO",
     "descr": "Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CHARTS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CHARTS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_Charts_Init",
+    "args": []
   },
   {
     "name": "NTP",
-    "init": "NTP_Init",
     "title": "TODO",
     "descr": "NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_NTP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_NTP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "NTP_Init",
+    "args": []
   },
   {
     "name": "DS3231",
-    "init": "DS3231_Init",
     "title": "TODO",
     "descr": "Driver for DS3231 RTC.\nStart with \"startdriver DS3231 &lt;CLK-Pin&gt; &lt;DATA-Pin&gt; [&lt;optional sync&gt;]\".\nSync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DS3231</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DS3231</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DS3231_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "9"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "14"
+      }
+    ]
   },
   {
     "name": "HTTPButtons",
-    "init": "DRV_InitHTTPButtons",
     "title": "TODO",
     "descr": "This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HTTPBUTTONS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HTTPBUTTONS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_InitHTTPButtons",
+    "args": []
   },
   {
     "name": "TESTPOWER",
-    "init": "Test_Power_Init",
     "title": "TODO",
     "descr": "This is a fake POWER measuring socket driver, only for testing",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTPOWER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTPOWER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Test_Power_Init",
+    "args": []
   },
   {
     "name": "TESTLED",
-    "init": "Test_LED_Driver_Init",
     "title": "TODO",
     "descr": "This is a fake I2C LED driver, only for testing",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTLED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTLED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Test_LED_Driver_Init",
+    "args": []
   },
   {
     "name": "TESTUART",
-    "init": "Test_UART_Init",
     "title": "TODO",
     "descr": "g",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTUART</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTUART</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Test_UART_Init",
+    "args": []
   },
   {
     "name": "Test",
-    "init": "Test_Init",
     "title": "TODO",
     "descr": "Self test of the device",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_TEST_COMMANDS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_TEST_COMMANDS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Test_Init",
+    "args": []
   },
   {
     "name": "SimpleEEPROM",
-    "init": "EEPROM_Init",
     "title": "TODO",
     "descr": "SimpleEEPROM",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_SIMPLEEEPROM</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_SIMPLEEEPROM</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "EEPROM_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "NO default! "
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "NO default!"
+      }
+    ]
   },
   {
     "name": "MultiPinI2CScanner",
-    "init": "MultiPinI2CScanner_Init",
     "title": "TODO",
     "descr": "qq.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_MULTIPINI2CSCANNER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_MULTIPINI2CSCANNER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "MultiPinI2CScanner_Init",
+    "args": []
   },
   {
     "name": "I2C",
-    "init": "DRV_I2C_Init",
     "title": "TODO",
     "descr": "Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_I2C</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_I2C</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_I2C_Init",
+    "args": []
   },
   {
     "name": "RN8209",
-    "init": "RN8209_Init",
     "title": "TODO",
     "descr": "WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_RN8209</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_RN8209</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "RN8209_Init",
+    "args": []
   },
   {
     "name": "BL0942",
-    "init": "BL0942_UART_Init",
     "title": "TODO",
     "descr": "BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). By default, it uses 4800 baud, but you can also enable it with baud 9600 by using 'startDriver BL0942 9600', see [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20957896#20957896)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BL0942</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BL0942</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BL0942_UART_Init",
+    "args": []
   },
   {
     "name": "PWMG",
-    "init": "PWMG_Init",
     "title": "TODO",
     "descr": "PWM Groups (synchronized PWMs) driver for OpenBeken.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PWM_GROUP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PWM_GROUP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "PWMG_Init",
+    "args": []
   },
   {
     "name": "BL0942SPI",
-    "init": "BL0942_SPI_Init",
     "title": "TODO",
     "descr": "BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BL0942SPI</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BL0942SPI</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BL0942_SPI_Init",
+    "args": []
   },
   {
     "name": "HLW8112SPI",
-    "init": "HLW8112SPI_Init",
     "title": "TODO",
     "descr": "TODO",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HLW8112SPI</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HLW8112SPI</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "HLW8112SPI_Init",
+    "args": []
   },
   {
     "name": "ChargingLimit",
-    "init": "ChargingLimit_Init",
     "title": "TODO",
     "descr": "Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CHARGINGLIMIT</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CHARGINGLIMIT</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "ChargingLimit_Init",
+    "args": []
   },
   {
     "name": "BL0937",
-    "init": "BL0937_Init",
     "title": "TODO",
     "descr": "BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BL0937</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BL0937</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BL0937_Init",
+    "args": []
   },
   {
     "name": "CSE7761",
-    "init": "CSE7761_Init",
     "title": "CSE7761",
     "descr": "Unfinished driver for CSE7761, a single-phase multi-purpose electric energy metering chip that incorporates three sigma delta ADCs, a power calculator, an energy frequency converter, one SPI interface, and one UART interface",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CSE7761</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CSE7761</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "CSE7761_Init",
+    "args": []
   },
   {
     "name": "CSE7766",
-    "init": "CSE7766_Init",
     "title": "TODO",
     "descr": "CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CSE7766</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CSE7766</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "CSE7766_Init",
+    "args": []
   },
   {
     "name": "MAX6675",
-    "init": "MAX6675_Init",
     "title": "TODO",
     "descr": "Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX6675</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX6675</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "MAX6675_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "CS",
+        "type": "Pin",
+        "value": "24"
+      },
+      {
+        "index": 2,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "26"
+      },
+      {
+        "index": 3,
+        "name": "MISO",
+        "type": "Pin",
+        "value": "6"
+      },
+      {
+        "index": 4,
+        "name": "CH temperature",
+        "type": "Integer",
+        "value": "-1"
+      }
+    ]
   },
   {
     "name": "MAX31855",
-    "init": "MAX31855_Init",
     "title": "TODO",
     "descr": "T",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX31855</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX31855</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "MAX31855_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "CS",
+        "type": "Pin",
+        "value": "24"
+      },
+      {
+        "index": 2,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "26"
+      },
+      {
+        "index": 3,
+        "name": "MISO",
+        "type": "Pin",
+        "value": "6"
+      },
+      {
+        "index": 4,
+        "name": "CH temperature",
+        "type": "Integer",
+        "value": "-1"
+      }
+    ]
   },
   {
     "name": "PT6523",
-    "init": "PT6523_Init",
     "title": "TODO",
     "descr": "Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PT6523</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_PT6523</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "PT6523_Init",
+    "args": []
   },
   {
     "name": "TextScroller",
-    "init": "TS_Init",
     "title": "TODO",
     "descr": "Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TEXTSCROLLER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TEXTSCROLLER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TS_Init",
+    "args": []
   },
   {
     "name": "SM16703P",
-    "init": "SM16703P_Init",
     "title": "TODO",
     "descr": "SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SM16703P</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SM16703P</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "SM16703P_Init",
+    "args": []
   },
   {
     "name": "SM15155E",
-    "init": "SM15155E_Init",
     "title": "TODO",
     "descr": "SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SM15155E</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SM15155E</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "SM15155E_Init",
+    "args": []
   },
   {
     "name": "IR",
-    "init": "DRV_IR_Init",
     "title": "TODO",
     "descr": "IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_IR</b>\" or \"<b>ENABLE_DRIVER_IRREMOTEESP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_IR</b>\" or \"<b>ENABLE_DRIVER_IRREMOTEESP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_IR_Init",
+    "args": []
   },
   {
     "name": "RC",
-    "init": "DRV_RC_Init",
     "title": "TODO",
     "descr": "",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_RC</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_RC</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_RC_Init",
+    "args": []
   },
   {
     "name": "IR2",
-    "init": "DRV_IR2_Init",
     "title": "TODO",
     "descr": "simple IR2 driver for sending captures from flipper zero",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_IR2</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_IR2</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_IR2_Init",
+    "args": []
   },
   {
     "name": "DDPSend",
-    "init": "DRV_DDPSend_Init",
     "title": "TODO",
     "descr": "DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDPSEND</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDPSEND</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_DDPSend_Init",
+    "args": []
   },
   {
     "name": "Shutters",
-    "init": "DRV_Shutters_Init",
     "title": "TODO",
     "descr": "ShutterShutters",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHUTTERS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHUTTERS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_Shutters_Init",
+    "args": []
   },
   {
     "name": "DDP",
-    "init": "DRV_DDP_Init",
     "title": "TODO",
     "descr": "DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_DDP_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "BufferSize",
+        "type": "Integer",
+        "value": "512"
+      }
+    ]
   },
   {
     "name": "MDNS",
-    "init": "DRV_MDNS_Init",
     "title": "TODO",
     "descr": "mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MDNS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MDNS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_MDNS_Init",
+    "args": []
   },
   {
     "name": "SSDP",
-    "init": "DRV_SSDP_Init",
     "title": "TODO",
     "descr": "SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SSDP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SSDP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_SSDP_Init",
+    "args": []
   },
   {
     "name": "DGR",
-    "init": "DRV_DGR_Init",
     "title": "TODO",
     "descr": "Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_TASMOTADEVICEGROUPS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_TASMOTADEVICEGROUPS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_DGR_Init",
+    "args": []
   },
   {
     "name": "Wemo",
-    "init": "WEMO_Init",
     "title": "TODO",
     "descr": "Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_WEMO</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_WEMO</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "WEMO_Init",
+    "args": []
   },
   {
     "name": "Hue",
-    "init": "HUE_Init",
     "title": "TODO",
     "descr": "Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HUE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HUE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "HUE_Init",
+    "args": []
   },
   {
     "name": "PWMToggler",
-    "init": "DRV_InitPWMToggler",
     "title": "TODO",
     "descr": "PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html).",
     "requires": "",
-    "define": "Enabled by defining \"<b>PLATFORM_BEKEN</b>\" or \"<b>WINDOWS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>PLATFORM_BEKEN</b>\" or \"<b>WINDOWS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_InitPWMToggler",
+    "args": []
   },
   {
     "name": "DoorSensor",
-    "init": "DoorDeepSleep_Init",
     "title": "TODO",
     "descr": "DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
     "requires": "",
-    "define": "Enabled by defining \"<b>PLATFORM_BEKEN</b>\" or \"<b>WINDOWS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>PLATFORM_BEKEN</b>\" or \"<b>WINDOWS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DoorDeepSleep_Init",
+    "args": []
   },
   {
     "name": "ADCButton",
-    "init": "DRV_ADCButton_Init",
     "title": "TODO",
     "descr": "This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ADCBUTTON</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ADCBUTTON</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_ADCButton_Init",
+    "args": []
   },
   {
     "name": "MAX72XX_Clock",
-    "init": "DRV_MAX72XX_Clock_Init",
     "title": "TODO",
     "descr": "Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX72XX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX72XX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_MAX72XX_Clock_Init",
+    "args": []
   },
   {
     "name": "SM2135",
-    "init": "SM2135_Init",
     "title": "TODO",
     "descr": "SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "SM2135_Init",
+    "args": []
   },
   {
     "name": "BP5758D",
-    "init": "BP5758D_Init",
     "title": "TODO",
     "descr": "BP5758D custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP5758D pin roles. This may need you to remap the RGBCW indexes with BP5758D_Map command. This driver is used in some of BL602/Sonoff bulbs, see [video flashing tutorial here](https://www.youtube.com/watch?v=L6d42IMGhHw)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BP5758D_Init",
+    "args": []
   },
   {
     "name": "BP1658CJ",
-    "init": "BP1658CJ_Init",
     "title": "TODO",
     "descr": "BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BP1658CJ_Init",
+    "args": []
   },
   {
     "name": "SM2235",
-    "init": "SM2235_Init",
     "title": "TODO",
     "descr": "SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LED</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "SM2235_Init",
+    "args": []
   },
   {
     "name": "SSD1306",
-    "init": "SSD1306_DRV_Init",
     "title": "TODO",
     "descr": "SSD1306 OLEd 128x32 I2C display driver.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SSD1306</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SSD1306</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "SSD1306_DRV_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "16"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "20"
+      },
+      {
+        "index": 3,
+        "name": "I2C_Addr",
+        "type": "Integer",
+        "value": "0x3C"
+      }
+    ]
   },
   {
     "name": "BMP280",
-    "init": "BMP280_Init",
     "title": "TODO",
     "descr": "BMP280 is a Temperature and Pressure sensor with I2C interface.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BMP280</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BMP280</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BMP280_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "8"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "14"
+      },
+      {
+        "index": 3,
+        "name": "CH temperature",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 4,
+        "name": "CH pressure",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 5,
+        "name": "CH humidity",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 6,
+        "name": "I2C_Addr8bit",
+        "type": "Integer",
+        "value": "236 (0x76 <<1)"
+      }
+    ]
   },
   {
     "name": "MAX72XX",
-    "init": "DRV_MAX72XX_Init",
     "title": "TODO",
     "descr": "MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX72XX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX72XX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_MAX72XX_Init",
+    "args": []
   },
   {
     "name": "BMPI2C",
-    "init": "BMPI2C_Init",
     "title": "TODO",
     "descr": "Driver for BMP085, BMP180, BMP280, BME280, BME68X sensors with I2C interface.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BMPI2C</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BMPI2C</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BMPI2C_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "8"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "14"
+      },
+      {
+        "index": 3,
+        "name": "CH temperature",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 4,
+        "name": "CH pressure",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 5,
+        "name": "CH humidity",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 6,
+        "name": "I2C_Addr index",
+        "type": "Integer",
+        "value": "0 for 0x77, 1 for 0x76, default 0 (0x77)"
+      }
+    ]
   },
   {
     "name": "CHT83XX",
-    "init": "CHT83XX_Init",
     "title": "TODO",
     "descr": "CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CHT83XX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_CHT83XX</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "CHT83XX_Init",
+    "args": []
   },
   {
     "name": "MCP9808",
-    "init": "MCP9808_Init",
     "title": "TODO",
     "descr": "MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MCP9808</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MCP9808</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "MCP9808_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "26"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "24"
+      },
+      {
+        "index": 3,
+        "name": "CH temperature",
+        "type": "Integer",
+        "value": "-1"
+      }
+    ]
   },
   {
     "name": "KP18058",
-    "init": "KP18058_Init",
     "title": "TODO",
     "descr": "KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_KP18058</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_KP18058</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "KP18058_Init",
+    "args": []
   },
   {
     "name": "ADCSmoother",
-    "init": "DRV_ADCSmoother_Init",
     "title": "TODO",
     "descr": "ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ADCSMOOTHER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_ADCSMOOTHER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_ADCSmoother_Init",
+    "args": []
   },
   {
     "name": "SHT3X",
-    "init": "SHT3X_Init",
     "title": "TODO",
     "descr": "Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHT3X</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHT3X</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "SHT3X_Init",
+    "args": []
   },
   {
     "name": "SGP",
-    "init": "SGP_Init",
     "title": "TODO",
     "descr": "SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SGP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SGP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "SGP_Init",
+    "args": []
   },
   {
     "name": "ShiftRegister",
-    "init": "Shift_Init",
     "title": "TODO",
     "descr": "Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHIFTREGISTER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_SHIFTREGISTER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Shift_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "24"
+      },
+      {
+        "index": 2,
+        "name": "latch",
+        "type": "Pin",
+        "value": "6"
+      },
+      {
+        "index": 3,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "7"
+      },
+      {
+        "index": 4,
+        "name": "CH 1",
+        "type": "Integer",
+        "value": "10"
+      },
+      {
+        "index": 5,
+        "name": "order",
+        "type": "Integer",
+        "value": "1"
+      },
+      {
+        "index": 6,
+        "name": "Registers",
+        "type": "Integer",
+        "value": "1"
+      },
+      {
+        "index": 7,
+        "name": "invert",
+        "type": "Integer",
+        "value": "0"
+      }
+    ]
   },
   {
     "name": "AHT2X",
-    "init": "AHT2X_Init",
     "title": "TODO",
     "descr": "AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_AHT2X</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_AHT2X</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "AHT2X_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "9"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "14"
+      },
+      {
+        "index": 3,
+        "name": "CH temperature",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 4,
+        "name": "CH humidity",
+        "type": "Integer",
+        "value": "-1"
+      }
+    ]
   },
   {
     "name": "DS1820",
-    "init": "DS1820_driver_Init",
     "title": "TODO",
     "descr": "Very simple driver for oneWire temperature sensor DS1820.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DS1820</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DS1820</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DS1820_driver_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "Period (s)",
+        "type": "Integer",
+        "value": "15"
+      }
+    ]
   },
   {
     "name": "DS1820_FULL",
-    "init": "DS1820_full_driver_Init",
     "title": "TODO",
     "descr": "Driver for oneWire temperature sensor DS18(B)20.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DS1820_FULL</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_DS1820_FULL</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DS1820_full_driver_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "Period (s)",
+        "type": "Integer",
+        "value": "15"
+      }
+    ]
   },
   {
     "name": "HT16K33",
-    "init": "HT16K33_Init",
     "title": "TODO",
     "descr": "Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HT16K33</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_HT16K33</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "HT16K33_Init",
+    "args": []
   },
   {
     "name": "TM1637",
-    "init": "TM1637_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK interface. See [TM1637 information](https://www.elektroda.com/rtvforum/viewtopic.php?p=20468593#20468593)",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TM1637_Init",
+    "args": []
   },
   {
     "name": "GN6932",
-    "init": "GN6932_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "GN6932_Init",
+    "args": []
   },
   {
     "name": "TM1638",
-    "init": "TM1638_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TM1638_Init",
+    "args": []
   },
   {
     "name": "HD2015",
-    "init": "HD2015_Init",
     "title": "TODO",
     "descr": "Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TMGN</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "HD2015_Init",
+    "args": []
   },
   {
     "name": "Battery",
-    "init": "Batt_Init",
     "title": "TODO",
     "descr": "Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BATTERY</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BATTERY</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Batt_Init",
+    "args": []
   },
   {
     "name": "BKPartitions",
-    "init": "BKPartitions_Init",
     "title": "TODO",
     "descr": "o.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BKPARTITIONS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BKPARTITIONS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "BKPartitions_Init",
+    "args": []
   },
   {
     "name": "Bridge",
-    "init": "Bridge_driver_Init",
     "title": "TODO",
     "descr": "A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BRIDGE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_BRIDGE</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "Bridge_driver_Init",
+    "args": []
   },
   {
     "name": "UartTCP",
-    "init": "UART_TCP_Init",
     "title": "TODO",
     "descr": "UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_UART_TCP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_UART_TCP</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "UART_TCP_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "baud",
+        "type": "Integer",
+        "value": "115200"
+      },
+      {
+        "index": 2,
+        "name": "reqbufsize",
+        "type": "Integer",
+        "value": "512 (max 16384)"
+      },
+      {
+        "index": 3,
+        "name": "CH connected",
+        "type": "Integer",
+        "value": "-1"
+      },
+      {
+        "index": 3,
+        "name": "flowcontrol",
+        "type": "Integer",
+        "value": "0"
+      }
+    ]
   },
   {
     "name": "TXWCAM",
-    "init": "TXW_Cam_Init",
     "title": "TODO",
     "descr": "TXW81X Camera.",
     "requires": "",
-    "define": "Enabled by defining \"<b>PLATFORM_TXW81X</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>PLATFORM_TXW81X</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TXW_Cam_Init",
+    "args": []
   },
   {
     "name": "NEO6M",
-    "init": "NEO6M_UART_Init",
     "title": "TODO",
     "descr": "NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_NEO6M</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_NEO6M</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "NEO6M_UART_Init",
+    "args": []
   },
   {
     "name": "LTR_ALS",
-    "init": "LTR_Init",
     "title": "TODO",
     "descr": "LTR-303/329 ambient light sensor driver.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LTR_ALS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_LTR_ALS</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "LTR_Init",
+    "args": [
+      {
+        "index": 1,
+        "name": "SCL",
+        "type": "Pin",
+        "value": "9"
+      },
+      {
+        "index": 2,
+        "name": "SDA",
+        "type": "Pin",
+        "value": "14"
+      },
+      {
+        "index": 3,
+        "name": "CH lux",
+        "type": "Integer",
+        "value": "-1"
+      }
+    ]
   },
   {
     "name": "TinyIR_NEC",
-    "init": "TinyIR_NEC_Init",
     "title": "TODO",
     "descr": "NEC-only IR receiver",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TINYIR_NEC</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_TINYIR_NEC</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "TinyIR_NEC_Init",
+    "args": []
   },
   {
     "name": "mqttServer",
-    "init": "DRV_MQTTServer_Init",
     "title": "TODO",
     "descr": "MQTT Server driver.",
     "requires": "",
-    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MQTTSERVER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) "
+    "define": "Enabled by defining \"<b>ENABLE_DRIVER_MQTTSERVER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
+    "init": "DRV_MQTTServer_Init",
+    "args": []
   }
 ]

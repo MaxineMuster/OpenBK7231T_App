@@ -198,8 +198,8 @@ commandResult_t DS3231_SetEpochCmd(const void* context, const char* cmd, const c
 
 //drvinitdetail:{"init":"DS3231_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "pin_clk", "type": "Pinindex", "value": "9"},
-//drvinitdetail:{"index": 2, "name": "pin_data", "type": "Pinindex", "value": "14"}
+//drvinitdetail:{"index": 1, "name": "SCL", "type": "Pin", "value": "9"},
+//drvinitdetail:{"index": 2, "name": "SDA", "type": "Pin", "value": "14"}
 //drvinitdetail:]}
 void DS3231_Init()
 {

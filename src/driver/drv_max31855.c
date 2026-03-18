@@ -84,10 +84,10 @@ void MAX31855_RunEverySecond() {
 // startDriver MAX31855 24 26 6 1
 //drvinitdetail:{"init":"MAX31855_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "port_cs", "type": "Integer", "value": "24"},
-//drvinitdetail:{"index": 2, "name": "sclk", "type": "Integer", "value": "26"},
-//drvinitdetail:{"index": 3, "name": "miso", "type": "Integer", "value": "6"},
-//drvinitdetail:{"index": 4, "name": "targetChannel", "type": "Integer", "value": "-1"}
+//drvinitdetail:{"index": 1, "name": "CS", "type": "Pin", "value": "24"},
+//drvinitdetail:{"index": 2, "name": "SCL", "type": "Pin", "value": "26"},
+//drvinitdetail:{"index": 3, "name": "MISO", "type": "Pin", "value": "6"},
+//drvinitdetail:{"index": 4, "name": "CH temperature", "type": "Integer", "value": "-1"}
 //drvinitdetail:]}
 void MAX31855_Init() {
 	port_cs = Tokenizer_GetArgIntegerDefault(1, port_cs);

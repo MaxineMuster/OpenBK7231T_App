@@ -300,9 +300,10 @@ void Start_UART_TCP(void* arg)
 
 //drvinitdetail:{"init":"UART_TCP_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "g_baudRate", "type": "Integer", "value": "115200"},
+//drvinitdetail:{"index": 1, "name": "baud", "type": "Integer", "value": "115200"},
 //drvinitdetail:{"index": 2, "name": "reqbufsize", "type": "Integer", "value": "512 (max 16384)"},
-//drvinitdetail:{"index": 3, "name": "g_conn_channel", "type": "Integer", "value": "-1"}
+//drvinitdetail:{"index": 3, "name": "CH connected", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 3, "name": "flowcontrol", "type": "Integer", "value": "0"}
 //drvinitdetail:]}
 void UART_TCP_Init()
 {

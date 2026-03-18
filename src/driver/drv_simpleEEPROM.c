@@ -161,8 +161,8 @@ commandResult_t EEPROM_DumpCmd(const void*ctx, const char*cmd, const char*args, 
 // EEPROM_Read 0 16
 //drvinitdetail:{"init":"EEPROM_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "g_eepI2C.pin_clk", "type": "Pinindex", "value": "NO default! "},
-//drvinitdetail:{"index": 2, "name": "g_eepI2C.pin_data", "type": "Pinindex", "value": "NO default!"}
+//drvinitdetail:{"index": 1, "name": "SCL", "type": "Pin", "value": "NO default! "},
+//drvinitdetail:{"index": 2, "name": "SDA", "type": "Pin", "value": "NO default!"}
 //drvinitdetail:]}
 void EEPROM_Init() {
 //	g_eepI2C.pin_clk = Tokenizer_GetArgIntegerDefault(1, g_eepI2C.pin_clk); 

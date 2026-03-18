@@ -214,7 +214,7 @@ void DRV_DDP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreS
 }
 //drvinitdetail:{"init":"DRV_DDP_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "g_ddp_bufferSize", "type": "Integer", "value": "512"}
+//drvinitdetail:{"index": 1, "name": "BufferSize", "type": "Integer", "value": "512"}
 //drvinitdetail:]}
 void DRV_DDP_Init()
 {

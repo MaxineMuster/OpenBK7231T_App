@@ -269,9 +269,9 @@ goto again
 */
 //drvinitdetail:{"init":"SSD1306_DRV_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "g_softI2C.pin_clk", "type": "Pinindex", "value": "16"},
-//drvinitdetail:{"index": 2, "name": "g_softI2C.pin_data", "type": "Pinindex", "value": "20"},
-//drvinitdetail:{"index": 3, "name": "ssd1306_addr", "type": "Integer", "value": "0x3C"}
+//drvinitdetail:{"index": 1, "name": "SCL", "type": "Pin", "value": "16"},
+//drvinitdetail:{"index": 2, "name": "SDA", "type": "Pin", "value": "20"},
+//drvinitdetail:{"index": 3, "name": "I2C_Addr", "type": "Integer", "value": "0x3C"}
 //drvinitdetail:]}
 void SSD1306_DRV_Init() {
 

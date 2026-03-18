@@ -158,9 +158,9 @@ commandResult_t LTR_Cycle(const void* ctx, const char* cmd, const char* args, in
 
 //drvinitdetail:{"init":"LTR_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "g_softI2C.pin_clk", "type": "Pinindex", "value": "9"},
-//drvinitdetail:{"index": 2, "name": "g_softI2C.pin_data", "type": "Pinindex", "value": "14"},
-//drvinitdetail:{"index": 3, "name": "ch_lux", "type": "Integer", "value": "-1"}
+//drvinitdetail:{"index": 1, "name": "SCL", "type": "Pin", "value": "9"},
+//drvinitdetail:{"index": 2, "name": "SDA", "type": "Pin", "value": "14"},
+//drvinitdetail:{"index": 3, "name": "CH lux", "type": "Integer", "value": "-1"}
 //drvinitdetail:]}
 void LTR_Init()
 {

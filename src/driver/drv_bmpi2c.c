@@ -123,12 +123,12 @@ void BMPI2C_Measure()
 // Adr8bit 0 for 0x77, 1 for 0x76
 //drvinitdetail:{"init":"BMPI2C_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "g_softI2C.pin_clk", "type": "Pinindex", "value": "8"},
-//drvinitdetail:{"index": 2, "name": "g_softI2C.pin_data", "type": "Pinindex", "value": "14"},
-//drvinitdetail:{"index": 3, "name": "g_targetChannelTemperature", "type": "Integer", "value": "-1"},
-//drvinitdetail:{"index": 4, "name": "g_targetChannelPressure", "type": "Integer", "value": "-1"},
-//drvinitdetail:{"index": 5, "name": "g_targetChannelHumidity", "type": "Integer", "value": "-1"},
-//drvinitdetail:{"index": 6, "name": "g_softI2C.address8bit", "type": "Integer", "value": "0 for 0x77, 1 for 0x76, default 0 (0x77)"}
+//drvinitdetail:{"index": 1, "name": "SCL", "type": "Pin", "value": "8"},
+//drvinitdetail:{"index": 2, "name": "SDA", "type": "Pin", "value": "14"},
+//drvinitdetail:{"index": 3, "name": "CH temperature", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 4, "name": "CH pressure", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 5, "name": "CH humidity", "type": "Integer", "value": "-1"},
+//drvinitdetail:{"index": 6, "name": "I2C_Addr index", "type": "Integer", "value": "0 for 0x77, 1 for 0x76, default 0 (0x77)"}
 //drvinitdetail:]}
 void BMPI2C_Init()
 {

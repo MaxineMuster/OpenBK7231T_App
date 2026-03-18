@@ -715,9 +715,42 @@ function getFolder(name, cb) {
 
 									console.log("drv type name: " + drvName);
 
+									// EXTENSION: Extract the init function from the next non-comment line
+									// The init function is the second element in the driver struct definition
+									let drvInit = "TODO";
+									let j3 = j + 1;
+									while (j3 < lines.length) {
+										let nextLine = lines[j3].trim();
+										// Skip comment lines (lines starting with //)
+										if (nextLine.startsWith('//')) {
+											j3++;
+											continue;
+										}
+										// Skip preprocessor directives (#if, #endif, etc.)
+										if (nextLine.startsWith('#')) {
+											j3++;
+											continue;
+										}
+										// This should be the init function line - extract it
+										if (nextLine && !nextLine.startsWith('{') && !nextLine.startsWith('NULL')) {
+											// Extract function name by splitting at comma and removing trailing comments
+											drvInit = nextLine.split(',')[0].trim();
+											drvInit = drvInit.split('//')[0].trim();
+										}
+										break;
+									}
+									
+									if (drvindex[drvName]) {
+										drvindex[drvName].init = drvInit;
+									}
+
+
+									// END EXTENSION
+
 									let drv = {
 										name: drvName,
 										title: drvName,
+										init: drvInit,
 										descr: mytrim("TODO"),
 										requires: mytrim(""),
 									};
@@ -1380,9 +1413,12 @@ for (let i = 0; i < drvs.length; i++) {
 	let drv = drvs[i];
 //find corresponding arguments (if present) from driver
 	let init = drvInitindex[drv.init];
-	let argstr = " - ";
+	console.log("Driver " + drv.name + " has init " + drv.init);
+	let argstr = "";
+	drvs[i].args=[];
 	if (init) {
 		argstr = `\n\nArguments:${init.args.map(arg => ` <${arg.name} &emsp;(${arg.type}, default ${arg.value})>`).join("&emsp;")}`;
+		drvs[i].args=init.args;
 		
 	}
 	let descMore = "<br/>" + genReadMore(drv.name);

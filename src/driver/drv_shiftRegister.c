@@ -49,13 +49,13 @@ setChannelType 17 Toggle
 */
 //drvinitdetail:{"init":"Shift_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "g_data", "type": "Integer", "value": "24"},
-//drvinitdetail:{"index": 2, "name": "g_latch", "type": "Integer", "value": "6"},
-//drvinitdetail:{"index": 3, "name": "g_clk", "type": "Integer", "value": "7"},
-//drvinitdetail:{"index": 4, "name": "g_firstChannel", "type": "Integer", "value": "10"},
-//drvinitdetail:{"index": 5, "name": "g_order", "type": "Integer", "value": "1"},
-//drvinitdetail:{"index": 6, "name": "g_totalRegisters", "type": "Integer", "value": "1"},
-//drvinitdetail:{"index": 7, "name": "g_invert", "type": "Integer", "value": "0"}
+//drvinitdetail:{"index": 1, "name": "SDA", "type": "Pin", "value": "24"},
+//drvinitdetail:{"index": 2, "name": "latch", "type": "Pin", "value": "6"},
+//drvinitdetail:{"index": 3, "name": "SCL", "type": "Pin", "value": "7"},
+//drvinitdetail:{"index": 4, "name": "CH 1", "type": "Integer", "value": "10"},
+//drvinitdetail:{"index": 5, "name": "order", "type": "Integer", "value": "1"},
+//drvinitdetail:{"index": 6, "name": "Registers", "type": "Integer", "value": "1"},
+//drvinitdetail:{"index": 7, "name": "invert", "type": "Integer", "value": "0"}
 //drvinitdetail:]}
 void Shift_Init() {
 	// NOTE: this is called by "startDriver ShiftRegister" command,

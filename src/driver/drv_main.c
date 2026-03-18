@@ -50,7 +50,6 @@ void GirierMCU_RunEverySecond();
 static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_TUYAMCU
 	//drvdetail:{"name":"TuyaMCU",
-	//drvdetail:"init":"TuyaMCU_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TuyaMCU is a protocol used for communication between WiFI module and external MCU. This protocol is using usually RX1/TX1 port of BK chips. See [TuyaMCU dimmer example](https://www.elektroda.com/rtvforum/topic3929151.html), see [TH06 LCD humidity/temperature sensor example](https://www.elektroda.com/rtvforum/topic3942730.html), see [fan controller example](https://www.elektroda.com/rtvforum/topic3908093.html), see [simple switch example](https://www.elektroda.com/rtvforum/topic3906443.html)",
 	//drvdetail:"requires":""}
@@ -65,7 +64,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"tmSensor",
-	//drvdetail:"init":"TuyaMCU_Sensor_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"The tmSensor must be used only when TuyaMCU is already started. tmSensor is a TuyaMcu Sensor, it's used for Low Power TuyaMCU communication on devices like TuyaMCU door sensor, or TuyaMCU humidity sensor. After device reboots, tmSensor uses TuyaMCU to request data update from the sensor and reports it on MQTT. Then MCU turns off WiFi module again and goes back to sleep. See an [example door sensor here](https://www.elektroda.com/rtvforum/topic3914412.html).",
 	//drvdetail:"requires":""}
@@ -82,7 +80,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_ROOMBA
 	//drvdetail:{"name":"Roomba",
-	//drvdetail:"init":"Roomba_Init",
 	//drvdetail:"title":"Roomba",
 	//drvdetail:"descr":"Roomba OI Driver",
 	//drvdetail:"requires":""}
@@ -99,7 +96,6 @@ static driver_t g_drivers[] = {
 #endif
 #ifdef ENABLE_DRIVER_GIRIERMCU
 	//drvdetail:{"name":"GirierMCU",
-	//drvdetail:"init":"GirierMCU_Init",
 	//drvdetail:"title":"GirierMCU",
 	//drvdetail:"descr":"TODO",
 	//drvdetail:"requires":""}
@@ -116,7 +112,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TCA9554
 	//drvdetail:{"name":"TCA9554",
-	//drvdetail:"init":"TCA9554_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TCA9554.",
 	//drvdetail:"requires":""}
@@ -133,7 +128,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_DMX
 	//drvdetail:{"name":"DMX",
-	//drvdetail:"init":"DMX_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DMX.",
 	//drvdetail:"requires":""}
@@ -150,7 +144,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_FREEZE
 	//drvdetail:{"name":"Freeze",
-	//drvdetail:"init":"Freeze_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Freeze is a test driver for watchdog. Enabling this will freeze device main loop.",
 	//drvdetail:"requires":""}
@@ -167,7 +160,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_ESPHOME_API
 	//drvdetail:{"name":"ESPHomeAPI",
-	//drvdetail:"init":"DRV_ESPHome_API_Init",
 	//drvdetail:"title":"ESPHome Protocol Bridge",
 	//drvdetail:"descr":"Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
 	//drvdetail:"requires":"BT Proxy"}
@@ -184,7 +176,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TESTSPIFLASH
 	//drvdetail:{"name":"TESTSPIFLASH",
-	//drvdetail:"init":"DRV_InitFlashMemoryTestFunctions",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TESTSPIFLASH",
 	//drvdetail:"requires":""}
@@ -201,7 +192,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_PIR
 	//drvdetail:{"name":"PIR",
-	//drvdetail:"init":"PIR_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PIR",
 	//drvdetail:"requires":""}
@@ -218,7 +208,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_PIXELANIM
 	//drvdetail:{"name":"PixelAnim",
-	//drvdetail:"init":"PixelAnim_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PixelAnim provides a simple set of WS2812B animations",
 	//drvdetail:"requires":""}
@@ -235,7 +224,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_DRAWERS
 	//drvdetail:{"name":"Drawers",
-	//drvdetail:"init":"Drawers_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WS2812B driver wrapper with REST API for [smart drawers project](https://www.elektroda.com/rtvforum/topic4054134.html)",
 	//drvdetail:"requires":""}
@@ -252,7 +240,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_HGS02
 	//drvdetail:{"name":"HGS02",
-	//drvdetail:"init":"HGS02_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"[HGS02](https://www.elektroda.com/rtvforum/viewtopic.php?p=21177061#21177061)",
 	//drvdetail:"requires":""}
@@ -269,7 +256,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_PINMUTEX
 	//drvdetail:{"name":"PinMutex",
-	//drvdetail:"init":"DRV_PinMutex_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PinMutex.",
 	//drvdetail:"requires":""}
@@ -286,7 +272,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_GOSUNDSW2
 	//drvdetail:{"name":"GosundSW2",
-	//drvdetail:"init":"DRV_GosundSW2_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"GosundSW2",
 	//drvdetail:"requires":""}
@@ -303,7 +288,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TCL
 	//drvdetail:{"name":"TCL",
-	//drvdetail:"init":"TCL_Init",
 	//drvdetail:"title":"TCL",
 	//drvdetail:"descr":"Driver for TCL-based air conditioners",
 	//drvdetail:"requires":""}
@@ -320,7 +304,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_OPENWEATHERMAP
 	//drvdetail:{"name":"OpenWeatherMap",
-	//drvdetail:"init":"DRV_OpenWeatherMap_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"OpenWeatherMap integration allows you to fetch current weather for your lat/long. You can later extract temperatura, humidity and pressure data and display it on main page.",
 	//drvdetail:"requires":""}
@@ -337,7 +320,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_WIDGET
 	//drvdetail:{"name":"Widget",
-	//drvdetail:"init":"DRV_Widget_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Widget driver allows you to create custom HTML snippets that are displayed on main OBK page. Snippets are loaded from LittleFS file system and can use OBK REST API.",
 	//drvdetail:"requires":""}
@@ -354,7 +336,6 @@ static driver_t g_drivers[] = {
 #endif
 #if WINDOWS
 	//drvdetail:{"name":"TestCharts",
-	//drvdetail:"init":"Charts_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Development only driver - a sample of chart generation with chart.js.",
 	//drvdetail:"requires":""}
@@ -371,7 +352,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_CHARTS
 	//drvdetail:{"name":"Charts",
-	//drvdetail:"init":"Charts_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Charts driver allows you to create a customizable chart directly on your device. See [tutorial](https://www.elektroda.com/rtvforum/topic4075289.html).",
 	//drvdetail:"requires":""}
@@ -388,7 +368,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_NTP
 	//drvdetail:{"name":"NTP",
-	//drvdetail:"init":"NTP_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NTP driver is required to get current time and date from web. Without it, there is no correct datetime. Put 'startDriver NTP' in short startup line or autoexec.bat to run it on start.",
 	//drvdetail:"requires":""}
@@ -405,7 +384,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_DS3231
 	//drvdetail:{"name":"DS3231",
-	//drvdetail:"init":"DS3231_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for DS3231 RTC.\nStart with \"startdriver DS3231 &lt;CLK-Pin&gt; &lt;DATA-Pin&gt; [&lt;optional sync&gt;]\".\nSync values: 0 - do nothing / 1: set device clock to RTC on driver start / 2: regulary (every minute) set device clock to RTC (so RTC is time source)",
 	//drvdetail:"requires":""}
@@ -422,7 +400,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
-	//drvdetail:"init":"DRV_InitHTTPButtons",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This driver allows you to create custom, scriptable buttons on main WWW page. You can create those buttons in autoexec.bat and assign commands to them",
 	//drvdetail:"requires":""}
@@ -439,7 +416,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TESTPOWER
 	//drvdetail:{"name":"TESTPOWER",
-	//drvdetail:"init":"Test_Power_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake POWER measuring socket driver, only for testing",
 	//drvdetail:"requires":""}
@@ -456,7 +432,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TESTLED
 	//drvdetail:{"name":"TESTLED",
-	//drvdetail:"init":"Test_LED_Driver_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This is a fake I2C LED driver, only for testing",
 	//drvdetail:"requires":""}
@@ -473,7 +448,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TESTUART
 	//drvdetail:{"name":"TESTUART",
-	//drvdetail:"init":"Test_UART_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"g",
 	//drvdetail:"requires":""}
@@ -490,7 +464,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_TEST_COMMANDS
 	//drvdetail:{"name":"Test",
-	//drvdetail:"init":"Test_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Self test of the device",
 	//drvdetail:"requires":""}
@@ -507,7 +480,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_SIMPLEEEPROM
 	//drvdetail:{"name":"SimpleEEPROM",
-	//drvdetail:"init":"EEPROM_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SimpleEEPROM",
 	//drvdetail:"requires":""}
@@ -524,7 +496,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_MULTIPINI2CSCANNER
 	//drvdetail:{"name":"MultiPinI2CScanner",
-	//drvdetail:"init":"MultiPinI2CScanner_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"qq.",
 	//drvdetail:"requires":""}
@@ -541,7 +512,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_I2C
 	//drvdetail:{"name":"I2C",
-	//drvdetail:"init":"DRV_I2C_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Generic I2C, not used for LED drivers, but may be useful for displays or port expanders. Supports both hardware and software I2C.",
 	//drvdetail:"requires":""}
@@ -558,7 +528,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_RN8209
 	//drvdetail:{"name":"RN8209",
-	//drvdetail:"init":"RN8209_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"WIP driver for power-metering chip RN8209 found in one of Zmai-90 versions.",
 	//drvdetail:"requires":""}
@@ -575,7 +544,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BL0942
 	//drvdetail:{"name":"BL0942",
-	//drvdetail:"init":"BL0942_UART_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [LSPA9 teardown example](https://www.elektroda.com/rtvforum/topic3887748.html). By default, it uses 4800 baud, but you can also enable it with baud 9600 by using 'startDriver BL0942 9600', see [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20957896#20957896)",
 	//drvdetail:"requires":""}
@@ -592,7 +560,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_PWM_GROUP
 	//drvdetail:{"name":"PWMG",
-	//drvdetail:"init":"PWMG_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PWM Groups (synchronized PWMs) driver for OpenBeken.",
 	//drvdetail:"requires":""}
@@ -609,7 +576,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BL0942SPI
 	//drvdetail:{"name":"BL0942SPI",
-	//drvdetail:"init":"BL0942_SPI_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0942 driver version for SPI protocol. It's usually connected to SPI1 port of BK. You need to calibrate power metering once, just like in Tasmota. See [PZIOT-E01 teardown example](https://www.elektroda.com/rtvforum/topic3945667.html). ",
 	//drvdetail:"requires":""}
@@ -626,7 +592,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_HLW8112SPI
 	//drvdetail:{"name":"HLW8112SPI",
-	//drvdetail:"init":"HLW8112SPI_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TODO",
 	//drvdetail:"requires":""}
@@ -643,7 +608,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_CHARGINGLIMIT
 	//drvdetail:{"name":"ChargingLimit",
-	//drvdetail:"init":"ChargingLimit_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Mechanism to perform an action based on a max. delta value and max time. Used to control Electric Vehicle chargers. See [discussion](https://github.com/openshwprojects/OpenBK7231T_App/issues/892).",
 	//drvdetail:"requires":""}
@@ -660,7 +624,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BL0937
 	//drvdetail:{"name":"BL0937",
-	//drvdetail:"init":"BL0937_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BL0937 is a power-metering chip which uses custom protocol to report data. It requires setting 3 pins in pin config: CF, CF1 and SEL",
 	//drvdetail:"requires":""}
@@ -677,7 +640,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_CSE7761
 	//drvdetail:{"name":"CSE7761",
-	//drvdetail:"init":"CSE7761_Init",
 	//drvdetail:"title":"CSE7761",
 	//drvdetail:"descr":"Unfinished driver for CSE7761, a single-phase multi-purpose electric energy metering chip that incorporates three sigma delta ADCs, a power calculator, an energy frequency converter, one SPI interface, and one UART interface",
 	//drvdetail:"requires":""}
@@ -694,7 +656,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_CSE7766
 	//drvdetail:{"name":"CSE7766",
-	//drvdetail:"init":"CSE7766_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"CSE7766 is a power-metering chip which uses UART protocol for communication. It's usually connected to TX1/RX1 port of BK",
 	//drvdetail:"requires":""}
@@ -711,7 +672,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_MAX6675
 	//drvdetail:{"name":"MAX6675",
-	//drvdetail:"init":"MAX6675_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Thermocouple driver for measuring high temperatures, see [presentation](https://www.elektroda.com/rtvforum/topic4055231.html)",
 	//drvdetail:"requires":""}
@@ -728,7 +688,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_MAX31855
 	//drvdetail:{"name":"MAX31855",
-	//drvdetail:"init":"MAX31855_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"T",
 	//drvdetail:"requires":""}
@@ -745,7 +704,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_PT6523
 	//drvdetail:{"name":"PT6523",
-	//drvdetail:"init":"PT6523_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Car radio LCD driver, see [teardown and presentation](https://www.elektroda.com/rtvforum/topic3983111.html)",
 	//drvdetail:"requires":""}
@@ -762,7 +720,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TEXTSCROLLER
 	//drvdetail:{"name":"TextScroller",
-	//drvdetail:"init":"TS_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Wrapper utility that can do text scrolling animation on implemented displays (WIP)",
 	//drvdetail:"requires":""}
@@ -779,7 +736,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SM16703P
 	//drvdetail:{"name":"SM16703P",
-	//drvdetail:"init":"SM16703P_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM16703P is an individually addressable LEDs controller like WS2812B. Currently SM16703P LEDs are supported through hardware SPI, LEDs data should be connected to P16 (MOSI), [here you can read](https://www.elektroda.com/rtvforum/topic4005865.html) how to break it out on CB2S.",
 	//drvdetail:"requires":""}
@@ -796,7 +752,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SM15155E
 	//drvdetail:{"name":"SM15155E",
-	//drvdetail:"init":"SM15155E_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM15155E is a WS2812B-like single wire LED controller. It's also always using P16 (SPI out) on Beken. See [reverse-engineering topic](https://www.elektroda.com/rtvforum/topic4060227.html)",
 	//drvdetail:"requires":""}
@@ -813,7 +768,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_IR || ENABLE_DRIVER_IRREMOTEESP
 	//drvdetail:{"name":"IR",
-	//drvdetail:"init":"DRV_IR_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"IRLibrary wrapper, so you can receive remote signals and send them. See [forum discussion here](https://www.elektroda.com/rtvforum/topic3920360.html), also see [LED strip and IR YT video](https://www.youtube.com/watch?v=KU0tDwtjfjw)",
 	//drvdetail:"requires":""}
@@ -830,7 +784,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_RC
 	//drvdetail:{"name":"RC",
-	//drvdetail:"init":"DRV_RC_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"",
 	//drvdetail:"requires":""}
@@ -847,7 +800,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_IR2
 	//drvdetail:{"name":"IR2",
-	//drvdetail:"init":"DRV_IR2_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"simple IR2 driver for sending captures from flipper zero",
 	//drvdetail:"requires":""}
@@ -864,7 +816,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_DDPSEND
 	//drvdetail:{"name":"DDPSend",
-	//drvdetail:"init":"DRV_DDPSend_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
@@ -881,7 +832,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SHUTTERS
 	//drvdetail:{"name":"Shutters",
-	//drvdetail:"init":"DRV_Shutters_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"ShutterShutters",
 	//drvdetail:"requires":""}
@@ -898,7 +848,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_DDP
 	//drvdetail:{"name":"DDP",
-	//drvdetail:"init":"DRV_DDP_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DDP is a LED control protocol that is using UDP. You can use xLights or any other app to control OBK LEDs that way. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
@@ -915,7 +864,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_MDNS
 	//drvdetail:{"name":"MDNS",
-	//drvdetail:"init":"DRV_MDNS_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
 	//drvdetail:"requires":""}
@@ -932,7 +880,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SSDP
 	//drvdetail:{"name":"SSDP",
-	//drvdetail:"init":"DRV_SSDP_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SSDP is a discovery protocol, so BK devices can show up in, for example, Windows network section",
 	//drvdetail:"requires":""}
@@ -949,7 +896,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_TASMOTADEVICEGROUPS
 	//drvdetail:{"name":"DGR",
-	//drvdetail:"init":"DRV_DGR_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Tasmota Device groups driver. See [forum example](https://www.elektroda.com/rtvforum/topic3925472.html) and [video tutorial](https://www.youtube.com/watch?v=e1xcq3OUR5M&ab_channel=Elektrodacom)",
 	//drvdetail:"requires":""}
@@ -966,7 +912,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_WEMO
 	//drvdetail:{"name":"Wemo",
-	//drvdetail:"init":"WEMO_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Wemo emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
 	//drvdetail:"requires":""}
@@ -983,7 +928,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_HUE
 	//drvdetail:{"name":"Hue",
-	//drvdetail:"init":"HUE_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Hue emulation for Alexa. You must also start SSDP so it can run, because it depends on SSDP discovery.",
 	//drvdetail:"requires":""}
@@ -1000,7 +944,6 @@ static driver_t g_drivers[] = {
 #endif
 #if defined(PLATFORM_BEKEN) || defined(WINDOWS)
 	//drvdetail:{"name":"PWMToggler",
-	//drvdetail:"init":"DRV_InitPWMToggler",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"PWMToggler is a custom abstraction layer that can run on top of raw PWM channels. It provides ability to turn off/on the PWM while keeping it's value, which is not possible by direct channel operations. It can be used for some custom devices with extra lights/lasers. See example [here](https://www.elektroda.com/rtvforum/topic3939064.html).",
 	//drvdetail:"requires":""}
@@ -1015,7 +958,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"DoorSensor",
-	//drvdetail:"init":"DoorDeepSleep_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"DoorSensor is using deep sleep to preserve battery. This is used for devices without TuyaMCU, where BK deep sleep and wakeup on GPIO is used. This drives requires you to set a DoorSensor pin. Change on door sensor pin wakes up the device. If there are no changes for some time, device goes to sleep. See example [here](https://www.elektroda.com/rtvforum/topic3960149.html). If your door sensor does not wake up in certain pos, please use DSEdge command (try all 3 options, default is 2). ",
 	//drvdetail:"requires":""}
@@ -1032,7 +974,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_ADCBUTTON
 	//drvdetail:{"name":"ADCButton",
-	//drvdetail:"init":"DRV_ADCButton_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"This allows you to connect multiple buttons on single ADC pin. Each button must have a different resistor value, this works by probing the voltage on ADC from a resistor divider. You need to select AB_Map first. See forum post for [details](https://www.elektroda.com/rtvforum/viewtopic.php?p=20541973#20541973).",
 	//drvdetail:"requires":""}
@@ -1049,7 +990,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX_Clock",
-	//drvdetail:"init":"DRV_MAX72XX_Clock_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple hardcoded driver for MAX72XX clock. Requires manual start of MAX72XX driver with MAX72XX setup and NTP start.",
 	//drvdetail:"requires":""}
@@ -1066,7 +1006,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_LED
 	//drvdetail:{"name":"SM2135",
-	//drvdetail:"init":"SM2135_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM2135 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2135 pin roles. This may need you to remap the RGBCW indexes with SM2135_Map command",
 	//drvdetail:"requires":""}
@@ -1081,7 +1020,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"BP5758D",
-	//drvdetail:"init":"BP5758D_Init",
 	//drvdetail:"title":"TODO",	
 	//drvdetail:"descr":"BP5758D custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP5758D pin roles. This may need you to remap the RGBCW indexes with BP5758D_Map command. This driver is used in some of BL602/Sonoff bulbs, see [video flashing tutorial here](https://www.youtube.com/watch?v=L6d42IMGhHw)",
 	//drvdetail:"requires":""}
@@ -1096,7 +1034,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"BP1658CJ",
-	//drvdetail:"init":"BP1658CJ_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BP1658CJ custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both BP1658CJ pin roles. This may need you to remap the RGBCW indexes with BP1658CJ_Map command",
 	//drvdetail:"requires":""}
@@ -1111,7 +1048,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"SM2235",
-	//drvdetail:"init":"SM2235_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SM2335 andd SM2235 custom-'I2C' LED driver for RGBCW lights. This will start automatically if you set both SM2235 pin roles. This may need you to remap the RGBCW indexes with SM2235_Map command. This driver also works for SM2185N.",
 	//drvdetail:"requires":""}
@@ -1128,7 +1064,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SSD1306
 	//drvdetail:{"name":"SSD1306",
-	//drvdetail:"init":"SSD1306_DRV_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SSD1306 OLEd 128x32 I2C display driver.",
 	//drvdetail:"requires":""}
@@ -1145,7 +1080,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BMP280
 	//drvdetail:{"name":"BMP280",
-	//drvdetail:"init":"BMP280_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"BMP280 is a Temperature and Pressure sensor with I2C interface.",
 	//drvdetail:"requires":""}
@@ -1162,7 +1096,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_MAX72XX
 	//drvdetail:{"name":"MAX72XX",
-	//drvdetail:"init":"DRV_MAX72XX_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MAX72XX LED matrix display driver with font and simple script interface. See [protocol explanation](https://www.elektroda.pl/rtvforum/viewtopic.php?p=18040628#18040628)",
 	//drvdetail:"requires":""}
@@ -1179,7 +1112,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BMPI2C
 		//drvdetail:{"name":"BMPI2C",
-		//drvdetail:"init":"BMPI2C_Init",
 		//drvdetail:"title":"TODO",
 		//drvdetail:"descr":"Driver for BMP085, BMP180, BMP280, BME280, BME68X sensors with I2C interface.",
 		//drvdetail:"requires":""}
@@ -1196,7 +1128,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_CHT83XX
 	//drvdetail:{"name":"CHT83XX",
-	//drvdetail:"init":"CHT83XX_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"CHT8305, CHT8310 and CHT8315 are a Temperature and Humidity sensors with I2C interface.",
 	//drvdetail:"requires":""}
@@ -1213,7 +1144,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_MCP9808
 	//drvdetail:{"name":"MCP9808",
-	//drvdetail:"init":"MCP9808_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MCP9808 is a Temperature sensor with I2C interface and an external wakeup pin, see [docs](https://www.elektroda.pl/rtvforum/topic3988466.html).",
 	//drvdetail:"requires":""}
@@ -1230,7 +1160,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_KP18058
 	//drvdetail:{"name":"KP18058",
-	//drvdetail:"init":"KP18058_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"KP18058 I2C LED driver. Supports also KP18068. Working, see reverse-engineering [topic](https://www.elektroda.pl/rtvforum/topic3991620.html)",
 	//drvdetail:"requires":""}
@@ -1247,7 +1176,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_ADCSMOOTHER
 	//drvdetail:{"name":"ADCSmoother",
-	//drvdetail:"init":"DRV_ADCSmoother_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"ADCSmoother is used for 3-way stairs switches synchronized via extra wire.",
 	//drvdetail:"requires":""}
@@ -1264,7 +1192,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SHT3X
 	//drvdetail:{"name":"SHT3X",
-	//drvdetail:"init":"SHT3X_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Humidity/temperature sensor. See [SHT Sensor tutorial topic here](https://www.elektroda.com/rtvforum/topic3958369.html), also see [this sensor teardown](https://www.elektroda.com/rtvforum/topic3945688.html)",
 	//drvdetail:"requires":""}
@@ -1281,7 +1208,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SGP
 	//drvdetail:{"name":"SGP",
-	//drvdetail:"init":"SGP_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"SGP Air Quality sensor with I2C interface. See [this DIY sensor](https://www.elektroda.com/rtvforum/topic3967174.html) for setup information.",
 	//drvdetail:"requires":""}
@@ -1298,7 +1224,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_SHIFTREGISTER
 	//drvdetail:{"name":"ShiftRegister",
-	//drvdetail:"init":"Shift_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Simple Shift Register driver that allows you to map channels to shift register output. See [related topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20533505#20533505)",
 	//drvdetail:"requires":""}
@@ -1315,7 +1240,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_AHT2X
 	//drvdetail:{"name":"AHT2X",
-	//drvdetail:"init":"AHT2X_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"AHT Humidity/temperature sensor. Supported sensors are: AHT10, AHT2X, AHT30. See [presentation guide](https://www.elektroda.com/rtvforum/topic4052685.html)",
 	//drvdetail:"requires":""}
@@ -1332,7 +1256,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_DS1820
 	//drvdetail:{"name":"DS1820",
-	//drvdetail:"init":"DS1820_driver_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Very simple driver for oneWire temperature sensor DS1820.",
 	//drvdetail:"requires":""}
@@ -1349,7 +1272,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_DS1820_FULL
 	//drvdetail:{"name":"DS1820_FULL",
-	//drvdetail:"init":"DS1820_full_driver_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for oneWire temperature sensor DS18(B)20.",
 	//drvdetail:"requires":""}
@@ -1366,7 +1288,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_HT16K33
 	//drvdetail:{"name":"HT16K33",
-	//drvdetail:"init":"HT16K33_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 16-segment LED display with I2C. See [protocol explanation](https://www.elektroda.pl/rtvforum/topic3984616.html)",
 	//drvdetail:"requires":""}
@@ -1384,7 +1305,6 @@ static driver_t g_drivers[] = {
 	// Shared driver for TM1637, GN6932, TM1638 - TM_GN_Display_SharedInit
 #if ENABLE_DRIVER_TMGN
 	//drvdetail:{"name":"TM1637",
-	//drvdetail:"init":"TM1637_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK interface. See [TM1637 information](https://www.elektroda.com/rtvforum/viewtopic.php?p=20468593#20468593)",
 	//drvdetail:"requires":""}
@@ -1399,7 +1319,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"GN6932",
-	//drvdetail:"init":"GN6932_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. See [this topic](https://www.elektroda.com/rtvforum/topic3971252.html) for details.",
 	//drvdetail:"requires":""}
@@ -1414,7 +1333,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"TM1638",
-	//drvdetail:"init":"TM1638_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with DIO/CLK/STB interface. TM1638 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/viewtopic.php?p=20553628#20553628) for details.",
 	//drvdetail:"requires":""}
@@ -1429,7 +1347,6 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 	//drvdetail:{"name":"HD2015",
-	//drvdetail:"init":"HD2015_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Driver for 7-segment LED display with I2C-like interface. Seems to be compatible with TM1650. HD2015 is very similiar to GN6932 and TM1637. See [this topic](https://www.elektroda.com/rtvforum/topic4052946.html) for details.",
 	//drvdetail:"requires":""}
@@ -1446,7 +1363,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BATTERY
 	//drvdetail:{"name":"Battery",
-	//drvdetail:"init":"Batt_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
 	//drvdetail:"requires":""}
@@ -1463,7 +1379,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BKPARTITIONS
 	//drvdetail:{"name":"BKPartitions",
-	//drvdetail:"init":"BKPartitions_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"o.",
 	//drvdetail:"requires":""}
@@ -1480,7 +1395,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_BRIDGE
 	//drvdetail:{"name":"Bridge",
-	//drvdetail:"init":"Bridge_driver_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"A bridge relay driver, added for [TONGOU TO-Q-SY1-JWT Din Rail Switch](https://www.elektroda.com/rtvforum/topic3934580.html). See linked topic for info.",
 	//drvdetail:"requires":""}
@@ -1497,7 +1411,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_UART_TCP
 	//drvdetail:{"name":"UartTCP",
-	//drvdetail:"init":"UART_TCP_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"UART to TCP bridge, mainly for WiFi Zigbee coordinators.",
 	//drvdetail:"requires":""}
@@ -1514,7 +1427,6 @@ static driver_t g_drivers[] = {
 #endif
 #if PLATFORM_TXW81X
 	//drvdetail:{"name":"TXWCAM",
-	//drvdetail:"init":"TXW_Cam_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"TXW81X Camera.",
 	//drvdetail:"requires":""}
@@ -1531,7 +1443,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_NEO6M
 	//drvdetail:{"name":"NEO6M",
-	//drvdetail:"init":"NEO6M_UART_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NEO6M is a GPS chip which uses UART protocol for communication. By default, it uses 9600 baud, but you can also enable it with other baud rates by using 'startDriver NEO6M <rate>'.",
 	//drvdetail:"requires":""}
@@ -1548,7 +1459,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_LTR_ALS
 	//drvdetail:{"name":"LTR_ALS",
-	//drvdetail:"init":"LTR_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"LTR-303/329 ambient light sensor driver.",
 	//drvdetail:"requires":""}
@@ -1565,7 +1475,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_TINYIR_NEC
 	//drvdetail:{"name":"TinyIR_NEC",
-	//drvdetail:"init":"TinyIR_NEC_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"NEC-only IR receiver",
 	//drvdetail:"requires":""}
@@ -1582,7 +1491,6 @@ static driver_t g_drivers[] = {
 #endif
 #if ENABLE_DRIVER_MQTTSERVER
 	//drvdetail:{"name":"mqttServer",
-	//drvdetail:"init":"DRV_MQTTServer_Init",
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"MQTT Server driver.",
 	//drvdetail:"requires":""}

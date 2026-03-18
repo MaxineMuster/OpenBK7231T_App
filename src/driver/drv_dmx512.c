@@ -99,7 +99,7 @@ void DMX_SetLEDCount(int pixel_count, int pixel_size) {
 
 //drvinitdetail:{"init":"DMX_Init",
 //drvinitdetail:"args":[
-//drvinitdetail:{"index": 1, "name": "dmx_pin", "type": "Pinindex", "value": "22"}
+//drvinitdetail:{"index": 1, "name": "Pin", "type": "Pin", "value": "22"}
 //drvinitdetail:]}
 void DMX_Init() {
 //	dmx_pin = Tokenizer_GetArgIntegerDefault(1, dmx_pin);
