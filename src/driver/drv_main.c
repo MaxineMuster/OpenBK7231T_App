@@ -22,7 +22,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
-#include "drv_shtxx.h"
+#include "drv_xhtxx.h"
 #include "drv_veml7700.h"
 
 
@@ -1193,17 +1193,17 @@ static driver_t g_drivers[] = {
 	false,                                   // loaded
 	},
 #endif
-#if ENABLE_DRIVER_SHTXX
-       //drvdetail:{"name":"SHTXX",
+#if ENABLE_DRIVER_XHTXX
+       //drvdetail:{"name":"XHTXX",
        //drvdetail:"title":"TODO",
        //drvdetail:"descr":"Humidity/temperature sensor. For SHT3x/SHT4x/GXV4 ...",
        //drvdetail:"requires":""}
-       { "SHTXX",                               // Driver Name
-       SHTXX_Init,                              // Init
-       SHTXX_OnEverySecond,                     // onEverySecond
-       SHTXX_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+       { "XHTXX",                               // Driver Name
+       XHTXX_Init,                              // Init
+       XHTXX_OnEverySecond,                     // onEverySecond
+       XHTXX_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
        NULL,                                    // runQuickTick
-       SHTXX_StopDriver,                        // stopFunction
+       XHTXX_StopDriver,                        // stopFunction
        NULL,                                    // onChannelChanged
        NULL,                                    // onHassDiscovery
        false,                                   // loaded

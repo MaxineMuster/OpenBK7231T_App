@@ -239,6 +239,7 @@ void Tokenizer_TokenizeString(const char* s, int flags);
 const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def);
 int Tokenizer_GetArgEqualInteger(const char *search, const int def);
 int Tokenizer_GetPinEqual(const char *search, const int def);
+bool Tokenizer_IsStringPresent(const char *search);
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_RunUpdate(float deltaTimeSeconds);

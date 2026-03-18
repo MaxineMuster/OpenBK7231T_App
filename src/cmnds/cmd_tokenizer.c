@@ -341,7 +341,7 @@ const char *Tokenizer_GetArgEqualDefault(const char *name, const char *def) {
             // --> g_arg[i] must be "<name>=<value>" so
             //		p must point to the beginning of g_arg[i], so it p == g_args[i]
             //		g_args[i] must be at least two chars longer than <name> (one is '=' + at least one for the value)
-            //		following the <name> there must be the char '=' 	--> g_args[i][name_len] == '='	
+            //		following the <name> there must be the char '=' 	--> g_args[i][name_len] == '='
             //		g_args[i] must start with '-'
             if (p == g_args[i] &&
 		arg_len >= name_len + 2 &&
@@ -390,6 +390,15 @@ int Tokenizer_GetPinEqual(const char *search, const int def) {
 	int temp = PIN_FindIndexFromString(found);			// will check for number and pin names
 	if (temp != -1) return temp;
 	return def;
+}
+
+// search if a string is present (e.g. check a "flag")
+// like "-single" or "-multi"
+bool Tokenizer_IsStringPresent(const char *search) {
+    for (int i = 0; i < g_numArgs; i++) {
+        if (strcmp(g_args[i], search) == 0) return true;
+    }
+    return false;
 }
 
 void Tokenizer_TokenizeString(const char *s, int flags) {
@@ -453,7 +462,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 				g_numArgs++;
 			}
 		}
-		// special handling to allow quotes with named arguments like 
+		// special handling to allow quotes with named arguments like
 		// myarg="that's my arg"
 		// in this case, the quote is "inside" the arg (no whitespace before the '"' - but a '=')
 		//
@@ -466,7 +475,7 @@ void Tokenizer_TokenizeString(const char *s, int flags) {
 		//
 		// and immediately jump to "quote:"
 		// This works, because in "quote" first code will change the '"' to '\0' so we have the "name" string terminated by \0
-		// Then the next arg is started after the " (turned to \0 before) and continued until the closing '"' 
+		// Then the next arg is started after the " (turned to \0 before) and continued until the closing '"'
 		//
 		// we know p[1] must be present, even if string is ending, it will be there as '\0', so it's safe to compare p[1] to '"'
 		if ((flags & TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE) == TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE && *p == '=' &&  p[1] == '"'){

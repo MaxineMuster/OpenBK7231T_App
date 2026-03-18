@@ -43,6 +43,7 @@
 // ===================================================================
 
 // CRC-8/NRSC-5  poly=0x31 init=0xFF  (Sensirion convention, all sensors)
+/*
 static uint8_t crc8_sensirion(uint8_t a, uint8_t b) {
     uint8_t crc = 0xFF ^ a;
     for (int i = 0; i < 8; i++) crc = (crc & 0x80) ? (uint8_t)((crc << 1) ^ 0x31) : (uint8_t)(crc << 1);
@@ -50,12 +51,25 @@ static uint8_t crc8_sensirion(uint8_t a, uint8_t b) {
     for (int i = 0; i < 8; i++) crc = (crc & 0x80) ? (uint8_t)((crc << 1) ^ 0x31) : (uint8_t)(crc << 1);
     return crc;
 }
-
+*/
+static uint8_t crc8(const uint8_t *data, size_t len) {
+    uint8_t crc = 0xFF;
+    
+    for (size_t i = 0; i < len; i++) {
+        crc ^= data[i];
+        for (int j = 0; j < 8; j++) {
+            crc = (crc & 0x80) ? (uint8_t)((crc << 1) ^ 0x31) : (uint8_t)(crc << 1);
+        }
+    }
+    
+    return crc;
+}
 // Pack a 3-byte Sensirion word [MSB, LSB, CRC] into buf
 static void pack_word(uint8_t *buf, uint16_t raw) {
     buf[0] = (uint8_t)(raw >> 8);
     buf[1] = (uint8_t)(raw & 0xFF);
-    buf[2] = crc8_sensirion(buf[0], buf[1]);
+//    buf[2] = crc8_sensirion(buf[0], buf[1]);
+    buf[2] = crc8(&buf[0],2);
 }
 
 // Pack two Sensirion words (T then H) = 6 bytes
@@ -84,7 +98,8 @@ static void pack_th(uint8_t *resp, uint16_t raw_t, uint16_t raw_h) {
 //   0x3066  heater on
 //   0x3098  heater off
 //   0xF32D  read status register
-//   0x3780  read serial number
+//   0x3780  read serial number - clock stretch
+//   0x3682  read serial number - no clock stretch 
 //
 // Response (6 bytes): [T_MSB T_LSB T_CRC H_MSB H_LSB H_CRC]
 //
@@ -121,7 +136,7 @@ static bool sht3x_encode(sim_ctx_t *ctx) {
     // Periodic fetch
     if (c0 == 0xE0 && c1 == 0x00)  { sht3x_build_meas(ctx); return true; }
     // Serial number → 6 bytes (two CRC-valid fake words)
-    if (c0 == 0x37) {
+    if ((c0 == 0x36 && c1 == 0x82) || c0 == 0x37 && c1 == 0x80) {
         pack_word(ctx->resp, 0xDEAD); pack_word(ctx->resp+3, 0xBEEF);
         ctx->resp_len = 6; return true;
     }
@@ -251,6 +266,11 @@ static bool aht2x_encode(sim_ctx_t *ctx) {
     }
 
     switch (ctx->cmd[0]) {
+    case 0x71: // Status
+        if (s->calibrated) ctx->resp[0] = 0x18;
+        else ctx->resp[0] = 0x00; ctx->resp_len = 1;
+        return true;
+
     case 0xBA: // soft reset → uncalibrated
         s->calibrated = false;
         ctx->resp[0] = 0x00; ctx->resp_len = 1;
@@ -275,8 +295,18 @@ static bool aht2x_encode(sim_ctx_t *ctx) {
         ctx->resp[4] = (uint8_t)((raw_t >>  8) & 0xFF);
         ctx->resp[5] = (uint8_t)( raw_t        & 0xFF);
         ctx->resp_len = 6;
+
+        // Calculate CRC over the 6 measurement bytes
+        uint8_t crc = crc8(&ctx->resp[0], 6);
+        ctx->resp[6] = crc;
+        ctx->resp_len = 7;  // 6 data bytes + 1 CRC byte
+        
+        printf("[SIM][AHT2x] T=%d.%d C  H=%d.%d%%  raw_T=0x%05X raw_H=0x%05X  CRC=0x%02X\n",
+               t10/10, abs(t10%10), h10/10, h10%10, raw_t, raw_h, crc);
+/*
         printf("[SIM][AHT2x] T=%d.%d C  H=%d.%d%%  raw_T=0x%05X raw_H=0x%05X\n",
                t10/10, abs(t10%10), h10/10, h10%10, raw_t, raw_h);
+*/
         return true;
     }
     default:
