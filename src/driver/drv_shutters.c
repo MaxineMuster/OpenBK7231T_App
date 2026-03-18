@@ -417,7 +417,15 @@ void DRV_Shutters_DoDiscovery(const char *topic) {
 }
 // backlog setPinRole 5 ShutterA; startDriver Shutters; scheduleHADiscovery 1
 void DRV_Shutters_Init() {
+	//cmddetail:{"name":"ShutterMove","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Shutter_MoveTo","file":"driver/drv_shutters.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ShutterMove", CMD_Shutter_MoveTo, NULL);
+	//cmddetail:{"name":"ShutterCalibrate","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Shutter_Calibrate","file":"driver/drv_shutters.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ShutterCalibrate", CMD_Shutter_Calibrate, NULL);
 }
 

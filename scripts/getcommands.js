@@ -246,13 +246,18 @@ function getFolder(name, cb) {
 						for (j = i; j < lines.length; j++) {
 							let line2raw = lines[j];
 							let line2 = line2raw.trim();
-							if (line2.startsWith('//chandetail:')) {
+		//							if (line2.startsWith('//chandetail:')) {
+							if (line2.match(/^\s*\/\/\s*chandetail:/)) {
 								let commentlines = [];
 								let j2;
+								const regex_chandetail = /^\s*\/\/\s*chandetail:/;
 								for (j2 = j; j2 < lines.length; j2++) {
 									let l = lines[j2].trim();
-									if (l.startsWith('//chandetail:')) {
-										l = l.slice('//chandetail:'.length);
+									let found = regex_chandetail.exec(l);
+//								if (l.startsWith('//chandetail:')) {
+									if (found) {
+//									l = l.slice('//chandetail:'.length);
+										l = l.slice(found[0].length);
 										commentlines.push(l);
 										newlines.push(lines[j2]);
 									} else {
@@ -361,124 +366,39 @@ function getFolder(name, cb) {
 						i = j;
 					}
 
-/*
-							if (line2.startsWith('//drvdetail:')) {
-								let commentlines = [];
-								let j2;
-								for (j2 = j; j2 < lines.length; j2++) {
-									let l = lines[j2].trim();
-									if (l.startsWith('//drvdetail:')) {
-										l = l.slice('//drvdetail:'.length);
-										commentlines.push(l);
-										newlines.push(lines[j2]);
-									} else {
-										break;
-									}
-								}
-								// move our parsing forward to skip all found
-								// we are allready BEHIND comments when we used break, 
-								// so we need to skip to j2-1 to handle the line in next loop 
-								j = j2 - 1;
-								let json = commentlines.join('\n');
-								try {
-									let drv = JSON.parse(json);
-
-									if (drvindex[drv.name]) {
-										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
-										console.error('\tlast "#if" statement: "' + lasthash + '"' + '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] + '"');
-										// Compare without mutating the stored object (otherwise "define" can get deleted and leak as "undefined" into docs).
-										let tmpcmd = Object.assign({}, drvindex[drv.name]);
-										delete tmpcmd.define;
-										let drvNoDefine = Object.assign({}, drv);
-										delete drvNoDefine.define;
-										if (JSON.stringify(tmpcmd) == JSON.stringify(drvNoDefine)) {
-											console.error('\tshould be safe to ignore, because documentation is equal!');
-											// Add new defines, so the docs remain accurate.
-											if (!drvdefines[drv.name]) drvdefines[drv.name] = [];	// this should never happen, but just in case ...
-											drvdefines[drv.name].push(...def2text(lasthash));	// makeDriverDefineText will take care of possible duplicates, so just add all defines
-											drvindex[drv.name].define = makeDriverDefineText(drvdefines[drv.name]);
-										} else {
-											console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(drvNoDefine).replace(/,\"/g, "\n\t\t\t\"") + '"');
-										}
-										//console.error(line);
-									} else { // so we found first/only driver
-										drvdefines[drv.name] = [];
-										drvdefines[drv.name].push(...def2text(lasthash));
-										drv.define = makeDriverDefineText(drvdefines[drv.name]);
-										drvs.push(drv);
-										drvindex[drv.name] = drv;
-									}
-
-
-
-									if (drvInitindex[drv.name]) {
-										console.error('duplicate driver docs (in "' + line + '") for drv.name="' + drv.name + '" at file: ' + file + '  --  actual line:' + line2);
-										console.error('\tlast "#if" statement: "' + lasthash + '"' + '\n\tfirst defined with "#if" statement: "' + drvdefines[drv.name] + '"');
-										// Compare without mutating the stored object (otherwise "define" can get deleted and leak as "undefined" into docs).
-										let tmpcmd = Object.assign({}, drvInitindex[drv.name]);
-										delete tmpcmd.define;
-										let drvNoDefine = Object.assign({}, drv);
-										delete drvNoDefine.define;
-										if (JSON.stringify(tmpcmd) == JSON.stringify(drvNoDefine)) {
-											console.error('\tshould be safe to ignore, because documentation is equal!');
-											// Add new defines, so the docs remain accurate.
-											if (!drvdefines[drv.name]) drvdefines[drv.name] = [];	// this should never happen, but just in case ...
-											drvdefines[drv.name].push(...def2text(lasthash));	// makeDriverDefineText will take care of possible duplicates, so just add all defines
-											drvInitindex[drv.name].define = makeDriverDefineText(drvdefines[drv.name]);
-										} else {
-											console.error('\tFirst found:\n\t\t"' + JSON.stringify(tmpcmd).replace(/,\"/g, "\n\t\t\t\"") + '"\n\tactual:\n\t\t"' + JSON.stringify(drvNoDefine).replace(/,\"/g, "\n\t\t\t\"") + '"');
-										}
-										//console.error(line);
-									} else { // so we found first/only driver
-										drvdefines[drv.name] = [];
-										drvdefines[drv.name].push(...def2text(lasthash));
-										drv.define = makeDriverDefineText(drvdefines[drv.name]);
-										drvs.push(drv);
-										drvInitindex[drv.name] = drv;
-									}
-
-
-
-
-
-
-*/
-
-					if (sourceFile && line.startsWith('//drvinitdetail:')) {
+//					if (sourceFile && line.startsWith('//drvinitdetail:')) {
+					if (sourceFile && line.match(/^\s*\/\/\s*drvinitdetail:/)) {
 						let commentlines = [];
 						let j;
+						const regex_drvinitdetail = /^\s*\/\/\s*drvinitdetail:/;
 						for (j = i; j < lines.length; j++) {
 							let l = lines[j].trim();
 							// console.log("l " + l);
-							if (l.startsWith('//drvinitdetail:')) {
-								l = l.slice('//drvinitdetail:'.length);
+							let found = regex_drvinitdetail.exec(l);
+//						if (l.startsWith('//drvinitdetail:')) {
+							if (found) {
+//							l = l.slice('//drvinitdetail:'.length);
+								l = l.slice(found[0].length);
 								commentlines.push(l);
 								newlines.push(lines[j]);
 							} else {
 								break;
 							}
 						}
-						i = j;
 						let json = commentlines.join('\n');
 						try {
 							let drv = JSON.parse(json);
-//							console.error('\tdrvinitdetail found:\n\t' + JSON.stringify(drv));
+//							console.log('\tdrvinitdetail found:\n\t' + JSON.stringify(drv));
 							if (drvInitindex[drv.init]) {
 								console.error('duplicate driver Init docs (in "' + line + '") for drv.init="' + drv.init + '" at file: ' + file );
-								//console.error(line);
 							} else { // so we found first/only driver
 								drvInitindex[drv.init] = drv;
-//								console.error('Set driver Init drv.init="' + drv.init + '" at file: ' + file );
+//								console.log('Set driver Init drv.init="' + drv.init + '" at file: ' + file );
 							}
 						} catch (e) {
 									console.error('error in json at file: ' + file + ' line: ' + line + ' er ' + e);
 									console.error(json);
 						}
-
-
-
-
-
 
 						i = j;
 					}
@@ -555,13 +475,18 @@ function getFolder(name, cb) {
 						for (j = i; j < lines.length; j++) {
 							let line2raw = lines[j];
 							let line2 = line2raw.trim();
-							if (line2.startsWith('//iodetail:')) {
+	//							if (line2.startsWith('//iodetail:')) {
+							if (line2.match(/^\s*\/\/\s*iodetail:/)) {
 								let commentlines = [];
 								let j2;
+								const regex_iodetail = /^\s*\/\/\s*iodetail:/;
 								for (j2 = j; j2 < lines.length; j2++) {
 									let l = lines[j2].trim();
-									if (l.startsWith('//iodetail:')) {
-										l = l.slice('//iodetail:'.length);
+									let found = regex_iodetail.exec(l);
+//								if (l.startsWith('//iodetail:')) {
+									if (found) {
+//									l = l.slice('//iodetail:'.length);
+										l = l.slice(found[0].length);
 										commentlines.push(l);
 										newlines.push(lines[j2]);
 									} else {
@@ -648,13 +573,18 @@ function getFolder(name, cb) {
 								// try finding #if ENABLE_DRIVER_XY so we can use it in case of a duplicate driver
 								lasthash = line2;
 							}
-							if (line2.startsWith('//drvdetail:')) {
+//							if (line2.startsWith('//drvdetail:')) {
+							if (line2.match(/^\s*\/\/\s*drvdetail:/)) {
 								let commentlines = [];
 								let j2;
+								const regex_drvdetail = /^\s*\/\/\s*drvdetail:/;
 								for (j2 = j; j2 < lines.length; j2++) {
 									let l = lines[j2].trim();
-									if (l.startsWith('//drvdetail:')) {
-										l = l.slice('//drvdetail:'.length);
+									let found = regex_drvdetail.exec(l);
+//								if (l.startsWith('//drvdetail:')) {
+									if (found) {
+//									l = l.slice('//drvdetail:'.length);
+										l = l.slice(found[0].length);
 										commentlines.push(l);
 										newlines.push(lines[j2]);
 									} else {
@@ -816,13 +746,18 @@ function getFolder(name, cb) {
 						for (j = i; j < lines.length; j++) {
 							let line2raw = lines[j];
 							let line2 = line2raw.trim();
-							if (line2.startsWith('//cnstdetail:')) {
+	//							if (line2.startsWith('//cnstdetail:')) {
+							if (line2.match(/^\s*\/\/\s*cnstdetail:/)) {
 								let commentlines = [];
 								let j2;
+								const regex_cnstdetail = /^\s*\/\/\s*cnstdetail:/;
 								for (j2 = j; j2 < lines.length; j2++) {
 									let l = lines[j2].trim();
-									if (l.startsWith('//cnstdetail:')) {
-										l = l.slice('//cnstdetail:'.length);
+									let found = regex_cnstdetail.exec(l);
+//								if (l.startsWith('//cnstdetail:')) {
+									if (found) {
+//									l = l.slice('//cnstdetail:'.length);
+										l = l.slice(found[0].length);
 										commentlines.push(l);
 										newlines.push(lines[j2]);
 									} else {
@@ -902,13 +837,18 @@ function getFolder(name, cb) {
 						}
 						i = j;
 					}
-					if (sourceFile && line.startsWith('//cmddetail:')) {
+//					if (sourceFile && line.startsWith('//cmddetail:')) {
+					if (sourceFile && line.match(/^\s*\/\/\s*cmddetail:/)) {
 						let commentlines = [];
 						let j;
+						const regex = /^\s*\/\/\s*cmddetail:/;
 						for (j = i; j < lines.length; j++) {
 							let l = lines[j].trim();
-							if (l.startsWith('//cmddetail:')) {
-								l = l.slice('//cmddetail:'.length);
+							let found = regex.exec(l);
+//							if (l.startsWith('//cmddetail:')) {
+							if (found) {
+//								l = l.slice('//cmddetail:'.length);
+								l = l.slice(found[0].length);
 								commentlines.push(l);
 								newlines.push(lines[j]);
 							} else {

@@ -1559,32 +1559,116 @@ void Roomba_Init() {
 	// Roomba_SendByte(CMD_SAFE);
 
 	// Register console commands for manual testing
+	//cmddetail:{"name":"Roomba_SendCmd","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_SendCmd","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_SendCmd", CMD_Roomba_SendCmd, NULL);
+	//cmddetail:{"name":"Roomba_SendBytes","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_SendBytes","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_SendBytes", CMD_Roomba_SendBytes, NULL);
+	//cmddetail:{"name":"Roomba_LEDs","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_LEDs","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_LEDs", CMD_Roomba_LEDs, NULL);
+	//cmddetail:{"name":"Roomba_DigitsRaw","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_DigitsRaw","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_DigitsRaw", CMD_Roomba_DigitsRaw, NULL);
+	//cmddetail:{"name":"Roomba_DigitsASCII","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_DigitsASCII","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_DigitsASCII", CMD_Roomba_DigitsASCII, NULL);
+	//cmddetail:{"name":"Roomba_Beep","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Beep","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Beep", CMD_Roomba_Beep, NULL);
+	//cmddetail:{"name":"Roomba_Drive","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Drive","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Drive", CMD_Roomba_Drive, NULL);
+	//cmddetail:{"name":"Roomba_DriveDirect","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_DriveDirect","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_DriveDirect", CMD_Roomba_DriveDirect, NULL);
+	//cmddetail:{"name":"Roomba_Clean","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Clean","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Clean", CMD_Roomba_Clean, NULL);
+	//cmddetail:{"name":"Roomba_Spot","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Spot","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Spot", CMD_Roomba_Spot, NULL);
+	//cmddetail:{"name":"Roomba_Dock","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Dock","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Dock", CMD_Roomba_Dock, NULL);
+	//cmddetail:{"name":"Roomba_Max","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Max","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Max", CMD_Roomba_Max, NULL);
+	//cmddetail:{"name":"Roomba_Safe","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Safe","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Safe", CMD_Roomba_Safe, NULL);
+	//cmddetail:{"name":"Roomba_Stop","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Stop","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Stop", CMD_Roomba_Stop, NULL);
+	//cmddetail:{"name":"Roomba_Discovery","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_Discovery","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_Discovery", CMD_Roomba_Discovery, NULL);
+	//cmddetail:{"name":"Roomba_SetSafe","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_SetSafe","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_SetSafe", CMD_Roomba_SetSafe, NULL);
+	//cmddetail:{"name":"Roomba_SetFull","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_SetFull","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_SetFull", CMD_Roomba_SetFull, NULL);
+	//cmddetail:{"name":"Roomba_SetPassive","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_Roomba_SetPassive","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("Roomba_SetPassive", CMD_Roomba_SetPassive, NULL);
+	//cmddetail:{"name":"RoombaOrder","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_RoombaOrder","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("RoombaOrder", CMD_RoombaOrder, NULL); // Custom HA Command
 
 	
 
 	// Register vacuum entity MQTT command topics (HA standard)
 
+	//cmddetail:{"name":"vacuum/command","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_RoombaOrder","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("vacuum/command", CMD_RoombaOrder, NULL);
 
+	//cmddetail:{"name":"vacuum/send_command","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"CMD_RoombaOrder","file":"driver/drv_roomba.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("vacuum/send_command", CMD_RoombaOrder, NULL);
 	
 	addLogAdv(LOG_INFO, LOG_FEATURE_DRV, "Roomba driver initialized (UART%d @ 115200 baud, %d sensors)", 

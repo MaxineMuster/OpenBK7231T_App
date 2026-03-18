@@ -405,21 +405,12 @@
     "examples": ""
   },
   {
-    "name": "BTStartScan",
+    "name": "BTStopScan",
     "args": "",
     "descr": "BT start scan",
     "fn": "CMD_StopScan",
     "file": "hal/generic/hal_bt_proxy_generic.c",
     "requires": "ENABLE_BT_PROXY",
-    "examples": ""
-  },
-  {
-    "name": "BTStopScan",
-    "args": "TODO",
-    "descr": "",
-    "fn": "CMD_StopScan",
-    "file": "hal/generic/hal_bt_proxy_generic.c",
-    "requires": "",
     "examples": ""
   },
   {
@@ -1972,38 +1963,38 @@
   },
   {
     "name": "ms_pass",
-    "args": "TODO",
-    "descr": "",
+    "args": "[Password]",
+    "descr": "Set or get the MQTT server password for client authentication.",
     "fn": "Cmd_MQTTServer_Pass",
     "file": "driver/drv_mqttServer.c",
-    "requires": "",
+    "requires": "MQTTSERVER",
     "examples": ""
   },
   {
     "name": "ms_port",
-    "args": "TODO",
-    "descr": "",
+    "args": "[PortNumber]",
+    "descr": "Set or get the MQTT server listen port. Setting a new port closes and recreates the listener.",
     "fn": "Cmd_MQTTServer_Port",
     "file": "driver/drv_mqttServer.c",
-    "requires": "",
+    "requires": "MQTTSERVER",
     "examples": ""
   },
   {
     "name": "ms_publish",
-    "args": "TODO",
-    "descr": "",
+    "args": "[Topic][Payload]",
+    "descr": "Publish a message via the built-in MQTT server to all subscribed clients.",
     "fn": "Cmd_MQTTServer_Publish",
     "file": "driver/drv_mqttServer.c",
-    "requires": "",
+    "requires": "MQTTSERVER",
     "examples": ""
   },
   {
     "name": "ms_user",
-    "args": "TODO",
-    "descr": "",
+    "args": "[Username]",
+    "descr": "Set or get the MQTT server username for client authentication.",
     "fn": "Cmd_MQTTServer_User",
     "file": "driver/drv_mqttServer.c",
-    "requires": "",
+    "requires": "MQTTSERVER",
     "examples": ""
   },
   {

@@ -279,10 +279,30 @@ void SSD1306_DRV_Init() {
 	g_softI2C.pin_data = Tokenizer_GetPin(2, 20);
 	ssd1306_addr = Tokenizer_GetArgIntegerDefault(3, 0x3C);
 
+	//cmddetail:{"name":"ssd1306_clear","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"SSD1306_Cmd_Clear","file":"driver/drv_ssd1306.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ssd1306_clear", SSD1306_Cmd_Clear, NULL);
+	//cmddetail:{"name":"ssd1306_on","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"SSD1306_Cmd_On","file":"driver/drv_ssd1306.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ssd1306_on", SSD1306_Cmd_On, NULL);
+	//cmddetail:{"name":"ssd1306_print","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"SSD1306_Cmd_Print","file":"driver/drv_ssd1306.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ssd1306_print", SSD1306_Cmd_Print, NULL);
+	//cmddetail:{"name":"ssd1306_rect","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"SSD1306_Cmd_Rect","file":"driver/drv_ssd1306.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ssd1306_rect", SSD1306_Cmd_Rect, NULL);
+	//cmddetail:{"name":"ssd1306_goto","args":"TODO",
+	//cmddetail:"descr":"",
+	//cmddetail:"fn":"SSD1306_Cmd_GoTo","file":"driver/drv_ssd1306.c","requires":"",
+	//cmddetail:"examples":""}
 	CMD_RegisterCommand("ssd1306_goto", SSD1306_Cmd_GoTo, NULL);
 
 	Soft_I2C_PreInit(&g_softI2C);

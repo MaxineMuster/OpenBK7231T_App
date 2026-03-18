@@ -148,7 +148,7 @@ void HAL_BTProxy_RegisterCommands(void)
 	//cmddetail:"fn":"CMD_StartScan","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("BTStartScan", CMD_StartScan, NULL);
-	//cmddetail:{"name":"BTStartScan","args":"",
+	//cmddetail:{"name":"BTStopScan","args":"",
 	//cmddetail:"descr":"BT start scan",
 	//cmddetail:"fn":"CMD_StopScan","file":"hal/generic/hal_bt_proxy_generic.c","requires":"ENABLE_BT_PROXY",
 	//cmddetail:"examples":""}

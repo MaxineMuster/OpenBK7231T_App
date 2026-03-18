@@ -729,26 +729,22 @@ void DRV_MQTTServer_Init() {
   g_totalPublishForwarded = 0;
   MQTTS_CreateListenSocket();
   // cmddetail:{"name":"ms_publish","args":"[Topic][Payload]",
-  // cmddetail:"descr":"Publish a message via the built-in MQTT server to all
-  // subscribed clients.",
+  // cmddetail:"descr":"Publish a message via the built-in MQTT server to all subscribed clients.",
   // cmddetail:"fn":"Cmd_MQTTServer_Publish","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
   // cmddetail:"examples":""}
   CMD_RegisterCommand("ms_publish", Cmd_MQTTServer_Publish, NULL);
   // cmddetail:{"name":"ms_user","args":"[Username]",
-  // cmddetail:"descr":"Set or get the MQTT server username for client
-  // authentication.",
+  // cmddetail:"descr":"Set or get the MQTT server username for client authentication.",
   // cmddetail:"fn":"Cmd_MQTTServer_User","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
   // cmddetail:"examples":""}
   CMD_RegisterCommand("ms_user", Cmd_MQTTServer_User, NULL);
   // cmddetail:{"name":"ms_pass","args":"[Password]",
-  // cmddetail:"descr":"Set or get the MQTT server password for client
-  // authentication.",
+  // cmddetail:"descr":"Set or get the MQTT server password for client authentication.",
   // cmddetail:"fn":"Cmd_MQTTServer_Pass","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
   // cmddetail:"examples":""}
   CMD_RegisterCommand("ms_pass", Cmd_MQTTServer_Pass, NULL);
   // cmddetail:{"name":"ms_port","args":"[PortNumber]",
-  // cmddetail:"descr":"Set or get the MQTT server listen port. Setting a new
-  // port closes and recreates the listener.",
+  // cmddetail:"descr":"Set or get the MQTT server listen port. Setting a new port closes and recreates the listener.",
   // cmddetail:"fn":"Cmd_MQTTServer_Port","file":"driver/drv_mqttServer.c","requires":"MQTTSERVER",
   // cmddetail:"examples":""}
   CMD_RegisterCommand("ms_port", Cmd_MQTTServer_Port, NULL);
