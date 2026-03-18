@@ -90,9 +90,9 @@ void MAX31855_RunEverySecond() {
 //drvinitdetail:{"index": 4, "name": "CH temperature", "type": "Integer", "value": "-1"}
 //drvinitdetail:]}
 void MAX31855_Init() {
-	port_cs = Tokenizer_GetArgIntegerDefault(1, port_cs);
-	sclk = Tokenizer_GetArgIntegerDefault(2, sclk);
-	miso = Tokenizer_GetArgIntegerDefault(3, miso);
+	port_cs = Tokenizer_GetPin(1, port_cs);
+	sclk = Tokenizer_GetPin(2, sclk);
+	miso = Tokenizer_GetPin(3, miso);
 	targetChannel = Tokenizer_GetArgIntegerDefault(4, targetChannel);
 
 	// define pin modes

@@ -303,7 +303,7 @@
   {
     "name": "TESTUART",
     "title": "TODO",
-    "descr": "g",
+    "descr": "TESTUART",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_TESTUART</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
     "init": "Test_UART_Init",
@@ -343,7 +343,7 @@
   {
     "name": "MultiPinI2CScanner",
     "title": "TODO",
-    "descr": "qq.",
+    "descr": "A multi pin I2C-Scanner",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_MULTIPINI2CSCANNER</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
     "init": "MultiPinI2CScanner_Init",
@@ -476,7 +476,7 @@
   {
     "name": "MAX31855",
     "title": "TODO",
-    "descr": "T",
+    "descr": "Cold-Junction Compensated Thermocouple-to-Digital Converter, see [presentation](https://www.elektroda.com/rtvforum/topic4083656.html)",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_MAX31855</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
     "init": "MAX31855_Init",
@@ -573,7 +573,7 @@
   {
     "name": "DDPSend",
     "title": "TODO",
-    "descr": "DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
+    "descr": "DDP. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
     "requires": "",
     "define": "Enabled by defining \"<b>ENABLE_DRIVER_DDPSEND</b>\" for your platform in [obk_config.h](https://github.com/openshwprojects/OpenBK7231T_App/blob/main/src/obk_config.h) ",
     "init": "DRV_DDPSend_Init",

@@ -1417,7 +1417,8 @@ for (let i = 0; i < drvs.length; i++) {
 	let argstr = "";
 	drvs[i].args=[];
 	if (init) {
-		argstr = `\n\nArguments:${init.args.map(arg => ` <${arg.name} &emsp;(${arg.type}, default ${arg.value})>`).join("&emsp;")}`;
+		argstr = `\n\nArguments: <USAGE (default - if used)>\n`;
+		argstr += `${init.args.map(arg => ` <${arg.name} (${arg.value})>`).join("&emsp;")}`;
 		drvs[i].args=init.args;
 		
 	}

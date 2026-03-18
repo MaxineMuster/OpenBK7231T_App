@@ -61,9 +61,9 @@ void Shift_Init() {
 	// NOTE: this is called by "startDriver ShiftRegister" command,
 	// which means that Tokenizer has already tokenized the command,
 	// and that argument 0 is "ShiftRegister" driver name
-	g_data = Tokenizer_GetArgIntegerDefault(1, 24);
-	g_latch = Tokenizer_GetArgIntegerDefault(2, 6);
-	g_clk = Tokenizer_GetArgIntegerDefault(3, 7);
+	g_data = Tokenizer_GetPin(1, 24);
+	g_latch = Tokenizer_GetPin(2, 6);
+	g_clk = Tokenizer_GetPin(3, 7);
 	g_firstChannel = Tokenizer_GetArgIntegerDefault(4, 10);
 	g_order = Tokenizer_GetArgIntegerDefault(5, 1);
 	g_totalRegisters = Tokenizer_GetArgIntegerDefault(6, 1);

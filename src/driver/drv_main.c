@@ -449,7 +449,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_TESTUART
 	//drvdetail:{"name":"TESTUART",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"g",
+	//drvdetail:"descr":"TESTUART",
 	//drvdetail:"requires":""}
 	{ "TESTUART",                            // Driver Name
 	Test_UART_Init,                          // Init
@@ -497,7 +497,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_MULTIPINI2CSCANNER
 	//drvdetail:{"name":"MultiPinI2CScanner",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"qq.",
+	//drvdetail:"descr":"A multi pin I2C-Scanner",
 	//drvdetail:"requires":""}
 	{ "MultiPinI2CScanner",                  // Driver Name
 	MultiPinI2CScanner_Init,                 // Init
@@ -689,7 +689,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_MAX31855
 	//drvdetail:{"name":"MAX31855",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"T",
+	//drvdetail:"descr":"Cold-Junction Compensated Thermocouple-to-Digital Converter, see [presentation](https://www.elektroda.com/rtvforum/topic4083656.html)",
 	//drvdetail:"requires":""}
 	{ "MAX31855",                            // Driver Name
 	MAX31855_Init,                           // Init
@@ -817,7 +817,7 @@ static driver_t g_drivers[] = {
 #if ENABLE_DRIVER_DDPSEND
 	//drvdetail:{"name":"DDPSend",
 	//drvdetail:"title":"TODO",
-	//drvdetail:"descr":"DDPqqqqqqq. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
+	//drvdetail:"descr":"DDP. See [DDP topic](https://www.elektroda.com/rtvforum/topic4040325.html)",
 	//drvdetail:"requires":""}
 	{ "DDPSend",                             // Driver Name
 	DRV_DDPSend_Init,                        // Init
