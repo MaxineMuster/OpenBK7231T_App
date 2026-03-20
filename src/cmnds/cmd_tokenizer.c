@@ -323,7 +323,7 @@ void expandQuotes(char* str) {
 	str[writeIndex] = 0;
 }
 
-
+/*
 // "parse" arguments to search for a "named" argument:
 // will accept
 // -<name> <value>		like "-port 80"
@@ -400,6 +400,16 @@ bool Tokenizer_IsStringPresent(const char *search) {
     }
     return false;
 }
+*/
+// search index of a string (e.g. check a "flag")
+// like "-single" or "-multi" - return -1 else
+int Tokenizer_GetStringIndex(const char *search) {
+    for (int i = 0; i < g_numArgs; i++) {
+        if (strcmp(g_args[i], search) == 0) return i;
+    }
+    return -1;
+}
+
 
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
