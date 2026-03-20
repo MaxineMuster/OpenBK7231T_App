@@ -1204,7 +1204,7 @@ static commandResult_t dimmer(const void *context, const char *cmd, const char *
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 		int iVal = 0;
 
-        ADDLOG_DEBUG(LOG_FEATURE_CMD, " dimmer (%s) received with args %s",cmd,args);
+        ADDLOG_DEBUG(LOG_FEATURE_CMD, " dimmer (%s) received with args '%s'",cmd,args);
 
 		// according to Elektroda.com users, domoticz sends following string:
 		// {"brightness":52,"state":"ON"}

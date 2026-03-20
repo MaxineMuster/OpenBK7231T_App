@@ -549,7 +549,7 @@ void Test_Tasmota_MQTT_RGBCW() {
 	*/
 	CMD_ExecuteCommand("Dimmer 20", 0);
 	SIM_ClearMQTTHistory();
-	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "");
+	SIM_SendFakeMQTTAndRunSimFrame_CMND("Dimmer", "20");
 	SELFTEST_ASSERT_HAS_MQTT_JSON_SENT("stat/rgbcwBulb/RESULT", false);
 	SELFTEST_ASSERT_JSON_VALUE_INTEGER(0, "Dimmer", 20);
 	SIM_ClearMQTTHistory();

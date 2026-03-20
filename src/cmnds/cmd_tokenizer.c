@@ -64,8 +64,10 @@ int Tokenizer_GetArgsCount() {
 	return g_numArgs;
 }
 bool Tokenizer_IsArgInteger(int i) {
-	if(i >= g_numArgs)
+	if(i >= g_numArgs || i < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD,"Tokenizer_IsArgInteger(%i) called - g_numArgs=%i",i,g_numArgs);
 		return false;
+	}
 	if (*g_args[i] == '$') {
 		return true;
 	}
@@ -77,8 +79,10 @@ const char *Tokenizer_GetArgExpanding(int i) {
 	char Templine[sizeof(g_argsExpanded[i])];
 	char convert[10];
 
-	if (i >= g_numArgs)
+	if (i >= g_numArgs || i < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgExpanding(%i) called - g_numArgs=%i",i,g_numArgs);
 		return 0;
+	}
 
 	s = g_args[i];
 
@@ -144,8 +148,10 @@ const char *Tokenizer_GetArgExpanding(int i) {
 const char *Tokenizer_GetArg(int i) {
 	const char *s;
 
-	if (i >= g_numArgs)
+	if (i >= g_numArgs || i < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArg(%i) called - g_numArgs=%i",i,g_numArgs);
 		return 0;
+	}
 
 	if (g_argsExpanded[i][0] != 0) {
 		return g_argsExpanded[i];
@@ -196,6 +202,10 @@ const char *Tokenizer_GetArg(int i) {
 	return g_args[i];
 }
 const char *Tokenizer_GetArgFrom(int i) {
+	if (g_numArgs <= i || i < 0) {		// we really should have a safguard here
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgFrom(%i) called - g_numArgs=%i",i,g_numArgs);
+		return 0;			// value to be dicussed
+	}
 	return g_argsFrom[i];
 }
 int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
@@ -214,7 +224,8 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 int Tokenizer_GetPin(int i, int def) {
 	int r;
 
-	if (g_numArgs <= i) {
+	if (g_numArgs <= i || i < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetPin(%i) called - g_numArgs=%i",i,g_numArgs);
 //		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i not present - Returning default index %i",i,def);
 		return def;
 	}
@@ -227,7 +238,8 @@ int Tokenizer_GetPin(int i, int def) {
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;
 
-	if (g_numArgs <= i) {
+	if (g_numArgs <= i || i < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgIntegerDefault(%i) called - g_numArgs=%i",i,g_numArgs);
 		return def;
 	}
 	r = Tokenizer_GetArgInteger(i);
@@ -237,7 +249,8 @@ int Tokenizer_GetArgIntegerDefault(int i, int def) {
 float Tokenizer_GetArgFloatDefault(int i, float def) {
 	float r;
 
-	if (g_numArgs <= i) {
+	if (g_numArgs <= i || i < 0) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgFloatDefault(%i) called - g_numArgs=%i",i,g_numArgs);
 		return def;
 	}
 	r = Tokenizer_GetArgFloat(i);
@@ -248,6 +261,10 @@ int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	int ret;
 
+	if (g_numArgs <= i || i < 0) {		// we really should have a safguard here
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgInteger(%i) called - g_numArgs=%i -- arg[%i]=%s",i,g_numArgs,i,g_args[i]);
+		return 0;			// value to be dicussed
+	}
 	s = g_args[i];
 	if (s == 0)
 		return 0;
@@ -321,6 +338,30 @@ void expandQuotes(char* str) {
 	}
 
 	str[writeIndex] = 0;
+}
+
+// search index of a string (e.g. check a "flag")
+// like "-single" or "-multi" - return -1 else
+// you can us it to check "presence" of a string or
+// get the next arg to implement named arguments
+//
+// e.g. "startdriver aht2x -SDA 3 -SCL 5 ..."
+// you can get the SDA pin with Tokenizer_GetPin(Tokenizer_GetStringIndex("-SDA")+1)
+//
+// we'll have some defines for that in cmd_public.h
+// "defining"
+//
+// 	Tokenizer_GetPinEqual(STR,DEF) 		// as in example above, use "Tokenizer_GetPinEqual("-SDA", 8)" 			to get the Pin after "-SDA" (or default)
+//	Tokenizer_GetArgEqualInteger(STR,DEF)	// same for an integer value e.g. Tokenizer_GetArgEqualInteger("-chan_t", 2)	to get the integer after "-chan_t" (or default)
+//	Tokenizer_GetArgEqualDefault(STR,DEF) 	// same for a string, "Tokenizer_GetArgEqualDefault("type", "sht3x")"		to get the "-type" value (or default)
+//	Tokenizer_IsStringPresent(STR)		// test for presenc of a string, "Tokenizer_IsStringPresent("default")		to test, if "default" is present
+//
+
+int Tokenizer_GetStringIndex(const char *search) {
+    for (int i = 0; i < g_numArgs; i++) {
+        if (strcmp(g_args[i], search) == 0) return i;
+    }
+    return -1;
 }
 
 void Tokenizer_TokenizeString(const char *s, int flags) {

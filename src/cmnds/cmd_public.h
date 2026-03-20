@@ -226,6 +226,11 @@ bool Tokenizer_IsArgInteger(int i);
 float Tokenizer_GetArgFloat(int i);
 int Tokenizer_GetArgIntegerRange(int i, int rangeMax, int rangeMin);
 void Tokenizer_TokenizeString(const char* s, int flags);
+int Tokenizer_GetStringIndex(const char *search);
+#define Tokenizer_GetPinEqual(STR,DEF) Tokenizer_GetPin(Tokenizer_GetStringIndex(STR) + 1,DEF)
+#define Tokenizer_GetArgEqualInteger(STR,DEF) Tokenizer_GetArgIntegerDefault(Tokenizer_GetStringIndex(STR) + 1,DEF)
+#define Tokenizer_GetArgEqualDefault(STR,DEF) (Tokenizer_GetStringIndex(STR) + 1 < Tokenizer_GetArgsCount()) ? Tokenizer_GetArg(Tokenizer_GetStringIndex(STR) +1 ) : DEF
+#define Tokenizer_IsStringPresent(STR) (Tokenizer_GetStringIndex(STR) != -1)
 // cmd_repeatingEvents.c
 void RepeatingEvents_Init();
 void RepeatingEvents_RunUpdate(float deltaTimeSeconds);
