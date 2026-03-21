@@ -54,6 +54,18 @@ bool isWhiteSpace(char ch) {
 		return true;
 	return false;
 }
+
+// helper testing index and writing error message
+static int __check_arg_range(int i, const char* f) {
+        if (i >= g_numArgs || i < 0) {
+            ADDLOG_ERROR(LOG_FEATURE_CMD, "%s(%i) called - g_numArgs=%i", f, i, g_numArgs);
+            return 1;
+        }
+        return 0;
+}
+// small wrapper macro to include caller name and return value if i is "invalid"
+#define CHECK_INDEX_AND_RET_DEFAULT(i, retval) if (__check_arg_range(i, __func__)) return (retval)
+
 bool Tokenizer_CheckArgsCountAndPrintWarning(const char *cmdString, int reqCount) {
 	if (g_numArgs >= reqCount)
 		return false;
@@ -64,10 +76,12 @@ int Tokenizer_GetArgsCount() {
 	return g_numArgs;
 }
 bool Tokenizer_IsArgInteger(int i) {
-	if(i >= g_numArgs || i < 0) {
+/*	if(i >= g_numArgs || i < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD,"Tokenizer_IsArgInteger(%i) called - g_numArgs=%i",i,g_numArgs);
 		return false;
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, false);
 	if (*g_args[i] == '$') {
 		return true;
 	}
@@ -78,11 +92,13 @@ const char *Tokenizer_GetArgExpanding(int i) {
 	char tokLine[sizeof(g_argsExpanded[i])];
 	char Templine[sizeof(g_argsExpanded[i])];
 	char convert[10];
-
+/*
 	if (i >= g_numArgs || i < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgExpanding(%i) called - g_numArgs=%i",i,g_numArgs);
 		return 0;
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, NULL);
 
 	s = g_args[i];
 
@@ -148,10 +164,13 @@ const char *Tokenizer_GetArgExpanding(int i) {
 const char *Tokenizer_GetArg(int i) {
 	const char *s;
 
+/*
 	if (i >= g_numArgs || i < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArg(%i) called - g_numArgs=%i",i,g_numArgs);
 		return 0;
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, NULL);
 
 	if (g_argsExpanded[i][0] != 0) {
 		return g_argsExpanded[i];
@@ -202,10 +221,13 @@ const char *Tokenizer_GetArg(int i) {
 	return g_args[i];
 }
 const char *Tokenizer_GetArgFrom(int i) {
+/*
 	if (g_numArgs <= i || i < 0) {		// we really should have a safguard here
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgFrom(%i) called - g_numArgs=%i",i,g_numArgs);
 		return 0;			// value to be dicussed
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, NULL);
 	return g_argsFrom[i];
 }
 int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
@@ -224,11 +246,16 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 int Tokenizer_GetPin(int i, int def) {
 	int r;
 
+/*
 	if (g_numArgs <= i || i < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetPin(%i) called - g_numArgs=%i",i,g_numArgs);
 //		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i not present - Returning default index %i",i,def);
 		return def;
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, def);
+
+
 	return Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
 //	r = Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
 //	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i (%s) - Returning index %i",i,g_args[i],r);
@@ -238,10 +265,14 @@ int Tokenizer_GetPin(int i, int def) {
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;
 
+/*
 	if (g_numArgs <= i || i < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgIntegerDefault(%i) called - g_numArgs=%i",i,g_numArgs);
 		return def;
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, def);
+
 	r = Tokenizer_GetArgInteger(i);
 
 	return r;
@@ -249,10 +280,14 @@ int Tokenizer_GetArgIntegerDefault(int i, int def) {
 float Tokenizer_GetArgFloatDefault(int i, float def) {
 	float r;
 
+/*
 	if (g_numArgs <= i || i < 0) {
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgFloatDefault(%i) called - g_numArgs=%i",i,g_numArgs);
 		return def;
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, def);
+
 	r = Tokenizer_GetArgFloat(i);
 
 	return r;
@@ -261,10 +296,14 @@ int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	int ret;
 
+/*
 	if (g_numArgs <= i || i < 0) {		// we really should have a safguard here
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgInteger(%i) called - g_numArgs=%i -- arg[%i]=%s",i,g_numArgs,i,g_args[i]);
 		return 0;			// value to be dicussed
 	}
+*/
+	CHECK_INDEX_AND_RET_DEFAULT(i, 0);		// value to be discussed
+
 	s = g_args[i];
 	if (s == 0)
 		return 0;
@@ -357,12 +396,36 @@ void expandQuotes(char* str) {
 //	Tokenizer_IsStringPresent(STR)		// test for presenc of a string, "Tokenizer_IsStringPresent("default")		to test, if "default" is present
 //
 
+
 int Tokenizer_GetStringIndex(const char *search) {
     for (int i = 0; i < g_numArgs; i++) {
         if (strcmp(g_args[i], search) == 0) return i;
     }
-    return -1;
+    return INDEX_NOTFOUND_VALUE; // return value out of range, we will check range in all Tokenizer_Get<XY> functions or return default; use -2 since we will call return-value +1 !
 }
+#if DEFINED_AND_NOT_ZERO(TOKENIZER_PARAM_EXTENSION)
+// if used multiple times, function will need less memory than macros...
+// 	Macros defined in cmd_public.h:
+// 	Tokenizer_GetPinEqual(STR,DEF) 		// as in example above, use "Tokenizer_GetPinEqual("-SDA", 8)" 			to get the Pin after "-SDA" (or default)
+//	Tokenizer_GetArgEqualInteger(STR,DEF)	// same for an integer value e.g. Tokenizer_GetArgEqualInteger("-chan_t", 2)	to get the integer after "-chan_t" (or default)
+//	Tokenizer_GetArgEqualDefault(STR,DEF) 	// same for a string, "Tokenizer_GetArgEqualDefault("type", "sht3x")"		to get the "-type" value (or default)
+//	Tokenizer_IsStringPresent(STR)		// test for presenc of a string, "Tokenizer_IsStringPresent("default")		to test, if "default" is present
+int Tokenizer_GetPinEqual(const char *search, int def){
+	return Tokenizer_GetPin(Tokenizer_GetStringIndex(search) + 1, def);
+}
+
+int Tokenizer_GetArgEqualInteger(const char *search, int def){
+	return Tokenizer_GetArgIntegerDefault(Tokenizer_GetStringIndex(search) + 1, def);
+}
+
+bool Tokenizer_IsStringPresent(const char *search){
+	return (Tokenizer_GetStringIndex(search) <  INDEX_NOTFOUND_VALUE );
+}
+int Tokenizer_GetArgEqualDefault(const char *search, const char *def){
+	int i=Tokenizer_GetStringIndex(search)+1;
+	return i < Tokenizer_GetArgsCount() ? Tokenizer_GetArg( i ) : def;
+}
+#endif
 
 void Tokenizer_TokenizeString(const char *s, int flags) {
 	char *p;
