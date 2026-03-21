@@ -421,7 +421,7 @@ int Tokenizer_GetArgEqualInteger(const char *search, int def){
 bool Tokenizer_IsStringPresent(const char *search){
 	return (Tokenizer_GetStringIndex(search) <  INDEX_NOTFOUND_VALUE );
 }
-int Tokenizer_GetArgEqualDefault(const char *search, const char *def){
+const char *Tokenizer_GetArgEqualDefault(const char *search, const char *def){
 	int i=Tokenizer_GetStringIndex(search)+1;
 	return i < Tokenizer_GetArgsCount() ? Tokenizer_GetArg( i ) : def;
 }
