@@ -997,6 +997,9 @@ static commandResult_t enableAll(const void *context, const char *cmd, const cha
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " enableAll (%s) received with args %s",cmd,args);
 
 		Tokenizer_TokenizeString(args, 0);
+		if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+			return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+		}
 
 		a = Tokenizer_GetArg(0);
 		if (a && !stricmp(a, "toggle")) {
@@ -1395,6 +1398,9 @@ commandResult_t LED_SetBaseColor_HSB(const void *context, const char *cmd, const
 	const char *p;
 
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {	// especially important here: if ArgsCount is 0, it would proceed to els, fetching 3 invalid values!!
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 	if (Tokenizer_GetArgsCount() == 1) {
 		p = args;
 		hue = atoi(p);
@@ -1595,6 +1601,9 @@ static commandResult_t lerpSpeed(const void *context, const char *cmd, const cha
 static commandResult_t cmdDimmerScale(const void *context, const char *cmd, const char *args, int cmdFlags) {
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	g_brightnessScale = Tokenizer_GetArgFloat(0);
 
@@ -1684,6 +1693,9 @@ static commandResult_t setSaturation(const void *context, const char *cmd, const
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	f = Tokenizer_GetArgFloat(0);
 
@@ -1704,6 +1716,9 @@ static commandResult_t setHue(const void *context, const char *cmd, const char *
 
 	// Use tokenizer, so we can use variables (eg. $CH11 as variable)
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	f = Tokenizer_GetArgFloat(0);
 
