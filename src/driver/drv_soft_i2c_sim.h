@@ -43,7 +43,8 @@ typedef enum {
     SIM_Q_PRESSURE    = 2,   // x10  -> 10132 = 1013.2 hPa
     SIM_Q_CO2         = 3,   // x1   ->  412 ppm
     SIM_Q_ALTITUDE    = 4,   // x10  -> 1234 = 123.4 m
-    SIM_Q_COUNT               // sentinel – keep last
+    SIM_Q_LIGHT       = 5,   // x10  ->  3000 = 300.0 lux
+    SIM_Q_COUNT              // sentinel – keep last
 } sim_quantity_t;
 
 // -------------------------------------------------------
