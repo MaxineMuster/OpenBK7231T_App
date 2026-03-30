@@ -723,7 +723,10 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
-#define ENABLE_DRIVER_SHTXX						1
+
+// for testing: enable new driver by default
+#define ENABLE_DRIVER_VEML7700					1
+#define ENABLE_DRIVER_XHTXX						1
 
 
 // closing OBK_CONFIG_H

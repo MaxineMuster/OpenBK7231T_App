@@ -268,6 +268,8 @@
     <ClCompile Include="src\driver\drv_shiftRegister.c" />
     <ClCompile Include="src\driver\drv_sht3x.c" />
     <ClCompile Include="src\driver\drv_shtxx.c" />
+    <ClCompile Include="src\driver\drv_xhtxx.c" />
+    <ClCompile Include="src\driver\drv_veml7700.c" />
     <ClCompile Include="src\driver\drv_soft_i2c_sim.c" />
     <ClCompile Include="src\driver\drv_soft_i2c_sim_sensors.c" />
     <ClCompile Include="src\driver\drv_simpleEEPROM.c" />
@@ -973,9 +975,9 @@
     <ClInclude Include="src\driver\drv_rc.h" />
     <ClInclude Include="src\driver\drv_sgp.h" />
     <ClInclude Include="src\driver\drv_sht3x.h" />
-    <ClCompile Include="src\driver\drv_shtxx.c" />
-    <ClCompile Include="src\driver\drv_soft_i2c_sim.c" />
-    <ClCompile Include="src\driver\drv_soft_i2c_sim_sensors.c" />
+    <ClInclude Include="src\driver\drv_xhtxx.h" />
+    <ClInclude Include="src\driver\drv_veml7700.h" />
+    <ClInclude Include="src\driver\drv_soft_i2c_sim.h" />
     <ClInclude Include="src\driver\drv_sm2235.h" />
     <ClInclude Include="src\driver\drv_soft_spi.h" />
     <ClInclude Include="src\driver\drv_spiLED.h" />
