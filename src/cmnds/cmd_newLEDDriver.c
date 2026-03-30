@@ -913,15 +913,17 @@ static commandResult_t temperature(const void *context, const char *cmd, const c
 	int tmp;
 	//if (!wal_strnicmp(cmd, "POWERALL", 8)){
 
+	Tokenizer_TokenizeString(args, 0);
+
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " temperature (%s) received with args %s",cmd,args);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
-		Tokenizer_TokenizeString(args, 0);
 
-		tmp = Tokenizer_GetArgInteger(0);
-
-		LED_SetTemperature(tmp, 1);
-
-		return CMD_RES_OK;
+	tmp = Tokenizer_GetArgInteger(0);
+	LED_SetTemperature(tmp, 1);
+	return CMD_RES_OK;
 	//}
 	//return 0;
 }
@@ -1179,6 +1181,9 @@ static commandResult_t add_temperature(const void *context, const char *cmd, con
 	int bWrapAroundInsteadOfHold;
 
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 2)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	iVal = Tokenizer_GetArgInteger(0);
 	bWrapAroundInsteadOfHold = Tokenizer_GetArgInteger(1);
@@ -1192,9 +1197,12 @@ static commandResult_t add_dimmer(const void *context, const char *cmd, const ch
 	int addMode;
 
 	Tokenizer_TokenizeString(args, 0);
+	if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 1)) {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 	iVal = Tokenizer_GetArgInteger(0);
-	addMode = Tokenizer_GetArgInteger(1);
+	addMode = Tokenizer_GetArgIntegerDefault(1,0);
 
 	LED_AddDimmer(iVal, addMode, 0);
 
@@ -1205,6 +1213,9 @@ static commandResult_t dimmer(const void *context, const char *cmd, const char *
 		int iVal = 0;
 
         ADDLOG_DEBUG(LOG_FEATURE_CMD, " dimmer (%s) received with args %s",cmd,args);
+	if (!args || args[0] == '\0') {
+		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
+	}
 
 		// according to Elektroda.com users, domoticz sends following string:
 		// {"brightness":52,"state":"ON"}
