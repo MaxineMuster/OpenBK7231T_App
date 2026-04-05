@@ -1529,8 +1529,9 @@ typedef struct mainConfig_s {
 	// startChannelValues at offs 0x000003DE
 	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
-	// unused_fill at offs 0x0000045E 
-	short unused_fill; // correct alignment
+	// unused_fill at offs 0x0000045E --> use for log2lfs
+	// 0: disabled  - else: number of seconds to log (for logging at startup)
+	unsigned short log2lfs; // correct alignment
 	// dgr_sendFlags at offs 0x00000460 
 	int dgr_sendFlags;
 	// dgr_recvFlags at offs 0x00000464 

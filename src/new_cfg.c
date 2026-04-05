@@ -789,6 +789,16 @@ uint32_t CFG_GetLFS_Size() {
 	}
 	return size;
 }
+// time to write log messages to lfs (0=disabled)
+unsigned short CFG_Get_log2lfs() {
+	return g_cfg.log2lfs;
+}
+void CFG_Set_log2lfs(unsigned short value) {
+	if(g_cfg.log2lfs != value) {
+		g_cfg.log2lfs = value;
+		g_cfg_pendingChanges++;
+	}
+}
 #endif
 
 #if MQTT_USE_TLS

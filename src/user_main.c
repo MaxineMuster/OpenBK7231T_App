@@ -35,6 +35,7 @@
 
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
+unsigned short g_log2lfs;
 #endif
 
 
@@ -1495,6 +1496,14 @@ void Main_Init_Before_Delay()
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 	CFG_InitAndLoad();
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+	void initLog2LFS(void);	// implemented in logging.c
+	// Now CFG flash is ininitialized, immediatley check 
+	// if we want startup log to be saved to LFS
+	g_log2lfs = CFG_Get_log2lfs();
+	if (g_log2lfs > 0) initLog2LFS();
+//	bk_printf("g_log2lfs=%i\r\n", g_log2lfs);
+#endif
 
 #if ENABLE_LITTLEFS
 	LFSAddCmds();

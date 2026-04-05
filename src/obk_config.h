@@ -719,5 +719,11 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
+// test for writing log to LFS: enable for all platforms, if FLS is present:
+#if ENABLE_LITTLEFS
+#define ENABLE_LOG2LFS	1
+#endif
+
+
 // closing OBK_CONFIG_H
 #endif

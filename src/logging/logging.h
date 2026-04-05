@@ -38,6 +38,19 @@ extern char *logfeaturenames[];
 
 extern volatile int direct_serial_log;
 
+
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+// LFS (startup) logging
+#include "../driver/drv_deviceclock.h"		// for TIME_IsTimeSynced() / TIME_GetCurrentTime()
+// To enable optional clock timestamp for the LFS startup log filename if clock is set.
+#include "../libraries/obktime/obktime.h"	// for formatting time as str (TS2STR and TIME_FORMAT_SHORT)
+
+// Set to 0 to disable, or N to log for the first N seconds of uptime.
+// The log is written to "startupLog_<timestamp_or_counter>.txt" on LittleFS.
+// Controlled at runtime with the "log2lfs" command.
+extern unsigned short g_log2lfs;
+#endif
+
 typedef enum logType_e {
 	LOGTYPE_NONE,
 	LOGTYPE_DIRECT,
