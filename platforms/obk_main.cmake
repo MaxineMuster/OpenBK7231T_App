@@ -24,6 +24,7 @@ set(OBKM_SRC
 	${OBK_SRCS}devicegroups/deviceGroups_util.c
 	${OBK_SRCS}devicegroups/deviceGroups_write.c
 	${OBK_SRCS}hal/generic/hal_adc_generic.c
+	${OBK_SRCS}hal/generic/hal_bt_proxy_generic.c
 	${OBK_SRCS}hal/generic/hal_flashConfig_generic.c
 	${OBK_SRCS}hal/generic/hal_flashVars_generic.c
 	${OBK_SRCS}hal/generic/hal_generic.c
@@ -84,6 +85,8 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_ds1820_common.c
 	${OBK_SRCS}driver/drv_ds1820_simple.c
 	${OBK_SRCS}driver/drv_ds1820_full.c
+	${OBK_SRCS}driver/drv_esphome_api.c
+	${OBK_SRCS}driver/drv_esphome_api_server.c
 	${OBK_SRCS}driver/drv_freeze.c
 	${OBK_SRCS}driver/drv_gn6932.c
 	${OBK_SRCS}driver/drv_hd2015.c
@@ -106,6 +109,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_deviceclock.c
 	${OBK_SRCS}driver/drv_ds3231.c
 	${OBK_SRCS}driver/drv_neo6m.c
+	${OBK_SRCS}driver/drv_DCF77.c
 	${OBK_SRCS}libraries/obktime/obktime.c
 	${OBK_SRCS}driver/drv_timed_events.c
 	${OBK_SRCS}driver/drv_openWeatherMap.c
@@ -133,6 +137,7 @@ set(OBKM_SRC
 	${OBK_SRCS}driver/drv_spiLED.c
 	${OBK_SRCS}driver/drv_spi_flash.c
 	${OBK_SRCS}driver/drv_spidma.c
+	${OBK_SRCS}driver/drv_mdns.c
 	${OBK_SRCS}driver/drv_ssdp.c
 	${OBK_SRCS}driver/drv_ssd1306.c
 	${OBK_SRCS}driver/drv_tasmotaDeviceGroups.c

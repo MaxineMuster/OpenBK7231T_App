@@ -1,5 +1,8 @@
 #if PLATFORM_LN882H || PLATFORM_LN8825
 
+#include "../../logging/logging.h"
+#include "../../new_cfg.h"
+#include "../../new_pins.h"
 #include "../hal_wifi.h"
 #include "wifi.h"
 #include "dhcp.h"
@@ -41,6 +44,8 @@
 #else
 #include "wifi_port.h"
 #include "ln_wifi_err.h"
+#include "ln_kv_api.h"
+static obkFastConnectData_t fcdata = { 0 };
 #endif
 
 
@@ -68,7 +73,7 @@ static char g_IP[32] = "unknown";
 // included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
-static uint8_t psk_value[40]      = {0x0};
+static uint8_t* psk_value = NULL;
 
 
 struct netif* get_connected_nif() {
@@ -261,17 +266,38 @@ static void wifi_connected_cb(void* arg)
     {
         g_wifiStatusCallback(WIFI_STA_CONNECTED);
     }
+#if PLATFORM_LN882H
+    if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT))
+    {
+        const char* ssid = NULL;
+        const uint8_t* bssid = NULL;
+        uint8_t chan = 0;
+        wifi_get_sta_conn_info(&ssid, &bssid);
+        HAL_GetWiFiChannel(&chan);
+
+        if((psk_value && memcmp(psk_value, fcdata.psk, sizeof(fcdata.psk)) != 0) ||
+            memcmp(fcdata.bssid, bssid, 6) != 0 ||
+            chan != fcdata.channel)
+        {
+            ADDLOG_INFO(LOG_FEATURE_GENERAL, "Saved fast connect data differ to current one, saving...");
+            memcpy(fcdata.bssid, bssid, 6);
+            fcdata.channel = chan;
+            memcpy(fcdata.psk, psk_value, sizeof(fcdata.psk));
+            ln_kv_set("fcdata", &fcdata, sizeof(obkFastConnectData_t));
+        }
+    }
+#endif
 }
 
-void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
+void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip, uint8_t chan, uint8_t* bssid, uint8_t* psk)
 {
 #if PLATFORM_LN882H
     sta_ps_mode_t ps_mode = PM_WIFI_DEFAULT_PS_MODE;
 	wifi_sta_connect_t connect = {
 		.ssid    = oob_ssid,
 		.pwd     = connect_key,
-		.bssid   = NULL,
-		.psk_value = NULL,
+		.bssid   = bssid,
+		.psk_value = psk,
 	};
 #else
     wifi_config_t connect = { 0 };
@@ -285,7 +311,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 #endif
 //	wifi_manager_set_ap_list_sort_rule(1);
 	wifi_scan_cfg_t scan_cfg = {
-        .channel   = 0,
+        .channel   = chan,
         .scan_type = WIFI_SCAN_TYPE_ACTIVE,
         .scan_time = 20,
 	};
@@ -339,11 +365,16 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
         LOG(LOG_LVL_ERROR, "[%s]wifi sta start failed!!!\r\n", __func__);
     }
 
-    connect.psk_value = NULL;
-    if (strlen(connect.pwd) != 0) {
-        if (0 == ln_psk_calc(connect.ssid, connect.pwd, psk_value, sizeof (psk_value))) {
-            connect.psk_value = psk_value;
-            hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
+    if(connect.psk_value == NULL)
+    {
+        if(strlen(connect.pwd) != 0)
+        {
+            if(!psk_value) psk_value = os_malloc(40);
+            if(0 == ln_psk_calc(connect.ssid, connect.pwd, psk_value, 40))
+            {
+                connect.psk_value = psk_value;
+                hexdump(LOG_LVL_INFO, "psk value ", psk_value, 40);
+            }
         }
     }
 #endif
@@ -393,7 +424,7 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
     alert_log("HAL_ConnectToWiFi");
 // set in user_main - included as "extern"
 //	g_WifiMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-	wifi_init_sta(oob_ssid, connect_key, ip);
+	wifi_init_sta(oob_ssid, connect_key, ip, 0, NULL, NULL);
 }
 
 void HAL_DisconnectFromWifi()
@@ -543,6 +574,30 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 #else
 	HAL_SetupWiFiAccessPoint(ssid, NULL);
 #endif
+}
+
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+    if(ln_kv_has_key("fcdata") == LN_FALSE)
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "Fast connect data is empty, connecting normally");
+        HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+        return;
+    }
+    size_t len = 0;
+    ln_kv_get("fcdata", &fcdata, sizeof(obkFastConnectData_t), &len);
+    if(len == sizeof(obkFastConnectData_t))
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "We have fast connection data, connecting...");
+        wifi_init_sta(oob_ssid, connect_key, ip, fcdata.channel, (uint8_t*)&fcdata.bssid, fcdata.psk);
+        return;
+    }
+    HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
+
+void HAL_DisableEnhancedFastConnect()
+{
+    ln_kv_del("fcdata");
 }
 
 #else
