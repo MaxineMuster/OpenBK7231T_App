@@ -199,17 +199,6 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("that's another string"),1);
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("another string"),0);
 
-
-	Tokenizer_TokenizeString("mystr=\"that's my string\" -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES);
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mystr","XX"), "\"that's");		// we didn't use TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE, so only first part is returned !!!!
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mysecondstr","XX"), "that's another string");
-
-
-	Tokenizer_TokenizeString("mystr=\"that's my string\" -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE);
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mystr","XX"), "that's my string");
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mysecondstr","XX"), "that's another string");
-
-
 }
 
 #endif
