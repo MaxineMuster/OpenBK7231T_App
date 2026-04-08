@@ -81,7 +81,7 @@ const char* HAL_GetMyIPString()
 {
 	uint32_t ip, gw, mask, dns1 = 0;
 
-	if(g_WifiMode =! 0)
+	if(g_WifiMode != 0)
 	{
 #if PLATFORM_BL602
 		wifi_mgmr_ap_ip_get(&ip, &gw, &mask);
@@ -398,13 +398,13 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char *key)
 	wifi_mgmr_sta_disable(wifi_interface);		// needs interface, but won't use it, so we can use local var here ...
 
 	wifi_interface = wifi_mgmr_ap_enable();
-	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, key, HAL_AP_Wifi_Channel);
+	wifi_mgmr_ap_start(wifi_interface, (char*)ssid, hidden_ssid, key, g_wifi_channel);
 #else
 	wifi_mgmr_ap_params_t config = { 0 };
 	config.ssid = (char*)ssid;
 	config.key = key;
 	//config.akm = NULL;
-	config.channel = HAL_AP_Wifi_Channel;
+	config.channel = g_wifi_channel;
 	config.ap_ipaddr = inet_addr("192.168.4.1");
 	config.ap_mask = inet_addr("255.255.255.0");
 	config.use_dhcpd = true;
