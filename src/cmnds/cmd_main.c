@@ -658,7 +658,7 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
 //	g_openAP = 5;
-	g_WifIiStartConnect = 5;
+	g_WifiStartConnect = 5;
 	g_WifiMode = 1;
 	
 
@@ -678,7 +678,7 @@ static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const ch
 	CFG_SetAP_SSID(ssid);
 	CFG_SetAP_Pass(pw);
 	g_WifiMode = 2;	// make sure, we don't try to connect as STA client!
-	g_WifIiStartConnect = 2;
+	g_WifiStartConnect = 2;
 /*
 
 	uint8_t argnum=Tokenizer_GetArgsCount();

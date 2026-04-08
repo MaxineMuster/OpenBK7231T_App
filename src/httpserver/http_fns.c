@@ -1825,10 +1825,10 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		poststr(request, "WiFi mode: ");
 		if (newwm==0) poststr(request, "Client.");
 		else hprintf255(request, "%s access point.",newwm==1?"open":"WPA");
-		if (bChanged) g_WifIiStartConnect = 2;
+		if (bChanged) g_WifiStartConnect = 2;
 	} else if(ChanChange && g_WifiMode > 0){
 		hprintf255(request, "AP channel changed to %i. Restarting AP.",CFG_GetAP_channel());
-		g_WifIiStartConnect = 2;
+		g_WifiStartConnect = 2;
 	}
 #if ALLOW_WEB_PASSWORD
 	if (http_getArg(request->url, "web_PW_en", tmpA, sizeof(tmpA))) {

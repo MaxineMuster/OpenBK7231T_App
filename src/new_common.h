@@ -1204,7 +1204,7 @@ extern byte g_wifi_channel;
 // included as "external byte g_WifiMode;" 
 // in other code like hal_wifi-code or http_fns.c
 extern byte g_WifiMode;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-extern short g_WifIiStartConnect;
+extern short g_WifiStartConnect;
 
 
 typedef int(*jsonCb_t)(void *userData, const char *fmt, ...);

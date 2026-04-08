@@ -1892,7 +1892,7 @@ void TuyaMCU_ResetWiFi() {
 
 	if (TuyaMCU_WiFiInReset()) {
 //		g_openAP = 1;
-		g_WifIiStartConnect = 5;
+		g_WifiStartConnect = 5;
 		g_WifiMode = 1;
 
 	}
@@ -2111,7 +2111,7 @@ void TuyaMCU_ProcessIncoming(const byte* data, int len) {
 				// TUYA_CMD_WIFI_SELECT
 				// it should have 1 payload byte, AP mode or EZ mode, but does it make difference for us?
 //				g_openAP = 1;
-				g_WifIiStartConnect = 5;
+				g_WifiStartConnect = 5;
 				g_WifiMode = 1;
 
 			}
