@@ -1066,13 +1066,16 @@ void Main_OnEverySecond()
 					}
 			} else {
 				g_wifi_channel = CFG_GetAP_channel();
+#if ENABLE_WPA_AP
 				if (g_WifiMode==WiFimodeOpenAP){
 					HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
 				}
-#if ENABLE_WPA_AP
 				if (g_WifiMode==WiFimodeWPA_AP){
 					HAL_SetupWiFiAccessPoint(AP_ssid,AP_pass);
 				}
+#else
+				g_WifiMode=WiFimodeOpenAP;
+				HAL_SetupWiFiOpenAccessPoint(CFG_GetDeviceName());
 #endif
 			}
 		}

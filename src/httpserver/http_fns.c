@@ -1475,7 +1475,7 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	}*/
 	poststr(request, "<script>byID=e=>document.getElementById(e);"
 			"function verify(){"
-			"v=byID('wfm').value,"
+			"v=byID('wfm').value;"
 #if ENABLE_WPA_AP
 			"txt='',"
 			"v!=1&&("
@@ -1488,15 +1488,15 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			"return confirm('Are you sure'+['? Please double-check SSID and password.',TCM+'Open Accesspoint?',TCM+'Accesspoint?\\nSSID='+ts+' \\nPW='+tp][v])};"
 			"shows=s=>[0,2].forEach(i=>{e=byID('wifi'+i);e.style.display=i==s?'block':'none';e.disabled=i!=s;});"
 			"setup=(e,c)=>{byID('wfm').innerHTML=['WiFi Client','Open AP','WPA AP'].map((v,i)=>"
-			"`<option id='w${i}'value='${i}' ${i==e&&'selected'}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');"
-			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c&&'selected'||''}>${i+1}</option>`).join('');"
+			"`<option id='w${i}'value='${i}' ${i==e?'selected':''}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');"
+			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c?'selected':''}>${i+1}</option>`).join('');"
 			"shows(e)},");
 #else
-			"return confirm('Are you sure'+['? Please double-check SSID and password.',' to convert module to an Open Accesspoint?'[v])};"
-			"shows=s=>e=byID('wifi0');e.style.display=0==s?'block':'none';e.disabled=s!=0});"
+			"return confirm('Are you sure'+['? Please double-check SSID and password.',' to convert module to an Open Accesspoint?'][v])};"
+			"shows=s=>{e=byID('wifi0');e.style.display=0==s?'block':'none';e.disabled=s!=0};"
 			"setup=(e,c)=>{byID('wfm').innerHTML=['WiFi Client','Open Accesspoint'].map((v,i)=>"
-			"`<option id='w${i}'value='${i}' ${i==e&&'selected'||''}>${v}</option>`).join('');"
-			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c&&'selected'||''}>${i+1}</option>`).join('');"
+			"`<option id='w${i}'value='${i}' ${i==e?'selected':''}>${v}</option>`).join('');"
+			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c?'selected':''}>${i+1}</option>`).join('');"
 			"shows(e)},");
 #endif
 			// a bit "hacky" to generate the option list, select the actual maoe and hide the others
@@ -1683,7 +1683,7 @@ APs passphrase:<br><input name=\"PWAP\" id=\"PWAP\">\
 	poststr(request, "<input type='hidden' name='scan' value='1' form='scanform'>"
 		"<input type='submit' value='Scan Local Networks'  form='scanform'>");
 	poststr_h2(request, "Use this to connect to your WiFi");
-	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "<form action=\"/cfg_wifi_set\">");
+	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "");
 	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span>");
 	poststr_h2(request, "Alternate WiFi (used when first one is not responding)");
 	poststr(request, "Note: It is possible to retain used SSID using command setStartupSSIDChannel in early.bat");

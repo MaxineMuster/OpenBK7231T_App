@@ -372,7 +372,11 @@ int CFG_SetWifiMode(byte m) {
 	return 1;
 }
 byte CFG_GetWifiMode() {
+#if ENABLE_WPA_AP
 	return g_cfg.WiFi_mode;
+#else
+	return (g_cfg.WiFi_mode != 0);		// if we don't know about WPA-AP, return (Open)AP if not in STA mode
+#endif
 }
 int CFG_SetAP_channel(byte c) {
 	// is there a change?
