@@ -6,13 +6,18 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "lwip/inet.h"
+#include <string.h>
 #include "../logging/logging.h"
+#include "../hal/hal_ota.h"
 #include "new_http.h"
 #if PLATFORM_ESP8266
 #define MAX_SOCKETS_TCP 2
+#endif
+#if PLATFORM_ESP8266
 #define REPLY_BUFFER_SIZE			1024
 #define INCOMING_BUFFER_SIZE		1024
 #define HTTP_CLIENT_STACK_SIZE		4096
+#define HTTP_CLIENT_STACK_SIZE		6144
 #endif
 #ifndef MAX_SOCKETS_TCP
 #define MAX_SOCKETS_TCP MEMP_NUM_TCP_PCB
@@ -79,6 +84,7 @@ static void tcp_client_thread(tcp_thread_t* arg)
 			break;
 		}
 		request.receivedLen += received;
+		request.received[request.receivedLen] = 0;
 		if(received < remaining)
 		{
 			break;
@@ -88,8 +94,11 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		char *newbuf = (char*)realloc(request.received, request.receivedLenmax + 2);
 		if(newbuf == NULL)
 		{
+			ADDLOG_ERROR(LOG_FEATURE_HTTP, "TCP Client realloc failed");
 			// no memory
-			goto exit;
+			//goto exit;
+			request.receivedLenmax -= INCOMING_BUFFER_SIZE;
+			continue;
 		}
 		request.received = buf = newbuf;
 	}
@@ -107,13 +116,13 @@ static void tcp_client_thread(tcp_thread_t* arg)
 		goto exit;
 	}
 
-	//addLog( "TCP received string %s\n",buf );
+	//addLog( "TCP received string %s",buf );
 	// returns length to be sent if any
-	 // ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP will process packet of len %i\n", request.receivedLen );
+	 // ADDLOG_DEBUG(LOG_FEATURE_HTTP,  "TCP will process packet of len %i", request.receivedLen );
 	int lenret = HTTP_ProcessPacket(&request);
 	if(lenret > 0)
 	{
-		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "TCP sending reply len %i\n", lenret);
+		ADDLOG_DEBUG(LOG_FEATURE_HTTP, "TCP sending reply len %i", lenret);
 		send(fd, reply, lenret, 0);
 	}
 
@@ -360,7 +369,7 @@ void HTTPServer_Start()
 		(beken_thread_arg_t)0);
 	if(err != kNoErr)
 	{
-		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!\r\n", err);
+		ADDLOG_ERROR(LOG_FEATURE_HTTP, "create \"TCP_server\" thread failed with %i!", err);
 	}
 }
 

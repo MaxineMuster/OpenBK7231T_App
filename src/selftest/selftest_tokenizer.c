@@ -134,7 +134,25 @@ void Test_Tokenizer() {
 	SELFTEST_ASSERT_ARGUMENT(1, "12:55");
 	SELFTEST_ASSERT_ARGUMENT(2, "level=77");
 	SELFTEST_ASSERT_ARGUMENT(3, "0");
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgFrom(2), "level=$CH5 $CH6");
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgFrom(2), "level=$CH5 $CH6")
+	
+	// test for invalid responses
+	Tokenizer_TokenizeString("1 2 3 4 5 6.6 7.7", 0);
+	SELFTEST_ASSERT_ARGUMENTS_COUNT(7);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(0, 1);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(-1, 0);	// negative index: default 0
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(7, 0);		// invalid index: default 0
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(1024, 0);	// invalid index: default 0
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(1, 2);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(2, 3);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(3, 4);
+	SELFTEST_ASSERT_ARGUMENT_INTEGER(4, 5);
+	SELFTEST_ASSERT_ARGUMENT_FLOAT(5, 6.6f);
+	SELFTEST_ASSERT_ARGUMENT_FLOAT(6, 7.7f);
+	SELFTEST_ASSERT_ARGUMENT_FLOAT(-1, 0.0f);	// negative index: default 0.0
+	SELFTEST_ASSERT_ARGUMENT_FLOAT(7, 0.0f);	// invalid index: default 0.0
+	SELFTEST_ASSERT_ARGUMENT_FLOAT(1024, 0.0f);	// invalid index: default 0.0
+
 
 // test new parsing args
 /*
@@ -162,22 +180,20 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 
 */
 
-	Tokenizer_TokenizeString("-XY 12 -X 13 SDA=ADC3 XX=17 -Y 19 SCL=8 mystr=somestring -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES);
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mystr","XX"), "somestring");
-	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mysecondstr","XX"), "that's another string");
-	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("XY",-1), 12);
-	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("X",-1), 13);
-	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("XX",-1), 17);
-	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("Y",-1), 19);
-	SELFTEST_ASSERT_INTEGER(Tokenizer_GetPinEqual("SDA",-1), 23);
-	SELFTEST_ASSERT_INTEGER(Tokenizer_GetPinEqual("SCL",1), 8);
+	Tokenizer_TokenizeString("-XY 12 -X 13 -SDA ADC3 -XX 17 -Y 19 -SCL 8 -mystr somestring -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES);
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("-mystr","XX"), "somestring");
+	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("-mysecondstr","XX"), "that's another string");
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("-XY",-1), 12);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("-X",-1), 13);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("-XX",-1), 17);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetArgEqualInteger("-Y",-1), 19);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetPinEqual("-SDA",-1), 23);
+	SELFTEST_ASSERT_INTEGER(Tokenizer_GetPinEqual("-SCL",1), 8);
 
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("-XY"),1);
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("XY"),0);
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("-Y"),1);
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("Y"),0);
-	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("SDA=ADC3"),1);
-	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("DA=ADC3"),0);
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("-mysecondstr"),1);
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("mysecondstr"),0);
 	SELFTEST_ASSERT_INTEGER(Tokenizer_IsStringPresent("that's another string"),1);
@@ -192,7 +208,6 @@ const char *HAL_PIN_GetPinNameAlias(int index) {
 	Tokenizer_TokenizeString("mystr=\"that's my string\" -mysecondstr \"that's another string\"", TOKENIZER_ALLOW_QUOTES_IN_NAMEDARG_VALUE);
 	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mystr","XX"), "that's my string");
 	SELFTEST_ASSERT_STRING(Tokenizer_GetArgEqualDefault("mysecondstr","XX"), "that's another string");
-
 
 
 }

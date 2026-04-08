@@ -31,6 +31,8 @@ else ifeq ($(VARIANT),hlw8112)
 OBK_VARIANT = 6
 else ifeq ($(VARIANT),battery)
 OBK_VARIANT = 7
+else ifeq ($(VARIANT),btproxy)
+OBK_VARIANT = 8
 else ifeq ($(VARIANT),2M)
 OBK_VARIANT = 1
 ESP_FSIZE = 2MB
@@ -262,6 +264,7 @@ prebuild_OpenTR6260: berry
 
 prebuild_OpenRTL87X0C: berry
 	git submodule update --init --recursive --depth=1 sdk/OpenRTL87X0C
+	if [ ! -e sdk/OpenRTL87X0C/tools/arm-none-eabi-gcc/arm-none-eabi ]; then cd sdk/OpenRTL87X0C/tools/arm-none-eabi-gcc && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/RTL87X0C/pre_build.sh ]; then \
 		echo "prebuild found for OpenRTL87X0C"; \
 		sh platforms/RTL87X0C/pre_build.sh; \
@@ -302,6 +305,7 @@ prebuild_OpenRTL8720D: berry
 
 prebuild_OpenBK7238: berry
 	git submodule update --init --recursive --depth=1 sdk/beken_freertos_sdk
+	if [ ! -e sdk/beken_freertos_sdk/toolchain/arm-none-eabi ]; then cd sdk/beken_freertos_sdk/toolchain && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/BK723x/pre_build_7238.sh ]; then \
 		echo "prebuild found for OpenBK7238"; \
 		sh platforms/BK723x/pre_build_7238.sh; \
@@ -310,6 +314,7 @@ prebuild_OpenBK7238: berry
 
 prebuild_OpenBK7231N_ALT: berry
 	git submodule update --init --recursive --depth=1 sdk/beken_freertos_sdk
+	if [ ! -e sdk/beken_freertos_sdk/toolchain/arm-none-eabi ]; then cd sdk/beken_freertos_sdk/toolchain && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/BK723x/pre_build_7231n.sh ]; then \
 		echo "prebuild found for OpenBK7231N"; \
 		sh platforms/BK723x/pre_build_7231n.sh; \
@@ -318,6 +323,7 @@ prebuild_OpenBK7231N_ALT: berry
 
 prebuild_OpenBK7231U: berry
 	git submodule update --init --recursive --depth=1 sdk/beken_freertos_sdk
+	if [ ! -e sdk/beken_freertos_sdk/toolchain/arm-none-eabi ]; then cd sdk/beken_freertos_sdk/toolchain && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/BK723x/pre_build_7231u.sh ]; then \
 		echo "prebuild found for OpenBK7231U"; \
 		sh platforms/BK723x/pre_build_7231u.sh; \
@@ -326,6 +332,7 @@ prebuild_OpenBK7231U: berry
 
 prebuild_OpenBK7231T_ALT: berry
 	git submodule update --init --recursive --depth=1 sdk/beken_freertos_sdk
+	if [ ! -e sdk/beken_freertos_sdk/toolchain/arm-none-eabi ]; then cd sdk/beken_freertos_sdk/toolchain && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/BK723x/pre_build_7231t.sh ]; then \
 		echo "prebuild found for OpenBK7231T"; \
 		sh platforms/BK723x/pre_build_7231t.sh; \
@@ -334,6 +341,7 @@ prebuild_OpenBK7231T_ALT: berry
 
 prebuild_OpenBK7252: berry
 	git submodule update --init --recursive --depth=1 sdk/beken_freertos_sdk
+	if [ ! -e sdk/beken_freertos_sdk/toolchain/arm-none-eabi ]; then cd sdk/beken_freertos_sdk/toolchain && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/BK723x/pre_build_7252.sh ]; then \
 		echo "prebuild found for OpenBK7252"; \
 		sh platforms/BK723x/pre_build_7252.sh; \
@@ -342,6 +350,7 @@ prebuild_OpenBK7252: berry
 
 prebuild_OpenBK7252N: berry
 	git submodule update --init --recursive --depth=1 sdk/beken_freertos_sdk
+	if [ ! -e sdk/beken_freertos_sdk/toolchain/arm-none-eabi ]; then cd sdk/beken_freertos_sdk/toolchain && XZ_OPT="-T0" tar -xf *.tar.xz; fi
 	@if [ -e platforms/BK723x/pre_build_7252n.sh ]; then \
 		echo "prebuild found for OpenBK7252N"; \
 		sh platforms/BK723x/pre_build_7252n.sh; \
@@ -387,6 +396,24 @@ prebuild_OpenTXW81X: berry
 		echo "prebuild found for OpenTXW81X"; \
 		sh platforms/TXW81X/pre_build.sh; \
 	else echo "prebuild for OpenTXW81X not found ... "; \
+	fi
+
+prebuild_OpenBL616: berry
+	git submodule update --init --recursive --depth=1 sdk/bouffalo_sdk
+	if [ ! -e platforms/BL616/gcc ]; then cd platforms/BL616 && git clone https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git gcc --depth=1; fi 
+	@if [ -e platforms/BL616/pre_build.sh ]; then \
+		echo "prebuild found for OpenBL616"; \
+		sh platforms/BL616/pre_build.sh; \
+	else echo "prebuild for OpenBL616 not found ... "; \
+	fi
+
+prebuild_OpenBL602_ALT: berry
+	git submodule update --init --recursive --depth=1 sdk/bouffalo_sdk
+	if [ ! -e platforms/BL616/gcc ]; then cd platforms/BL616 && git clone https://github.com/bouffalolab/toolchain_gcc_t-head_linux.git gcc --depth=1; fi 
+	@if [ -e platforms/BL602_ALT/pre_build.sh ]; then \
+		echo "prebuild found for OpenBL602_ALT"; \
+		sh platforms/BL602_ALT/pre_build.sh; \
+	else echo "prebuild for OpenBL602_ALT not found ... "; \
 	fi
 
 prebuild_OpenRDA5981: berry
@@ -584,7 +611,7 @@ OpenTR6260: prebuild_OpenTR6260
 	
 .PHONY: OpenRTL87X0C
 OpenRTL87X0C: prebuild_OpenRTL87X0C
-	$(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
+	ARM_GCC_TOOLCHAIN=$(PWD)/sdk/OpenRTL87X0C/tools/arm-none-eabi-gcc/arm-none-eabi/bin/ $(MAKE) -C sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) -j $(shell nproc)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/flash_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION).bin
 	cp sdk/OpenRTL87X0C/project/OpenBeken/GCC-RELEASE/application_is/Debug/bin/firmware_is.bin output/$(APP_VERSION)/OpenRTL87X0C_$(APP_VERSION)_ota.img
@@ -637,7 +664,17 @@ OpenRTL8720E: prebuild_OpenRTL8720E
 
 .PHONY: OpenBK7238
 OpenBK7238: prebuild_OpenBK7238
-	cd sdk/beken_freertos_sdk && OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION)
+ifeq ($(OBK_VARIANT), 8)
+	cd sdk/beken_freertos_sdk && \
+	cp -f beken378/app/config/sys_config_bk7238.h beken378/app/config/sys_config_bk7238.h.bak && \
+	sed -i 's/#if 0\/\/BTPROXY/#if 1/' beken378/app/config/sys_config_bk7238.h && \
+	ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION); \
+	rc=$$?; \
+	mv -f beken378/app/config/sys_config_bk7238.h.bak beken378/app/config/sys_config_bk7238.h; \
+	exit $$rc
+else
+	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7238 $(APP_VERSION)
+endif
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7238.bin output/$(APP_VERSION)/OpenBK7238_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7238_QIO.bin output/$(APP_VERSION)/OpenBK7238_QIO_${APP_VERSION}.bin
@@ -646,7 +683,7 @@ OpenBK7238: prebuild_OpenBK7238
 
 .PHONY: OpenBK7231U
 OpenBK7231U: prebuild_OpenBK7231U
-	cd sdk/beken_freertos_sdk && sh build.sh bk7231u $(APP_VERSION)
+	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7231u $(APP_VERSION)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7231u_QIO.bin output/$(APP_VERSION)/OpenBK7231U_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7231u.bin output/$(APP_VERSION)/OpenBK7231U_${APP_VERSION}.bin
@@ -655,7 +692,7 @@ OpenBK7231U: prebuild_OpenBK7231U
 
 .PHONY: OpenBK7252
 OpenBK7252: prebuild_OpenBK7252
-	cd sdk/beken_freertos_sdk && sh build.sh bk7251 $(APP_VERSION)
+	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7251 $(APP_VERSION)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7251.bin output/$(APP_VERSION)/OpenBK7252_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7251_QIO.bin output/$(APP_VERSION)/OpenBK7252_QIO_${APP_VERSION}.bin
@@ -666,7 +703,7 @@ OpenBK7252: prebuild_OpenBK7252
 
 .PHONY: OpenBK7252N
 OpenBK7252N: prebuild_OpenBK7252N
-	cd sdk/beken_freertos_sdk && sh build.sh bk7252n $(APP_VERSION)
+	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7252n $(APP_VERSION)
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7252n.bin output/$(APP_VERSION)/OpenBK7252N_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7252n_QIO.bin output/$(APP_VERSION)/OpenBK7252N_QIO_${APP_VERSION}.bin
@@ -677,7 +714,17 @@ OpenBK7252N: prebuild_OpenBK7252N
 
 .PHONY: OpenBK7231N_ALT
 OpenBK7231N_ALT: prebuild_OpenBK7231N_ALT
-	cd sdk/beken_freertos_sdk && OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7231n $(APP_VERSION)_ALT
+ifeq ($(OBK_VARIANT), 8)
+	cd sdk/beken_freertos_sdk && \
+	cp -f beken378/app/config/sys_config_bk7231n.h beken378/app/config/sys_config_bk7231n.h.bak && \
+	sed -i 's/#if 0\/\/BTPROXY/#if 1/' beken378/app/config/sys_config_bk7231n.h && \
+	ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7231n $(APP_VERSION)_ALT; \
+	rc=$$?; \
+	mv -f beken378/app/config/sys_config_bk7231n.h.bak beken378/app/config/sys_config_bk7231n.h; \
+	exit $$rc
+else
+	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7231n $(APP_VERSION)_ALT
+endif
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7231n_QIO.bin output/$(APP_VERSION)/OpenBK7231N_ALT_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7231n.bin output/$(APP_VERSION)/OpenBK7231N_ALT_${APP_VERSION}.bin
@@ -687,7 +734,7 @@ OpenBK7231N_ALT: prebuild_OpenBK7231N_ALT
 
 .PHONY: OpenBK7231T_ALT
 OpenBK7231T_ALT: prebuild_OpenBK7231T_ALT
-	cd sdk/beken_freertos_sdk && sh build.sh bk7231 $(APP_VERSION)_ALT
+	cd sdk/beken_freertos_sdk && ARM_GCC_TOOLCHAIN=$(PWD)/sdk/beken_freertos_sdk/toolchain/arm-none-eabi/bin/ OBK_VARIANT=$(OBK_VARIANT) sh build.sh bk7231 $(APP_VERSION)_ALT
 	mkdir -p output/$(APP_VERSION)
 	cp sdk/beken_freertos_sdk/out/bk7231t_QIO.bin output/$(APP_VERSION)/OpenBK7231T_ALT_QIO_${APP_VERSION}.bin
 	cp sdk/beken_freertos_sdk/out/bk7231u.bin output/$(APP_VERSION)/OpenBK7231T_ALT_${APP_VERSION}.bin
@@ -723,6 +770,20 @@ OpenRDA5981: prebuild_OpenRDA5981
 	#./sdk/OpenRDA5981/ota_lzma/imgpkt e sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
 	./sdk/OpenRDA5981/ota_lzma/xz --format=lzma -A -z -k -v -c sdk/OpenRDA5981/.build/OpenBeken.bin > sdk/OpenRDA5981/.build/OpenBeken.bin.lzma
 	python3 sdk/OpenRDA5981/ota_lzma/ota_pack_image_lzma.py sdk/OpenRDA5981/.build/OpenBeken.bin sdk/OpenRDA5981/.build/OpenBeken.bin.lzma output/$(APP_VERSION)/OpenRDA5981_$(APP_VERSION)_ota.img $(APP_VERSION)
+
+.PHONY: OpenBL616
+OpenBL616: prebuild_OpenBL616
+	cd ./platforms/BL616 && PATH="$(PATH):$(PWD)/platforms/BL616/gcc/bin" $(MAKE) CHIP=bl616 BOARD=bl616dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	mkdir -p output/$(APP_VERSION)
+	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.bin output/$(APP_VERSION)/OpenBL616_${APP_VERSION}.bin
+	cp ./platforms/BL616/build/build_out/OpenBeken_bl616.xz.ota output/$(APP_VERSION)/OpenBL616_${APP_VERSION}_OTA.bin.xz.ota
+
+.PHONY: OpenBL602_ALT
+OpenBL602_ALT: prebuild_OpenBL602_ALT
+	cd ./platforms/BL602_ALT && PATH="$(PATH):$(PWD)/platforms/BL616/gcc/bin" $(MAKE) CHIP=bl602 BOARD=bl602dk APP_VERSION=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT)
+	mkdir -p output/$(APP_VERSION)
+	dd conv=notrunc bs=1K skip=4 if=platforms/BL602_ALT/build/build_out/OpenBeken_bl602.bin of=output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}.bin
+	cp ./platforms/BL602_ALT/build/build_out/OpenBeken_bl602.xz.ota output/$(APP_VERSION)/OpenBL602_ALT_${APP_VERSION}_OTA.bin.xz.ota
 
 # Add custom Makefile if required
 -include custom.mk
@@ -760,6 +821,8 @@ clean:
 	-test -d ./platforms/ESP-IDF/build-c61 && cmake --build ./platforms/ESP-IDF/build-c61 --target clean
 	-test -d ./platforms/ESP8266/build && cmake --build ./platforms/ESP8266/build --target clean
 	-test -d ./sdk/OpenECR6600 && cd sdk/OpenECR6600 && make BOARD_DIR=$(ECRDIR)/Boards/ecr6600/standalone APP_NAME=OpenBeken TOPDIR=$(ECRDIR) GCC_PATH=$(ECRDIR)/tool/nds32le-elf-mculib-v3s/bin/ clean
+	-test -d ./sdk/OpenBL602 && $(MAKE) -C sdk/OpenBL602/customer_app/bl602_sharedApp USER_SW_VER=$(APP_VERSION) OBK_VARIANT=$(OBK_VARIANT) CONFIG_CHIP_NAME=BL602
+	-test -d ./platforms/BL616/build && $(MAKE) -C ./platforms/BL616 clean
 	-test -d ./sdk/OpenBK7231T && $(MAKE) -C sdk/OpenBK7231T/platforms/bk7231t/bk7231t_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
 	-test -d ./sdk/OpenBK7231N && $(MAKE) -C sdk/OpenBK7231N/platforms/bk7231n/bk7231n_os APP_BIN_NAME=$(APP_NAME) USER_SW_VER=$(APP_VERSION) clean
 	-$(RM) -r $(BUILD_DIR)
