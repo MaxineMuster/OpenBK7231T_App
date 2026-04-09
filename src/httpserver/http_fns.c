@@ -1473,10 +1473,10 @@ int http_fn_cfg_wifi(http_request_t* request) {
 	if(bChanged) {
 		poststr(request,"<h4> Device will reconnect after restarting</h4>");
 	}*/
+#if ENABLE_WPA_AP
 	poststr(request, "<script>byID=e=>document.getElementById(e);"
 			"function verify(){"
 			"v=byID('wfm').value;"
-#if ENABLE_WPA_AP
 			"txt='',"
 			"v!=1&&("
 				"ts=byID(v<1?'ssid':'SSIDAP').value,"
@@ -1491,41 +1491,22 @@ int http_fn_cfg_wifi(http_request_t* request) {
 			"`<option id='w${i}'value='${i}' ${i==e?'selected':''}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');"
 			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c?'selected':''}>${i+1}</option>`).join('');"
 			"shows(e)},");
-#else
-			"return confirm('Are you sure'+['? Please double-check SSID and password.',' to convert module to an Open Accesspoint?'][v])};"
-			"shows=s=>{e=byID('wifi0');e.style.display=0==s?'block':'none';e.disabled=s!=0};"
-			"setup=(e,c)=>{byID('wfm').innerHTML=['WiFi Client','Open Accesspoint'].map((v,i)=>"
-			"`<option id='w${i}'value='${i}' ${i==e?'selected':''}>${v}</option>`).join('');"
-			"byID('APchan').innerHTML=[...Array(14)].map((_,i)=>`<option value='${i+1}'${i+1==c?'selected':''}>${i+1}</option>`).join('');"
-			"shows(e)},");
-#endif
-			// a bit "hacky" to generate the option list, select the actual maoe and hide the others
-			//['WiFi Client','Open AP','WPA AP'].map((v,i)=>`<option id='w${i}' value='${i}' ${i==1 &&'selected'}>${v}</option>`).join('').replace(/AP/g,'Accesspoint');
-			// will generate (for e==1 to set the selected option)
-			// <option id='w0' value=0>WiFi Client</option> <option id='w1' value=1 selected>Open Accesspoint</option> <option id='w2' value=2>WPA Accesspoint</option>
 	hprintf255(request,"window.addEventListener('load',()=>setup(%i,%i));</script>",g_WifiMode,CFG_GetAP_channel());
 	poststr(request, "<h2>WiFi configuration</h2><form action='cfg_wifi' id='scanform'></form>"
 		"<form action=\"/cfg_wifi_set\">"
 		"Set WiFi mode <select style='width:unset' name='wfm' id='wfm' onchange='shows(this.value);'></select>"
 		" AP Channel: <select style='width:unset' name='APchan' id='APchan'></select>");
-#if ENABLE_WPA_AP
 	poststr(request, "<fieldset id='wifi2'>");
 	hprintf255(request, "AP SSID:<br><input id='SSIDAP' name='SSIDAP' value='%s'>",CFG_GetAP_SSID());
 	hprintf255(request, "AP passphrase:<br><input id='PWAP' name='PWAP' value='%s'>",CFG_GetAP_Pass());
-//	add_label_text_field(request, "AP SSID", "SSIDAP", CFG_GetAP_SSID(), "");
-//	add_label_text_field(request, "AP passphrase", "PWAP", CFG_GetAP_Pass(), "");
 	poststr(request, "</fieldset>");
-/*
-	poststr(request, "<fieldset id='wifi2'><input type=\"hidden\" name=\"WPA-AP\" value=\"1\">\
-APs SSID:<br><input name=\"SSIDAP\" id=\"SSIDAP\">\
-APs passphrase:<br><input name=\"PWAP\" id=\"PWAP\">\
-</fieldset>");
-*/
+	poststr(request, "<fieldset id='wifi0'><h2> Check networks reachable by module</h2> This will take a few seconds<br>");
+#else
+	poststr(request, "<h2> Check networks reachable by module</h2> This will take a few seconds<br>");
 #endif
-	poststr(request, "<fieldset id='wifi0'><h2>Check networks reachable by module</h2>This will take a few seconds<br>");
+
 	if (http_getArg(request->url, "scan", tmpA, sizeof(tmpA))) {
 #ifdef WINDOWS
-
 		poststr(request, "Not available on Windows<br>");
 #elif PLATFORM_BL602 && !PLATFORM_BL_NEW
                wifi_mgmr_ap_item_t *ap_info;
@@ -1680,8 +1661,21 @@ APs passphrase:<br><input name=\"PWAP\" id=\"PWAP\">\
 		hprintf255(request, "TODO %s<br>", PLATFORM_MCU_NAME);
 #endif
 	}
+#if ENABLE_WPA_AP
 	poststr(request, "<input type='hidden' name='scan' value='1' form='scanform'>"
 		"<input type='submit' value='Scan Local Networks'  form='scanform'>");
+#else
+	poststr(request, "<form action=\"/cfg_wifi\">\
+<input type=\"hidden\" id=\"scan\" name=\"scan\" value=\"1\">\
+<input type=\"submit\" value=\"Scan Local Networks\">\
+</form>");
+	poststr_h4(request, "Use this to disconnect from your WiFi");
+	poststr(request, "<form action=\"/cfg_wifi_set\">\
+<input type=\"hidden\" id=\"open\" name=\"open\" value=\"1\">\
+<input type=\"submit\" value=\"Convert to Open Access WiFi\" onclick=\"return confirm('Are you sure you want to switch to open access WiFi?')\">\
+</form>");
+#endif
+
 	poststr_h2(request, "Use this to connect to your WiFi");
 	add_label_text_field(request, "SSID", "ssid", CFG_GetWiFiSSID(), "");
 	add_label_password_field(request, "", "pass", CFG_GetWiFiPass(), "<br>Password<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span>");
@@ -1697,13 +1691,25 @@ APs passphrase:<br><input name=\"PWAP\" id=\"PWAP\">\
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
 	poststr(request, "<p>Enabling web authentication will protect this web interface and API using basic HTTP authentication. Username is always <b>admin</b>.</p>");
+#if ENABLE_WPA_AP
 	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_PW_en\" id=\"web_PW_en\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
 	poststr(request, "<label for=\"web_PW_en\">Enable web authentication</label>");
 	add_label_password_field(request, "Admin Password", "web_PW", CFG_GetWebPassword(), "");
+#else
+	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_admin_password_enabled\" id=\"web_admin_password_enabled\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
+	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label></div>");
+	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
 #endif
+#endif
+#if ENABLE_WPA_AP
 	poststr(request, "<br><br>\
 <input type=\"submit\" value=\"Submit\" onclick=\"verify()\">\
 </form>");
+#else
+	poststr(request, "<br><br>\
+<input type=\"submit\" value=\"Submit\" onclick=\"return confirm('Are you sure? Please double-check SSID and password.')\">\
+</form>");
+#endif
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
 	http_html_end(request);
 	poststr(request, NULL);
@@ -1752,20 +1758,20 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	char tmpA[128];
 	int bChanged;
 #if ENABLE_WPA_AP
-	char ssid[32],pw[32];
+	short newwm=1, wmok=0;
+	bool ChanChange=0;
 #endif
 
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_wifi_set ");
 	bChanged = 0;
-	bool ChanChange=0;
-	short newwm=1, wmok=0;
 
 	http_setup(request, httpMimeTypeHTML);
+	http_html_start(request, "Saving Wifi");
+
+#if ENABLE_WPA_AP
 	if (http_getArg(request->url, "wfm", tmpA, sizeof(tmpA))) {
 		newwm = (short)atoi(tmpA);
 		bChanged = (newwm!=g_WifiMode);
-//		g_WifiMode = newwm;
-//		addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "wfm=%s (as int %i)\r\n",tmpA,newwm);
 	}
 	if (http_getArg(request->url, "APchan", tmpA, sizeof(tmpA))) {
 		byte oldchan, newchan;
@@ -1777,7 +1783,6 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (newwm==1) {
 		wmok=1;
 	}
-#if ENABLE_WPA_AP
 	else if (newwm==2) {
 		int testforboth=0, s;
 		if ( (s = http_getArg(request->url, "SSIDAP", tmpA, sizeof(tmpA))) ) {
@@ -1798,10 +1803,8 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		}
 		if (testforboth==2){
 			wmok=1;
-//			poststr(request, "WiFi mode set to access point.");
 		}
 	}
-#endif
 	else if (newwm==0) {
 		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {
 			bChanged |= CFG_SetWiFiSSID(tmpA);
@@ -1809,7 +1812,6 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		if (http_getArg(request->url, "pass", tmpA, sizeof(tmpA))) {
 			bChanged |= CFG_SetWiFiPass(tmpA);
 		}
-//		poststr(request, "WiFi mode set: connect to WLAN.");
 		if (bChanged) HAL_DisableEnhancedFastConnect();
 		if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
 			bChanged |= CFG_SetWiFiSSID2(tmpA);
@@ -1817,9 +1819,9 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
 			bChanged |= CFG_SetWiFiPass2(tmpA);
 		}
-		if (bChanged) wmok=1;	// (re-)start as STA client in case we changed to STA or changed credentials!
+		if (bChanged) wmok=1;
 	}
-	if (wmok) {	// the new mode is ok, so we change
+	if (wmok) {
 		bChanged |= CFG_SetWifiMode(newwm);
 		g_WifiMode = newwm;
 		poststr(request, "WiFi mode: ");
@@ -1830,7 +1832,32 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		hprintf255(request, "AP channel changed to %i. Restarting AP.",CFG_GetAP_channel());
 		g_WifiStartConnect = 2;
 	}
+#else
+	if (http_getArg(request->url, "open", tmpA, sizeof(tmpA))) {
+		bChanged |= CFG_SetWiFiSSID("");
+		bChanged |= CFG_SetWiFiPass("");
+		poststr(request, "WiFi mode set: open access point.");
+	}
+	else {
+		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {
+			bChanged |= CFG_SetWiFiSSID(tmpA);
+		}
+		if (http_getArg(request->url, "pass", tmpA, sizeof(tmpA))) {
+			bChanged |= CFG_SetWiFiPass(tmpA);
+		}
+		poststr(request, "WiFi mode set: connect to WLAN.");
+		if(bChanged) HAL_DisableEnhancedFastConnect();
+	}
+	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
+		bChanged |= CFG_SetWiFiSSID2(tmpA);
+	}
+	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
+		bChanged |= CFG_SetWiFiPass2(tmpA);
+	}
+#endif
+
 #if ALLOW_WEB_PASSWORD
+#if ENABLE_WPA_AP
 	if (http_getArg(request->url, "web_PW_en", tmpA, sizeof(tmpA))) {
 		int web_password_enabled = atoi(tmpA);
 		if (web_password_enabled > 0 && http_getArg(request->url, "web_PW", tmpA, sizeof(tmpA))) {
@@ -1844,14 +1871,34 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	} else {
 		CFG_SetWebPassword("");
 	}
+#else
+	if (http_getArg(request->url, "web_admin_password_enabled", tmpA, sizeof(tmpA))) {
+		int web_password_enabled = atoi(tmpA);
+		if (web_password_enabled > 0 && http_getArg(request->url, "web_admin_password", tmpA, sizeof(tmpA))) {
+			if (strlen(tmpA) < 5) {
+				poststr_h4(request, "Web password needs to be at least 5 characters long!");
+			} else {
+				poststr(request, "<p>Web password has been changed.</p>");
+				CFG_SetWebPassword(tmpA);
+			}
+		}
+	} else {
+		CFG_SetWebPassword("");
+	}
 #endif
+#endif
+
 	CFG_Save_SetupTimer();
 	if (bChanged == 0) {
 		poststr(request, "<p>WiFi: No changes detected.</p>");
 	}
 	else {
+#if ENABLE_WPA_AP
 		poststr(request, "<p>WiFi: Settings changed ...</p>");
-	//	RESET_ScheduleModuleReset(3);
+#else
+		poststr(request, "<p>WiFi: Please wait for module to reset...</p>");
+		RESET_ScheduleModuleReset(3);
+#endif
 	}
 	poststr(request, "<br><a href=\"cfg_wifi\">Return to WiFi settings</a><br>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);
@@ -1859,7 +1906,6 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	poststr(request, NULL);
 	return 0;
 }
-
 int http_fn_cfg_loglevel_set(http_request_t* request) {
 	char tmpA[128];
 	addLogAdv(LOG_INFO, LOG_FEATURE_HTTP, "HTTP_ProcessPacket: generating cfg_loglevel_set ");
