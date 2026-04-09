@@ -7,12 +7,14 @@
 #ifndef MACSTR
 #define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
 #endif
-#include <stdint.h>
-extern uint8_t HAL_AP_Wifi_Channel; 	// defined and inintialized in hal_wifi_generic.c
-#if ENABLE_WPA_AP
-extern char g_HAL_AP_Wifi_SSID[64]; 	// defined and inintialized in hal_wifi_generic.c
-//const char* HAL_GetAPSSID();
+#ifndef AP_STA_CLIENTS
+#define AP_STA_CLIENTS 3
 #endif
+#include "../new_common.h"
+
+#include <stdint.h>
+//extern uint8_t HAL_AP_Wifi_Channel; 	// defined and inintialized in hal_wifi_generic.c
+// let's use (existing) g_wifi_channel - we can only be AP or STA, so we can share it ...
 
 typedef enum HALWifiStatus {
 	WIFI_UNDEFINED,

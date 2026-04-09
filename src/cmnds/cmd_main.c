@@ -657,7 +657,7 @@ static commandResult_t CMD_SetStartValue(const void* context, const char* cmd, c
 }
 static commandResult_t CMD_OpenAP(const void* context, const char* cmd, const char* args, int cmdFlags) {
 
-	g_openAP = 5;
+	g_WifiMode = 1;
 
 	return CMD_RES_OK;
 }
@@ -671,9 +671,10 @@ static commandResult_t CMD_WPA_AP(const void* context, const char* cmd, const ch
 	char *ssid = Tokenizer_GetArg(0);
 	char *pw = Tokenizer_GetArg(1);
 		
-	HAL_AP_Wifi_Channel = (uint8_t)Tokenizer_GetArgIntegerDefault(2,1);
-	snprintf(g_HAL_AP_Wifi_SSID, sizeof(g_HAL_AP_Wifi_SSID), "%s", ssid);
-	g_AccessPointMode = 2;	// make sure, we don't try to connect as STA client!
+	g_wifi_channel = (uint8_t)Tokenizer_GetArgIntegerDefault(2,1);
+	snprintf(g_AP_Wifi_SSID, sizeof(g_AP_Wifi_SSID), "%s", ssid);
+	snprintf(g_AP_Wifi_PW, sizeof(g_AP_Wifi_PW), "%s", pw);
+	g_WifiMode = 2;	// make sure, we don't try to connect as STA client!
 	HAL_DisconnectFromWifi();
 	HAL_SetupWiFiAccessPoint(ssid, pw);	
 /*

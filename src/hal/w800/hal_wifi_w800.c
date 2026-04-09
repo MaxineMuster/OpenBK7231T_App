@@ -15,7 +15,7 @@ static void (*g_wifiStatusCallback)(int code);
 // lenght of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 // is (Open-) Access point or a client?
-// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
 
@@ -112,7 +112,7 @@ void HAL_PrintNetworkInfo()
 				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
 				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
 //				 ip, gw, netmask, macstr, dns );
-				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_AccessPointMode == 0? dns :"-" );
+				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_WifiMode == 0? dns :"-" );
 				 				 
 	bk_printf(buffer);
 	// do we need this in web Log?
@@ -388,7 +388,7 @@ int demo_create_softap(u8* ssid, u8* key, int chan, int encrypt, int format)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-	demo_create_softap(ssid, "", HAL_AP_Wifi_Channel, 0, 1);
+	demo_create_softap((u8*)ssid, "", g_wifi_channel, 0, 1);
 
 	// dhcp_server_start(0);
 	// dhcp_server_stop(void);
@@ -396,9 +396,9 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	return 0;
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
-
 	if ( key && strlen(key) < 8){
 		printf("ERROR! key(%s) needs to be at least 8 characters!\r\n", key);
 		if (g_wifiStatusCallback != 0) {
@@ -409,12 +409,10 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 
 	// int demo_create_softap(u8 *ssid, u8 *key, int chan, int encrypt, int format)  		format: key's format: 0-HEX, 1-ASCII
-	demo_create_softap(ssid, key, HAL_AP_Wifi_Channel, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
-
-	// dhcp_server_start(0);
-	// dhcp_server_stop(void);
-
+	demo_create_softap((u8*)ssid, (u8*)key, g_wifi_channel, IEEE80211_ENCRYT_CCMP_WPA2, 1);	// tls_softap_info_t has no "AUTO", only tls_ibss_info_t ...
 	return 0;
 }
+#endif	// #if ENABLE_WPA_AP
+
 
 #endif
