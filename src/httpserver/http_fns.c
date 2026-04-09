@@ -1686,20 +1686,16 @@ int http_fn_cfg_wifi(http_request_t* request) {
 #endif
 	add_label_text_field(request, "SSID2", "ssid2", CFG_GetWiFiSSID2(), "");
 	add_label_password_field(request, "", "pass2", CFG_GetWiFiPass2(), "<br>Password2<span  style=\"float:right;\"><input type=\"checkbox\" onclick=\"e=getElement('pass2');if(this.checked){e.type='text'}else e.type='password'\" > enable clear text password</span>");
+#if ENABLE_WPA_AP
 	poststr(request, "</fieldset>");
+#endif
 #if ALLOW_WEB_PASSWORD
 	int web_password_enabled = strcmp(CFG_GetWebPassword(), "") == 0 ? 0 : 1;
 	poststr_h2(request, "Web Authentication");
 	poststr(request, "<p>Enabling web authentication will protect this web interface and API using basic HTTP authentication. Username is always <b>admin</b>.</p>");
-#if ENABLE_WPA_AP
 	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_PW_en\" id=\"web_PW_en\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
 	poststr(request, "<label for=\"web_PW_en\">Enable web authentication</label>");
 	add_label_password_field(request, "Admin Password", "web_PW", CFG_GetWebPassword(), "");
-#else
-	hprintf255(request, "<div><input type=\"checkbox\" name=\"web_admin_password_enabled\" id=\"web_admin_password_enabled\" value=\"1\"%s>", (web_password_enabled > 0 ? " checked" : ""));
-	poststr(request, "<label for=\"web_admin_password_enabled\">Enable web authentication</label></div>");
-	add_label_password_field(request, "Admin Password", "web_admin_password", CFG_GetWebPassword(), "");
-#endif
 #endif
 #if ENABLE_WPA_AP
 	poststr(request, "<br><br>\
@@ -1857,7 +1853,6 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 #endif
 
 #if ALLOW_WEB_PASSWORD
-#if ENABLE_WPA_AP
 	if (http_getArg(request->url, "web_PW_en", tmpA, sizeof(tmpA))) {
 		int web_password_enabled = atoi(tmpA);
 		if (web_password_enabled > 0 && http_getArg(request->url, "web_PW", tmpA, sizeof(tmpA))) {
@@ -1871,21 +1866,6 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	} else {
 		CFG_SetWebPassword("");
 	}
-#else
-	if (http_getArg(request->url, "web_admin_password_enabled", tmpA, sizeof(tmpA))) {
-		int web_password_enabled = atoi(tmpA);
-		if (web_password_enabled > 0 && http_getArg(request->url, "web_admin_password", tmpA, sizeof(tmpA))) {
-			if (strlen(tmpA) < 5) {
-				poststr_h4(request, "Web password needs to be at least 5 characters long!");
-			} else {
-				poststr(request, "<p>Web password has been changed.</p>");
-				CFG_SetWebPassword(tmpA);
-			}
-		}
-	} else {
-		CFG_SetWebPassword("");
-	}
-#endif
 #endif
 
 	CFG_Save_SetupTimer();
