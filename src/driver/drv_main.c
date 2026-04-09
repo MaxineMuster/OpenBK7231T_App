@@ -11,6 +11,7 @@
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
 #include "drv_public.h"
+#include "drv_mdns.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
@@ -21,6 +22,7 @@
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_DCF77.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -75,6 +77,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_ROOMBA
+	//drvdetail:{"name":"Roomba",
+	//drvdetail:"title":"Roomba",
+	//drvdetail:"descr":"Roomba OI Driver",
+	//drvdetail:"requires":""}
+	{ "Roomba",                                 // Driver Name
+	Roomba_Init,                                // Init
+	Roomba_RunEverySecond,                      // onEverySecond
+	Roomba_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	Roomba_OnQuickTick,                         // runQuickTick
+	NULL,                                       // stopFunction
+	NULL,                                       // onChannelChanged
+	Roomba_OnHassDiscovery,                     // onHassDiscovery
+	false,                                      // loaded
 	},
 #endif
 #ifdef ENABLE_DRIVER_GIRIERMCU
@@ -136,6 +154,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	Freeze_RunFrame,                         // runQuickTick
 	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_ESPHOME_API
+	//drvdetail:{"name":"ESPHomeAPI",
+	//drvdetail:"title":"ESPHome Protocol Bridge",
+	//drvdetail:"descr":"Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
+	//drvdetail:"requires":"BT Proxy"}
+	{ "ESPHomeAPI",                          // Driver Name
+	DRV_ESPHome_API_Init,                    // Init
+	DRV_ESPHome_API_OnEverySecond,           // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_ESPHome_API_Deinit,                  // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -360,6 +394,22 @@ static driver_t g_drivers[] = {
    	DS3231_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
    	NULL,                                    // runQuickTick
    	DS3231_Stop,                             // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_DCF77
+	//drvdetail:{"name":"DSCF77",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Decoding DCF77 signal (german radio time source sending near Frankfurt Main, Germany)",
+	//drvdetail:"requires":""}
+	{ "DCF77",                              // Driver Name
+   	DCF77_Init,                              // Init
+   	DCF77_OnEverySecond,                     // onEverySecond
+   	DCF77_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+   	DCF77_QuickTick,                         // runQuickTick
+   	DCF77_Stop,                              // stopFunction
    	NULL,                                    // onChannelChanged
    	NULL,                                    // onHassDiscovery
    	false,                                   // loaded
@@ -824,6 +874,22 @@ static driver_t g_drivers[] = {
 	DRV_DDP_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
 	DRV_DDP_RunFrame,                        // runQuickTick
 	DRV_DDP_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_MDNS
+	//drvdetail:{"name":"MDNS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
+	//drvdetail:"requires":""}
+	{ "MDNS",                                // Driver Name
+	DRV_MDNS_Init,                           // Init
+	DRV_MDNS_RunEverySecond,                 // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_MDNS_RunQuickTick,                   // runQuickTick
+	DRV_MDNS_Shutdown,                       // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -1591,28 +1657,29 @@ void DRV_StartDriver(const char* name) {
 #if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
 			twinrunning=false;
 			if (!stricmp("DS1820", name) && DRV_IsRunning("DS1820_FULL")){
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.\n", name);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.", name);
 				twinrunning=true;
 				break;
 			}
 			if (!stricmp("DS1820_FULL", name) && DRV_IsRunning("DS1820")){
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.\n", name);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.", name);
 				twinrunning=true;
 				break;
 			}
 #endif
 			if (g_drivers[i].bLoaded) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.", name);
 				bStarted = 1;
 				break;
 
 			}
 			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Starting %s.", name);
 				if (g_drivers[i].initFunc) {
 					g_drivers[i].initFunc();
 				}
 				g_drivers[i].bLoaded = true;
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.", name);
 				bStarted = 1;
 				break;
 			}
@@ -1623,7 +1690,7 @@ void DRV_StartDriver(const char* name) {
 #else
 	if (!bStarted) {
 #endif
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.\n", name);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.", name);
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Available drivers: ");
 		for (i = 0; i < g_numDrivers; i++) {
 			if (i == 0) {

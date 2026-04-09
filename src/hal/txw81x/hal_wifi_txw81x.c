@@ -16,7 +16,7 @@
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
 // is (Open-) Access point or a client?
-// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
 struct system_status sys_status;
@@ -62,20 +62,20 @@ void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : ["MACSTR"] %-6s  |\r\n", MAC2STR(mac), "");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |", g_WifiMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |", HAL_GetWifiStrength());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |", HAL_GetMyIPString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |", HAL_GetMyMaskString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |", HAL_GetMyGatewayString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : ["MACSTR"] %-6s  |", MAC2STR(mac), "");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+");
 }
 
 int HAL_GetWifiStrength()
 {
 	struct ieee80211_stainfo stainfo;
-	if(g_AccessPointMode==0) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
+	if(g_WifiMode==0) ieee80211_conf_get_stainfo(WIFI_MODE_STA, 0, NULL, &stainfo);
 	return stainfo.rssi;
 }
 
@@ -374,6 +374,7 @@ void HAL_DisconnectFromWifi()
 	}
 }
 
+#if ENABLE_WPA_AP
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 	int32 ret;
@@ -478,17 +479,18 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		dns_start_eloop("w0");
 	}
 	if (! key || key[0] == 0){
-		wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, HAL_AP_Wifi_Channel);
+		wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, g_wifi_channel);
 	} else {
-		wifi_create_ap(ssid, key, WPA_KEY_MGMT_PSK, HAL_AP_Wifi_Channel);
+		wifi_create_ap(ssid, key, WPA_KEY_MGMT_PSK, g_wifi_channel);
 	}
 	ieee80211_iface_start(WIFI_MODE_AP);
 }
-
+#endif
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-/*	int32 ret;
+#if !ENABLE_WPA_AP
+	int32 ret;
 	os_sprintf(sys_cfgs.ssid, "%s", ssid);
 	void* ops;
 	struct lmac_init_param lparam;
@@ -590,11 +592,11 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 		dns_start_eloop("w0");
 	}
 
-	wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, HAL_AP_Wifi_Channel);
+	wifi_create_ap(ssid, NULL, WPA_KEY_MGMT_NONE, g_wifi_channel);
 	ieee80211_iface_start(WIFI_MODE_AP);
-*/
+#else
 	return HAL_SetupWiFiAccessPoint(ssid, NULL);
-
+#endif
 }
 
 #endif // PLATFORM_TXW81X

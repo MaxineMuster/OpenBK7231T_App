@@ -382,7 +382,7 @@ void addLogAdv(int level, int feature, const char* fmt, ...)
 	tmp[len++] = '\n';
 	tmp[len] = '\0';
 #if WINDOWS
-	printf(tmp);
+	printf("%s", tmp);
 #endif
 	// This is used by HTTP console
 	if (g_log_alsoPrintToHTTP) {
@@ -581,7 +581,11 @@ void startSerialLog() {
 	err = rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
 		"log_serial",
 		(beken_thread_function_t)log_serial_thread,
+#if PLATFORM_BL_NEW
+		0x1000,
+#else
 		0x800,
+#endif
 		(beken_thread_arg_t)0);
 	if (err != kNoErr)
 	{

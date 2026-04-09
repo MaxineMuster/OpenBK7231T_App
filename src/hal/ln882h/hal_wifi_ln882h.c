@@ -1,5 +1,8 @@
 #if PLATFORM_LN882H || PLATFORM_LN8825
 
+#include "../../logging/logging.h"
+#include "../../new_cfg.h"
+#include "../../new_pins.h"
 #include "../hal_wifi.h"
 #include "wifi.h"
 #include "dhcp.h"
@@ -41,6 +44,8 @@
 #else
 #include "wifi_port.h"
 #include "ln_wifi_err.h"
+#include "ln_kv_api.h"
+static obkFastConnectData_t fcdata = { 0 };
 #endif
 
 
@@ -65,10 +70,10 @@ void alert_log(const char *format, ...) {
 // length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 // is (Open-) Access point or a client?
-// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
-static uint8_t psk_value[40]      = {0x0};
+static uint8_t* psk_value = NULL;
 
 
 struct netif* get_connected_nif() {
@@ -261,17 +266,38 @@ static void wifi_connected_cb(void* arg)
     {
         g_wifiStatusCallback(WIFI_STA_CONNECTED);
     }
+#if PLATFORM_LN882H
+    if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT))
+    {
+        const char* ssid = NULL;
+        const uint8_t* bssid = NULL;
+        uint8_t chan = 0;
+        wifi_get_sta_conn_info(&ssid, &bssid);
+        HAL_GetWiFiChannel(&chan);
+
+        if((psk_value && memcmp(psk_value, fcdata.psk, sizeof(fcdata.psk)) != 0) ||
+            memcmp(fcdata.bssid, bssid, 6) != 0 ||
+            chan != fcdata.channel)
+        {
+            ADDLOG_INFO(LOG_FEATURE_GENERAL, "Saved fast connect data differ to current one, saving...");
+            memcpy(fcdata.bssid, bssid, 6);
+            fcdata.channel = chan;
+            memcpy(fcdata.psk, psk_value, sizeof(fcdata.psk));
+            ln_kv_set("fcdata", &fcdata, sizeof(obkFastConnectData_t));
+        }
+    }
+#endif
 }
 
-void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
+void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip, uint8_t chan, uint8_t* bssid, uint8_t* psk)
 {
 #if PLATFORM_LN882H
     sta_ps_mode_t ps_mode = PM_WIFI_DEFAULT_PS_MODE;
 	wifi_sta_connect_t connect = {
 		.ssid    = oob_ssid,
 		.pwd     = connect_key,
-		.bssid   = NULL,
-		.psk_value = NULL,
+		.bssid   = bssid,
+		.psk_value = psk,
 	};
 #else
     wifi_config_t connect = { 0 };
@@ -285,7 +311,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 #endif
 //	wifi_manager_set_ap_list_sort_rule(1);
 	wifi_scan_cfg_t scan_cfg = {
-        .channel   = 0,
+        .channel   = chan,
         .scan_type = WIFI_SCAN_TYPE_ACTIVE,
         .scan_time = 20,
 	};
@@ -339,11 +365,16 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
         LOG(LOG_LVL_ERROR, "[%s]wifi sta start failed!!!\r\n", __func__);
     }
 
-    connect.psk_value = NULL;
-    if (strlen(connect.pwd) != 0) {
-        if (0 == ln_psk_calc(connect.ssid, connect.pwd, psk_value, sizeof (psk_value))) {
-            connect.psk_value = psk_value;
-            hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
+    if(connect.psk_value == NULL)
+    {
+        if(strlen(connect.pwd) != 0)
+        {
+            if(!psk_value) psk_value = os_malloc(40);
+            if(0 == ln_psk_calc(connect.ssid, connect.pwd, psk_value, 40))
+            {
+                connect.psk_value = psk_value;
+                hexdump(LOG_LVL_INFO, "psk value ", psk_value, 40);
+            }
         }
     }
 #endif
@@ -392,8 +423,8 @@ void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticI
 {
     alert_log("HAL_ConnectToWiFi");
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-	wifi_init_sta(oob_ssid, connect_key, ip);
+//	g_WifiMode = 0; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+	wifi_init_sta(oob_ssid, connect_key, ip, 0, NULL, NULL);
 }
 
 void HAL_DisconnectFromWifi()
@@ -403,10 +434,6 @@ void HAL_DisconnectFromWifi()
         g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
     }
 }
-
-#ifndef AP_STA_CLIENTS
-#define AP_STA_CLIENTS 3
-#endif
 
 #if PLATFORM_LN882H
 
@@ -460,7 +487,7 @@ void wifi_init_ap(const char* ssid, const char* key)
 		.pwd             = (! key || key[0] == 0) ? "" : key,
 		.bssid           = mac_addr,
 		.ext_cfg = {
-			.channel         = HAL_AP_Wifi_Channel,
+			.channel         = g_wifi_channel,
 			.authmode        = (! key || key[0] == 0) ? WIFI_AUTH_OPEN : WIFI_AUTH_WPA2_PSK,
 			.ssid_hidden     = 0,
 			.beacon_interval = 100,
@@ -493,55 +520,84 @@ void wifi_init_ap(const char* ssid, const char* key)
     }
 }
 
+
+#if ENABLE_WPA_AP
+int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+{
+	bool s = (ssid[0] != 0);
+	bool k = (!key || strlen(key) >= 8);
+	if (s && k) {
+		int tries=0;
+		if (key) alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
+		else alert_log("Starting open AP: %s", ssid);
+		wifi_init_ap(ssid,key);
+		alert_log("AP started, waiting for: netdev_got_ip()");
+		while (!netdev_got_ip() && ++tries < 5) {
+			OS_MsDelay(1000);
+		}
+		if (tries < 5){
+			alert_log("AP started OK!");
+			return WIFI_ERR_NONE;
+		}
+		alert_log("AP start failed!");
+		return WIFI_ERR_TIMEOUT;
+	}
+
+	if (!s) {
+	    alert_log("ERROR: empty SSID!!\r\n");
+	}
+	if (!k) {
+	    alert_log("ERROR: Password minimum is 8 characters!\r\n");
+	}
+
+	if (g_wifiStatusCallback != 0) {
+	    g_wifiStatusCallback(WIFI_AP_FAILED);
+	}
+	return WIFI_ERR_INVALID_PARAM;
+}
+#endif
+
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
+#if !ENABLE_WPA_AP
 	alert_log("Starting open AP: %s", ssid);
 	wifi_init_ap(ssid,NULL);
 
 	alert_log("AP started, waiting for: netdev_got_ip()");
-    while (!netdev_got_ip()) {
-        OS_MsDelay(1000);
-    }
-
-	alert_log("AP started OK!");
-// set in user_main - included as "extern"
-//	g_AccessPointMode = 1; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-
+	int tries=0;
+	while (!netdev_got_ip() && ++tries < 5) {
+		OS_MsDelay(1000);
+	}
+	if (tries < 5) alert_log("AP started OK!");
+	else alert_log("AP start failed!");
 	return 0;
+#else
+	HAL_SetupWiFiAccessPoint(ssid, NULL);
+#endif
 }
 
-int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
-	alert_log("Starting WPA2 AP: ssid=%s - PW=%s", ssid,key);
-	if (ssid[0] == 0) {
-		alert_log("Error: empty SSID!!\r\n");
-	        if (g_wifiStatusCallback != NULL) {
-		    g_wifiStatusCallback(WIFI_AP_FAILED);
-		}
-		return WIFI_ERR_INVALID_PARAM;
-	}
-	if (key[0] == 0 || strlen(key) < 8) {
-		alert_log("Error: Password minimum is 8 characters!!\r\n");
-	        if (g_wifiStatusCallback != NULL) {
-		    g_wifiStatusCallback(WIFI_AP_FAILED);
-		}
-		return WIFI_ERR_INVALID_PARAM;
-	}
-	 
-	wifi_init_ap(ssid,key);
-	int tmp;
-	wifi_softap_get_max_supp_sta_num(&tmp);
-
-	alert_log("AP started for %i clients, waiting for: netdev_got_ip()",tmp);
-    while (!netdev_got_ip()) {
-        OS_MsDelay(1000);
+    if(ln_kv_has_key("fcdata") == LN_FALSE)
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "Fast connect data is empty, connecting normally");
+        HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+        return;
     }
+    size_t len = 0;
+    ln_kv_get("fcdata", &fcdata, sizeof(obkFastConnectData_t), &len);
+    if(len == sizeof(obkFastConnectData_t))
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "We have fast connection data, connecting...");
+        wifi_init_sta(oob_ssid, connect_key, ip, fcdata.channel, (uint8_t*)&fcdata.bssid, fcdata.psk);
+        return;
+    }
+    HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
 
-	alert_log("AP started OK!");
-// set in user_main - included as "extern"
-//	g_AccessPointMode = 2; 	// 0 = STA	1 = OpenAP	2 = WAP-AP 
-
-	return 0;
+void HAL_DisableEnhancedFastConnect()
+{
+    ln_kv_del("fcdata");
 }
 
 #else

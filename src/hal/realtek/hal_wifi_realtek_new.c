@@ -33,7 +33,7 @@ bool g_STA_static_IP = 0;
 
 static void (*g_wifiStatusCallback)(int code) = NULL;
 // is (Open-) Access point or a client?
-// included as "extern uint8_t g_AccessPointMode;" from new_common.h
+// included as "extern uint8_t g_WifiMode;" from new_common.h
 // initilized in user_main.c
 // values:	0 = STA	1 = OpenAP	2 = WAP-AP
 static wifi_data_t wdata = { 0 };
@@ -43,12 +43,12 @@ struct static_ip_config user_static_ip = { 0 };
 
 const char* HAL_GetMyIPString()
 {
-	return ipaddr_ntoa(&xnetif[(g_AccessPointMode>0)].ip_addr);
+	return ipaddr_ntoa(&xnetif[(g_WifiMode>0)].ip_addr);
 }
 
 const char* HAL_GetMyGatewayString()
 {
-	return ipaddr_ntoa(&xnetif[(g_AccessPointMode>0)].gw);
+	return ipaddr_ntoa(&xnetif[(g_WifiMode>0)].gw);
 }
 
 const char* HAL_GetMyDNSString()
@@ -58,7 +58,7 @@ const char* HAL_GetMyDNSString()
 
 const char* HAL_GetMyMaskString()
 {
-	return ipaddr_ntoa(&xnetif[(g_AccessPointMode>0)].netmask);
+	return ipaddr_ntoa(&xnetif[(g_WifiMode>0)].netmask);
 }
 
 int WiFI_SetMacAddress(char* mac)
@@ -83,14 +83,14 @@ void HAL_PrintNetworkInfo()
 {
 	uint8_t mac[6];
 	WiFI_GetMacAddress((char*)mac);
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+\r\n");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |\r\n", g_AccessPointMode == 0 ? "STA" : "AP");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |\r\n", HAL_GetWifiStrength());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |\r\n", HAL_GetMyIPString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |\r\n", HAL_GetMyMaskString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |\r\n", HAL_GetMyGatewayString());
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |\r\n", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
-	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+\r\n");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------- net device info ------------+");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif type    : %-16s            |", g_WifiMode == 0 ? "STA" : "AP");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif rssi    = %-16i            |", HAL_GetWifiStrength());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif ip      = %-16s            |", HAL_GetMyIPString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mask    = %-16s            |", HAL_GetMyMaskString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif gateway = %-16s            |", HAL_GetMyGatewayString());
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "|netif mac     : [%02X:%02X:%02X:%02X:%02X:%02X] %-7s |", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], "");
+	ADDLOG_DEBUG(LOG_FEATURE_GENERAL, "+--------------------------------------------+");
 }
 
 int HAL_GetWifiStrength()
@@ -208,7 +208,7 @@ void ConfigureSTA(obkStaticIP_t* ip)
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+//	g_WifiMode = 0;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strncpy((char*)&wdata.pwd, connect_key, 64);
 	
@@ -231,7 +231,7 @@ void HAL_DisconnectFromWifi()
 int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 {
 // set in user_main - included as "extern"
-//	g_AccessPointMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP  
+//	g_WifiMode = (! key || key[0] == 0) ? 1 : 2 ; 	// 0 = STA	1 = OpenAP	2 = WAP-AP  
 	rtw_mode_t mode = RTW_MODE_STA_AP;
 	struct ip_addr ipaddr;
 	struct ip_addr netmask;
@@ -247,7 +247,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 		memcpy(connect_param.password, key, strlen(key));
 		connect_param.password_len = strlen(key);
 	}
-	connect_param.channel = HAL_AP_Wifi_Channel; 
+	connect_param.channel = g_wifi_channel; 
 
 	if(wifi_start_ap(&connect_param) < 0)
 	{
@@ -265,7 +265,7 @@ int HAL_SetupWiFiAccessPoint(const char* ssid, const char* key)
 
 int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 {
-/*	g_AccessPointMode = 1;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
+/*	g_WifiMode = 1;	// 0 = STA	1 = OpenAP	2 = WAP-AP 
 	rtw_mode_t mode = RTW_MODE_STA_AP;
 	struct ip_addr ipaddr;
 	struct ip_addr netmask;
@@ -325,7 +325,7 @@ exit:
 void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
 {
 // set in user_main - included as "extern"
-//	g_AccessPointMode = 0;
+//	g_WifiMode = 0;
 	strcpy((char*)&wdata.ssid, oob_ssid);
 	strncpy((char*)&wdata.pwd, connect_key, 64);
 
