@@ -1753,7 +1753,31 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 			HAL_SetupWiFiAccessPoint(ssid, pw);
 		}
 	}
-#endif
+	else {
+		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {
+			bChanged |= CFG_SetWiFiSSID(tmpA);
+		}
+		if (http_getArg(request->url, "pass", tmpA, sizeof(tmpA))) {
+			bChanged |= CFG_SetWiFiPass(tmpA);
+		}
+//		poststr(request, "WiFi mode set: connect to WLAN.");
+		if(bChanged) HAL_DisableEnhancedFastConnect();
+//		hprintf255(request, "WiFi mode set: connect to WLAN. bChanged=%i / g_WifiMode was %i<br>",bChanged,g_WifiMode);
+		bChanged |= (g_WifiMode != 0);
+		g_WifiMode = 0;
+		hprintf255(request, "WiFi mode set: connect to WLAN. (bChanged=%i)<br>",bChanged);
+		if(bChanged) {
+			HAL_DisconnectFromWifi();
+			restartWifiIn(5);
+		}
+	}
+	if (http_getArg(request->url, "ssid2", tmpA, sizeof(tmpA))) {
+		bChanged |= CFG_SetWiFiSSID2(tmpA);
+	}
+	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
+		bChanged |= CFG_SetWiFiPass2(tmpA);
+	}
+#else
 	else {
 		if (http_getArg(request->url, "ssid", tmpA, sizeof(tmpA))) {
 			bChanged |= CFG_SetWiFiSSID(tmpA);
@@ -1770,6 +1794,7 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 	if (http_getArg(request->url, "pass2", tmpA, sizeof(tmpA))) {
 		bChanged |= CFG_SetWiFiPass2(tmpA);
 	}
+#endif
 #if ALLOW_WEB_PASSWORD
 	if (http_getArg(request->url, "web_admin_password_enabled", tmpA, sizeof(tmpA))) {
 		int web_password_enabled = atoi(tmpA);
@@ -1790,8 +1815,10 @@ int http_fn_cfg_wifi_set(http_request_t* request) {
 		poststr(request, "<p>WiFi: No changes detected.</p>");
 	}
 	else {
+#if ! ENABLE_WPA_AP
 		poststr(request, "<p>WiFi: Please wait for module to reset...</p>");
 		RESET_ScheduleModuleReset(3);
+#endif
 	}
 	poststr(request, "<br><a href=\"cfg_wifi\">Return to WiFi settings</a><br>");
 	poststr(request, htmlFooterReturnToCfgOrMainPage);

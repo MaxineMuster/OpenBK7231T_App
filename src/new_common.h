@@ -1209,6 +1209,7 @@ extern uint8_t g_WifiMode;	// 0 = STA	1 = OpenAP	2 = WAP-AP
 #if ENABLE_WPA_AP
 extern char g_AP_Wifi_SSID[64];
 extern char g_AP_Wifi_PW[64];
+void restartWifiIn(int x);
 #endif
 
 

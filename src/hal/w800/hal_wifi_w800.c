@@ -95,24 +95,45 @@ void HAL_PrintNetworkInfo()
 
 	tls_wifi_get_current_bss(&bss);
 	bss.ssid[bss.ssid_len]=0;
-
+/*
+// no need to get mode - we'll rely on g_WifiMode 
+	uint8_t mode;
+	tls_param_get(TLS_PARAM_ID_WPROTOCOL, (void* )&mode, TRUE);
+	bool isAP = mode & IEEE80211_MODE_AP;
+*/
 	struct tls_ethif* tmpethif = tls_netif_get_ethif();
 	char buffer[256];
 	char ip[16] = {0};
-	strcpy(ip, inet_ntoa(tmpethif->ip_addr));
 	char gw[16] = {0};
-	strcpy(gw, inet_ntoa(tmpethif->gw));
 	char netmask[16] = {0};
-	strcpy(netmask, inet_ntoa(tmpethif->netmask));
 	char dns[16] = {0};
-	strcpy(dns, inet_ntoa(tmpethif->dns1));
-	snprintf(buffer, 256, 	"Network info:\r\n"
+//	if(isAP){
+	if(g_WifiMode != 0){
+/*
+		strcpy(ip, inet_ntoa(netif->next->ip_addr));
+		strcpy(gw, inet_ntoa(netif->next->gw));
+		strcpy(netmask, inet_ntoa(netif->next->netmask));
+		strcpy(dns, "-");
+*/
+// just use known values we assign for AP
+		strcpy(ip, "192.168.4.1");
+		strcpy(gw, "192.168.4.1");
+		strcpy(netmask, "255.255.255.0");
+		strcpy(dns, "local.wm");
+
+	} else {
+		strcpy(ip, inet_ntoa(tmpethif->ip_addr));
+		strcpy(gw, inet_ntoa(tmpethif->gw));
+		strcpy(netmask, inet_ntoa(tmpethif->netmask));
+		strcpy(dns, inet_ntoa(tmpethif->dns1));
+	}
+	snprintf(buffer, 256, 	"Network info (g_WifiMode=%i):\r\n"
 				"\tsta:rssi=%d, SSID=%s, BSSID=" MACSTR ", channel=%d, encr=%s\r\n"
-				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",
+				"\tIP=%s, GW=%s, MASK=%s, MAC=%s, DNS=%s\r\n",g_WifiMode,
 				bss.rssi, bss.ssid, MAC2STR(bss.bssid), bss.channel, 
 				( bss.encryptype >=  IEEE80211_ENCRYT_NONE && bss.encryptype <= IEEE80211_ENCRYT_AUTO_WPA2) ? security_names[bss.encryptype] : "-",
-//				 ip, gw, netmask, macstr, dns );
-				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_WifiMode == 0? dns :"-" );
+				 ip, gw, netmask, macstr, dns );
+//				 inet_ntoa(netif->ip_addr), inet_ntoa(netif->gw), inet_ntoa(netif->netmask), macstr, g_WifiMode == 0? dns :"-" );
 				 				 
 	bk_printf(buffer);
 	// do we need this in web Log?

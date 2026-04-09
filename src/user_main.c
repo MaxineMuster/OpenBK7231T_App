@@ -135,7 +135,6 @@ void Main_ForceUnsafeInit();
 #endif
 bool g_use_wfi = DEF_USE_WFI;
 
-
 // TEMPORARY
 int ota_status = -1;
 int total_bytes = 0;
@@ -453,6 +452,14 @@ void LN882H_ApplyPowerSave(int bOn);
 static int g_SSIDactual = SSID_USE_SSID1;       // -1 not initialized,  0=SSID1 1=SSID2
 static int g_SSIDSwitchAfterTry = 3;// switch to opposite SSID after
 static int g_SSIDSwitchCnt = 0;     // switch counter
+#endif
+
+#if ENABLE_WPA_AP
+static bool forceWiFiRestart = 0;
+void restartWifiIn(int x){
+	g_connectToWiFi = x;
+	forceWiFiRestart = 1;
+}
 #endif
 
 void CheckForSSID12_Switch() {
@@ -1071,10 +1078,18 @@ void Main_OnEverySecond()
 	if (g_connectToWiFi)
 	{
 		g_connectToWiFi--;
+#if ENABLE_WPA_AP
+		if (0 == g_connectToWiFi && (g_bHasWiFiConnected == 0 || forceWiFiRestart == 1))
+		{
+			forceWiFiRestart = 0;
+			Main_ConnectToWiFiNow();
+		}
+#else
 		if (0 == g_connectToWiFi && g_bHasWiFiConnected == 0)
 		{
 			Main_ConnectToWiFiNow();
 		}
+#endif
 	}
 
 	// config save moved here because of stack size problems
