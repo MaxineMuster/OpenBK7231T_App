@@ -1532,7 +1532,9 @@ typedef struct mainConfig_s {
 	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
 	// unused_fill at offs 0x0000045E 
-	short unused_fill; // correct alignment
+//	short unused_fill; // correct alignment
+	byte AP_channel; // Channel used in AP mode
+	byte WiFi_mode;	// STA, OpenAP or WPA-AP?
 	// dgr_sendFlags at offs 0x00000460 
 	int dgr_sendFlags;
 	// dgr_recvFlags at offs 0x00000464 
@@ -1601,7 +1603,19 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBB (3259 decimal)
 	byte disable_web_server;
 	// offset 0x00000CBC (3260 decimal)
-	char unused[324];
+#if PLATFORM_BEKEN
+	obkFastConnectData_t fcdata;
+	// offset 0x00000D0C (3340 decimal)
+//	char unused[244];
+	char AP_SSID[33];
+	char AP_PASS[33];
+	char unused[178];
+#else
+//	char unused[324];
+	char AP_SSID[33];
+	char AP_PASS[33];
+	char unused[258];
+#endif
 } mainConfig_t;
 
 // one sector is 4096 so it we still have some expand possibility
