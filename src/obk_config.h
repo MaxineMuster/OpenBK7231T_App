@@ -741,7 +741,7 @@
 
 
 // if any of the drivers was defined, use xhtxx instead
-#if ENABLE_DRIVER_AHT2X || ENABLE_DRIVER_CHT83XX || ENABLE_DRIVER_SHT3X
+#if ENABLE_DRIVER_AHT2X || ENABLE_DRIVER_CHT83XX || ENABLE_DRIVER_SHT3X || PLATFORM_XRADIO
 
 #define ENABLE_DRIVER_XHTXX				1
 // disable all other drivers included in xhtxx
