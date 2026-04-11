@@ -54,18 +54,6 @@ bool isWhiteSpace(char ch) {
 		return true;
 	return false;
 }
-
-// helper testing index and writing error message
-static int __check_arg_range(int i) {
-        if (i >= g_numArgs || i < 0) {
-            ADDLOG_ERROR(LOG_FEATURE_CMD, "Index=%i g_numArgs=%i", i, g_numArgs);
-            return 1;
-        }
-        return 0;
-}
-// small wrapper macro to include caller name and return value if i is "invalid"
-#define CHECK_INDEX_AND_RET_DEFAULT(i, retval) if (__check_arg_range(i)) return (retval)
-
 bool Tokenizer_CheckArgsCountAndPrintWarning(const char *cmdString, int reqCount) {
 	if (g_numArgs >= reqCount)
 		return false;
@@ -76,12 +64,8 @@ int Tokenizer_GetArgsCount() {
 	return g_numArgs;
 }
 bool Tokenizer_IsArgInteger(int i) {
-/*	if(i >= g_numArgs || i < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD,"Tokenizer_IsArgInteger(%i) called - g_numArgs=%i",i,g_numArgs);
+	if(i >= g_numArgs)
 		return false;
-	}
-*/
-	CHECK_INDEX_AND_RET_DEFAULT(i, false);
 	if (*g_args[i] == '$') {
 		return true;
 	}
@@ -92,13 +76,9 @@ const char *Tokenizer_GetArgExpanding(int i) {
 	char tokLine[sizeof(g_argsExpanded[i])];
 	char Templine[sizeof(g_argsExpanded[i])];
 	char convert[10];
-/*
-	if (i >= g_numArgs || i < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgExpanding(%i) called - g_numArgs=%i",i,g_numArgs);
+
+	if (i >= g_numArgs)
 		return 0;
-	}
-*/
-	CHECK_INDEX_AND_RET_DEFAULT(i, NULL);
 
 	s = g_args[i];
 
@@ -217,13 +197,6 @@ const char *Tokenizer_GetArg(int i) {
 	return g_args[i];
 }
 const char *Tokenizer_GetArgFrom(int i) {
-/*
-	if (g_numArgs <= i || i < 0) {		// we really should have a safguard here
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgFrom(%i) called - g_numArgs=%i",i,g_numArgs);
-		return 0;			// value to be dicussed
-	}
-*/
-	CHECK_INDEX_AND_RET_DEFAULT(i, NULL);
 	return g_argsFrom[i];
 }
 int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
@@ -251,16 +224,10 @@ int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 int Tokenizer_GetPin(int i, int def) {
 	int r;
 
-/*
-	if (g_numArgs <= i || i < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetPin(%i) called - g_numArgs=%i",i,g_numArgs);
+	if (g_numArgs <= i) {
 //		ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i not present - Returning default index %i",i,def);
 		return def;
 	}
-*/
-	CHECK_INDEX_AND_RET_DEFAULT(i, def);
-
-
 	return Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
 //	r = Tokenizer_IsArgInteger(i) ? Tokenizer_GetArgInteger(i) : PIN_FindIndexFromString(g_args[i]);
 //	ADDLOG_DEBUG(LOG_FEATURE_CMD, "Tokenizer_GetPin: Argument %i (%s) - Returning index %i",i,g_args[i],r);
@@ -283,8 +250,6 @@ float Tokenizer_GetArgFloatDefault(int i, float def) {
 	if (i < 0 || g_numArgs <= i) {
 		return def;
 	}
-	CHECK_INDEX_AND_RET_DEFAULT(i, def);
-
 	r = Tokenizer_GetArgFloat(i);
 
 	return r;
@@ -295,6 +260,7 @@ int Tokenizer_GetArgInteger(int i) {
 	if (i < 0 || g_numArgs <= i) {
 		return 0;
 	}
+
 	s = g_args[i];
 	if (s == 0)
 		return 0;
