@@ -164,13 +164,9 @@ const char *Tokenizer_GetArgExpanding(int i) {
 const char *Tokenizer_GetArg(int i) {
 	const char *s;
 
-/*
-	if (i >= g_numArgs || i < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArg(%i) called - g_numArgs=%i",i,g_numArgs);
+	if (i < 0 || g_numArgs <= i) {
 		return 0;
 	}
-*/
-	CHECK_INDEX_AND_RET_DEFAULT(i, NULL);
 
 	if (g_argsExpanded[i][0] != 0) {
 		return g_argsExpanded[i];
@@ -232,6 +228,15 @@ const char *Tokenizer_GetArgFrom(int i) {
 }
 int Tokenizer_GetArgIntegerRange(int i, int rangeMin, int rangeMax) {
 	int ret = Tokenizer_GetArgInteger(i);
+
+//
+// to be discussed: What to return in case of an invalid index? min or max or ???
+//
+	if (i < 0 || g_numArgs <= i) {
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "Invalid argument index %i! Using minumum value %i!",i,rangeMin);
+		return rangeMin;
+	}
+
 	if(ret < rangeMin) {
 		ret = rangeMin;
 		ADDLOG_ERROR(LOG_FEATURE_CMD, "Argument %i (val=%i) was out of range [%i,%i], clamped",i,ret,rangeMax,rangeMin);
@@ -265,14 +270,9 @@ int Tokenizer_GetPin(int i, int def) {
 int Tokenizer_GetArgIntegerDefault(int i, int def) {
 	int r;
 
-/*
-	if (g_numArgs <= i || i < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgIntegerDefault(%i) called - g_numArgs=%i",i,g_numArgs);
+	if (i < 0 || g_numArgs <= i) {
 		return def;
 	}
-*/
-	CHECK_INDEX_AND_RET_DEFAULT(i, def);
-
 	r = Tokenizer_GetArgInteger(i);
 
 	return r;
@@ -280,12 +280,9 @@ int Tokenizer_GetArgIntegerDefault(int i, int def) {
 float Tokenizer_GetArgFloatDefault(int i, float def) {
 	float r;
 
-/*
-	if (g_numArgs <= i || i < 0) {
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgFloatDefault(%i) called - g_numArgs=%i",i,g_numArgs);
+	if (i < 0 || g_numArgs <= i) {
 		return def;
 	}
-*/
 	CHECK_INDEX_AND_RET_DEFAULT(i, def);
 
 	r = Tokenizer_GetArgFloat(i);
@@ -295,15 +292,9 @@ float Tokenizer_GetArgFloatDefault(int i, float def) {
 int Tokenizer_GetArgInteger(int i) {
 	const char *s;
 	int ret;
-
-/*
-	if (g_numArgs <= i || i < 0) {		// we really should have a safguard here
-		ADDLOG_ERROR(LOG_FEATURE_CMD, "Tokenizer_GetArgInteger(%i) called - g_numArgs=%i -- arg[%i]=%s",i,g_numArgs,i,g_args[i]);
-		return 0;			// value to be dicussed
+	if (i < 0 || g_numArgs <= i) {
+		return 0;
 	}
-*/
-	CHECK_INDEX_AND_RET_DEFAULT(i, 0);		// value to be discussed
-
 	s = g_args[i];
 	if (s == 0)
 		return 0;
@@ -334,6 +325,9 @@ int Tokenizer_GetArgInteger(int i) {
 	return atoi(s);
 }
 float Tokenizer_GetArgFloat(int i) {
+	if (i < 0 || g_numArgs <= i) {
+		return 0.0f;
+	}
 #if !ENABLE_EXPAND_CONSTANT
 	int channelIndex;
 #endif
