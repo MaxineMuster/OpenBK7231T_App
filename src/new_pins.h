@@ -1480,6 +1480,9 @@ typedef struct ledRemap_s {
 // We should not worry about flash memory wear in this case.
 // The saved-every-reboot values are stored elsewhere
 // (i.e. saved channel states, reboot counter?)
+
+/*
+// see commented version below
 typedef struct mainConfig_s {
 	byte ident0;
 	byte ident1;
@@ -1515,6 +1518,7 @@ typedef struct mainConfig_s {
 	// at offs 0x298 
 	char webappRoot[64];
 	// TODO?
+	// 0x2d8
 	byte mac[6];
 	// at ofs: 0x2DE
 	// NOTE: NO LONGER 4 byte aligned!!!
@@ -1526,14 +1530,32 @@ typedef struct mainConfig_s {
 	char longDeviceName[CGF_DEVICE_NAME_SIZE];
 
 	//pins at offs 0x0000033E
-	// 160 bytes
+	// pinsState_t size is PLATFORM-DEPENDENT:
+	//   D  else / default / ESP8266:               roles[32]+channels[32]+channels2[32]+channelTypes[64] = 160 bytes (0xA0)
+	//   A  W800 / BK7252 / BK7252N / XR872 / BL616: roles[48]+channels[48]+channels2[48]+channelTypes[64] = 208 bytes (0xD0)
+	//   B  ESPIDF:                                  roles[50]+channels[50]+channels2[50]+channelTypes[64] = 214 bytes (0xD6)
+	//   C  RTL8720D / RTL8721DA / RTL8720E / TXW81X: roles[64]+channels[64]+channels2[64]+channelTypes[64] = 256 bytes (0x100)
+	// All offsets AFTER this field therefore differ by platform group.
+	// The offset comments below list ALL platform variants in order D / A / B / C.
 	pinsState_t pins;
-	// startChannelValues at offs 0x000003DE
+	// startChannelValues at offs:
+	//   0x000003DE (D: else/default/ESP8266)
+	//   0x0000040E (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000414 (B: ESPIDF)
+	//   0x0000043E (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	// 64 * 2
 	short startChannelValues[CHANNEL_MAX];
-	// unused_fill at offs 0x0000045E --> use for log2lfs
-	// 0: disabled  - else: number of seconds to log (for logging at startup)
-	unsigned short log2lfs; // correct alignment
+	// unused_fill at offs 0x0000045E --> use one byte for log2lfs
+	// 0: disabled  - else: number of seconds to log (for logging at startup) + number of repetitions
+	// use log2lf % 31 for "seconds to log", log2lfs / 31 for the number of startups to folow (reduce by 31 for every start, if < 31, set to 0)
+	// 0 : don't log
+	// 1 - 30: log (once) for 1 to 30 seconds, set to 0 afterwards
+	// 31 / 62 93 ... invalid / don't log
+	// 32 - 61 : log for (log2lfs - 31) seconds during two starts --> set to (log2lfs - 31) after logging, so one log to follow 
+	// ...  
+	// after logging : log2lfs =  (log2lfs >= 31) ? (log2lfs - 31) : 0
+	uint8_t log2lfs;
+	byte unused_fill; // correct alignment
 	// dgr_sendFlags at offs 0x00000460 
 	int dgr_sendFlags;
 	// dgr_recvFlags at offs 0x00000464 
@@ -1542,6 +1564,7 @@ typedef struct mainConfig_s {
 	char dgr_name[16];
 	// at offs 0x478
 	char ntpServer[32];
+	// at offs 0x498
 	// 8 * 4 = 32 bytes
 	cfgPowerMeasurementCalibration_t cal;
 	// offs 0x000004B8
@@ -1555,7 +1578,11 @@ typedef struct mainConfig_s {
 	// offs 0x000004BB
 	byte unused_fill1;
 
-	// offset 0x000004BC
+	// offset 0x000004BC	
+
+	// CAUTION - we can't use unsigned long (8 bytes) at 0x000004BC
+	// 0x4bc = 010010111100 --> 2-Byte-aligned !
+	// we'll need 8 byte aligend --> 010011000000 (0x4c0)
 	unsigned long LFS_Size; // szie of LFS volume.  it's aligned against the end of OTA
 	int loggerFlags;
 #if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
@@ -1604,6 +1631,246 @@ typedef struct mainConfig_s {
 	// offset 0x00000CBC (3260 decimal)
 	char unused[324];
 } mainConfig_t;
+*/
+// more comments after "pins" - different size for different platforms
+typedef struct mainConfig_s {
+	byte ident0;
+	byte ident1;
+	byte ident2;
+	byte crc;
+	// 0x4
+	int version;
+	// 0x08
+	uint32_t genericFlags;
+	// 0x0C
+	uint32_t genericFlags2;
+	// 0x10
+	unsigned short changeCounter;
+	unsigned short otaCounter;
+	// 0x14
+	// target wifi credentials
+	char wifi_ssid[64];
+	// 0x54
+	char wifi_pass[64];
+	// 0x94
+	// MQTT information for Home Assistant
+	char mqtt_host[256];
+	// ofs 0x194
+	// note: #define CGF_MQTT_CLIENT_ID_SIZE			64
+	char mqtt_clientId[CGF_MQTT_CLIENT_ID_SIZE];
+	// ofs 0x1D4
+	char mqtt_userName[64];
+	// ofs 0x214
+	char mqtt_pass[128];
+	//mqtt_port at offs 0x00000294 
+	int mqtt_port;
+	// addon JavaScript panel is hosted on external server
+	// at offs 0x298 
+	char webappRoot[64];
+	// TODO?
+	// 0x2d8
+	byte mac[6];
+	// at ofs: 0x2DE
+	// NOTE: NO LONGER 4 byte aligned!!!
+	// TODO?
+	// #define CGF_SHORT_DEVICE_NAME_SIZE		32
+	char shortDeviceName[CGF_SHORT_DEVICE_NAME_SIZE];
+	// #define CGF_DEVICE_NAME_SIZE			64
+	// at ofs: 0x2FE
+	char longDeviceName[CGF_DEVICE_NAME_SIZE];
+
+	// pins at offs 0x0000033E  (all platforms: fixed, unaffected by pinsState_t variant)
+	// pinsState_t size is PLATFORM-DEPENDENT:
+	//   D  else / default / ESP8266:               roles[32]+channels[32]+channels2[32]+channelTypes[64] = 160 bytes (0xA0)
+	//   A  W800 / BK7252 / BK7252N / XR872 / BL616: roles[48]+channels[48]+channels2[48]+channelTypes[64] = 208 bytes (0xD0)
+	//   B  ESPIDF:                                  roles[50]+channels[50]+channels2[50]+channelTypes[64] = 214 bytes (0xD6)
+	//   C  RTL8720D / RTL8721DA / RTL8720E / TXW81X: roles[64]+channels[64]+channels2[64]+channelTypes[64] = 256 bytes (0x100)
+	// All offsets AFTER this field therefore differ by platform group.
+	// The offset comments below list ALL platform variants in order D / A / B / C.
+	pinsState_t pins;
+	// startChannelValues at offs:
+	//   0x000003DE (D: else/default/ESP8266)
+	//   0x0000040E (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000414 (B: ESPIDF)
+	//   0x0000043E (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// 64 * 2 = 128 bytes
+	short startChannelValues[CHANNEL_MAX];
+	// log2lfs at offs:
+	//   0x0000045E (D: else/default/ESP8266)
+	//   0x0000048E (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000494 (B: ESPIDF)
+	//   0x000004BE (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// 0: disabled  - else: number of seconds to log (for logging at startup) + number of repetitions
+	// use log2lf % 31 for "seconds to log", log2lfs / 31 for the number of startups to folow (reduce by 31 for every start, if < 31, set to 0)
+	// 0 : don't log
+	// 1 - 30: log (once) for 1 to 30 seconds, set to 0 afterwards
+	// 31 / 62 93 ... invalid / don't log
+	// 32 - 61 : log for (log2lfs - 31) seconds during two starts --> set to (log2lfs - 31) after logging, so one log to follow 
+	// ...  
+	// after logging : log2lfs =  (log2lfs >= 31) ? (log2lfs - 31) : 0
+	uint8_t log2lfs;
+	byte unused_fill; // correct alignment
+	// dgr_sendFlags at offs:
+	//   0x00000460 (D: else/default/ESP8266)
+	//   0x00000490 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000496 (B: ESPIDF)
+	//   0x000004C0 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	int dgr_sendFlags;
+	// dgr_recvFlags at offs:
+	//   0x00000464 (D: else/default/ESP8266)
+	//   0x00000494 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x0000049A (B: ESPIDF)
+	//   0x000004C4 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	int dgr_recvFlags;
+	// dgr_name at offs:
+	//   0x00000468 (D: else/default/ESP8266)
+	//   0x00000498 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x0000049E (B: ESPIDF)
+	//   0x000004C8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char dgr_name[16];
+	// ntpServer at offs:
+	//   0x00000478 (D: else/default/ESP8266)
+	//   0x000004A8 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004AE (B: ESPIDF)
+	//   0x000004D8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char ntpServer[32];
+	// cal at offs:
+	//   0x00000498 (D: else/default/ESP8266)
+	//   0x000004C8 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004CE (B: ESPIDF)
+	//   0x000004F8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// 8 * 4 = 32 bytes
+	cfgPowerMeasurementCalibration_t cal;
+	// buttonShortPress at offs:
+	//   0x000004B8 (D: else/default/ESP8266)
+	//   0x000004E8 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004EE (B: ESPIDF)
+	//   0x00000518 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// short press 1 means 100 ms short press time
+	// So basically unit is 0.1 second
+	byte buttonShortPress;
+	// buttonLongPress at offs:
+	//   0x000004B9 (D: else/default/ESP8266)
+	//   0x000004E9 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004EF (B: ESPIDF)
+	//   0x00000519 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte buttonLongPress;
+	// buttonHoldRepeat at offs:
+	//   0x000004BA (D: else/default/ESP8266)
+	//   0x000004EA (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F0 (B: ESPIDF)
+	//   0x0000051A (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte buttonHoldRepeat;
+	// unused_fill1 at offs:
+	//   0x000004BB (D: else/default/ESP8266)
+	//   0x000004EB (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F1 (B: ESPIDF)
+	//   0x0000051B (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte unused_fill1;
+
+	// LFS_Size at offs:
+	//   0x000004BC (D: else/default/ESP8266)
+	//   0x000004EC (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F2 (B: ESPIDF)
+	//   0x0000051C (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// NOTE: 'unsigned long' is 4 bytes on all supported 32-bit embedded platforms,
+	// so no alignment padding is inserted by the compiler here.
+	// But on 64 bit platforms (like simulator) compiler will use
+	// alignment to reach 0x4C0 ('unsigned long' is 8 bytes (LP64/64-bit))
+#if ! WINDOWS
+	unsigned long LFS_Size; // size of LFS volume, aligned against the end of OTA
+#else
+	uint32_t LFS_Size; // size of LFS volume, aligned against the end of OTA - ensure using 32 bit value
+#endif
+	// loggerFlags at offs:
+	//   0x000004C0 (D: else/default/ESP8266)
+	//   0x000004F0 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F6 (B: ESPIDF)
+	//   0x00000520 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	int loggerFlags;
+// unusedSectorAB: sized per platform to keep obkStaticIP_t, ledRemap_t, led_corr_t
+// and the fields following them aligned identically
+//	for groups D and A,
+// 	for groups B and C this lands 2 bytes earlier (staticIP at 0x0525 instead of 0x0527).
+//
+//       The original "0x0554" comment below (for mqtt_group) is correct for D/A only!
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
+	// unusedSectorAB: 51 bytes  [group A]
+	byte unusedSectorAB[51];
+#elif PLATFORM_ESPIDF
+	// unusedSectorAB: 43 bytes  [group B]
+	byte unusedSectorAB[43];
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
+	// unusedSectorAB: 1 byte  [group C]
+	byte unusedSectorAB;
+#else
+	// unusedSectorAB: 99 bytes  [group D, default/ESP8266]
+	byte unusedSectorAB[99];
+#endif
+	// staticIP at offs:
+	//   0x00000527 (D: else/default/ESP8266)
+	//   0x00000527 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000525 (B: ESPIDF)
+	//   0x00000525 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	obkStaticIP_t staticIP;
+	// ledRemap_t (5 bytes): staticIP_off + 16
+	ledRemap_t ledRemap;
+	// led_corr_t (24 bytes): ledRemap_off + 5
+	led_corr_t led_corr;
+	// mqtt_group at offs:
+	//   0x00000554 (D: else/default/ESP8266)
+	//   0x00000554 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000552 (B: ESPIDF)           <-- 2 bytes earlier than D/A
+	//   0x00000552 (C: RTL8720D family)  <-- 2 bytes earlier than D/A
+	// alternate topic name for receiving MQTT commands
+	char mqtt_group[64];
+	// offs 0x00000594 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs 0x00000592 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte unused_bytefill[3];
+	// offs 0x00000597 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs 0x00000595 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte timeRequiredToMarkBootSuccessfull;
+	// offs 0x00000598 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs 0x00000596 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	int ping_interval;
+	int ping_seconds;
+	// ping_host at offs 0x000005A0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)\n	// offs  0x0000059E (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char ping_host[64];
+	// initCommandLine at offs 0x000005E0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs 0x000005DE (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)  (dec 1504 for D/A)
+	//char initCommandLine[512];
+#define ALLOW_SSID2 1
+#define ALLOW_WEB_PASSWORD 1
+	char initCommandLine[1568];
+	// wifi_ssid2 at offs 0x00000C00 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000BFE (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char wifi_ssid2[64];
+	// wifi_pass2 at offs 0x00000C40 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000C3E (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char wifi_pass2[68];
+	// webPassword at offs 0x00000C84 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000C82 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char webPassword[33];
+	// mqtt_use_tls at offs 0x00000CA5 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000CA3 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte mqtt_use_tls;
+	// mqtt_verify_tls_cert at offs 0x00000CA6 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000CA4 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte mqtt_verify_tls_cert;
+	// mqtt_cert_file at offs 0x00000CA7 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000CA5 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char mqtt_cert_file[20];
+	// disable_web_server at offs 0x00000CBB (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000CB9 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	byte disable_web_server;
+	// unused[324] at offs 0x00000CBC (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// 	offs  0x00000CBA (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	//
+	// total struct size: 0x0E00 (= 3584 bytes) (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
+	// total struct size: 0x0DFE (= 3582 bytes) (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	char unused[324];
+} mainConfig_t;
+
 
 // one sector is 4096 so it we still have some expand possibility
 #define MAGIC_CONFIG_SIZE_V3		2016

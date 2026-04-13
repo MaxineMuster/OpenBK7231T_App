@@ -748,7 +748,7 @@
 #if ENABLE_LITTLEFS
 #define ENABLE_LOG2LFS	1
 #endif
-
+#define ENABLE_CHECK_CFG 1
 
 // closing OBK_CONFIG_H
 #endif

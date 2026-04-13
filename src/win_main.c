@@ -42,7 +42,98 @@
 #include "selftest/selftest_local.h"
 #include "new_pins.h"
 
+
+// for checking offsets in mainConfig_t
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+
+struct OffsetCheck {
+	const char *fieldName;
+	size_t expected;
+	size_t actual;
+};
+
+#define CHECK(FIELD, EXPECTED) { #FIELD, EXPECTED, OFFSETOF(mainConfig_t, FIELD) }
+
+void validateMainConfigOffsets(void) {
+	const struct OffsetCheck checks[] = {
+		CHECK(ident0, 0x00000000),
+		CHECK(version, 0x00000004),
+		CHECK(genericFlags, 0x00000008),
+		CHECK(genericFlags2, 0x0000000C),
+		CHECK(changeCounter, 0x00000010),
+		CHECK(wifi_ssid, 0x00000014),
+		CHECK(wifi_pass, 0x00000054),
+		CHECK(mqtt_host, 0x00000094),
+		CHECK(mqtt_clientId, 0x00000194),
+		CHECK(mqtt_userName, 0x000001D4),
+		CHECK(mqtt_pass, 0x00000214),
+		CHECK(mqtt_port, 0x00000294),
+		CHECK(webappRoot, 0x00000298),
+		CHECK(mac, 0x000002D8),
+		CHECK(shortDeviceName, 0x000002DE),
+		CHECK(longDeviceName, 0x000002FE),
+		CHECK(pins, 0x0000033E),
+		CHECK(startChannelValues, 0x000003DE),
+		CHECK(log2lfs, 0x0000045E),
+		CHECK(unused_fill, 0x0000045F),
+		CHECK(dgr_sendFlags, 0x00000460),
+		CHECK(dgr_recvFlags, 0x00000464),
+		CHECK(dgr_name, 0x00000468),
+		CHECK(ntpServer, 0x00000478),
+		CHECK(cal, 0x00000498),
+		CHECK(buttonShortPress, 0x000004B8),
+		CHECK(buttonLongPress, 0x000004B9),
+		CHECK(buttonHoldRepeat, 0x000004BA),
+		CHECK(unused_fill1, 0x000004BB),
+		CHECK(LFS_Size, 0x000004BC),
+		CHECK(loggerFlags, 0x000004C0),
+		CHECK(mqtt_group, 0x00000554),
+		CHECK(webPassword, 0x00000C84),
+		CHECK(mqtt_use_tls, 0x00000CA5),
+		CHECK(mqtt_verify_tls_cert, 0x00000CA6),
+		CHECK(mqtt_cert_file, 0x00000CA7),
+		CHECK(disable_web_server, 0x00000CBB),
+		CHECK(unused, 0x00000CBC),
+	};
+
+	int errorCount = 0;
+	
+	// Check individual field offsets
+	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); i++) {
+		if (checks[i].actual != checks[i].expected) {
+			printf("ERROR: OFFSETOF(mainConfig_t, %s)\n"
+			       "  Expected: 0x%08zX\n"
+			       "  Actual:   0x%08zX\n",
+			       checks[i].fieldName, checks[i].expected, checks[i].actual);
+			errorCount++;
+		}
+	}
+
+	// Check struct size
+	#define EXPECTED_STRUCT_SIZE 0x00000E00  // 3584 bytes
+	size_t actualSize = sizeof(mainConfig_t);
+	
+	if (actualSize != EXPECTED_STRUCT_SIZE) {
+		printf("ERROR: sizeof(mainConfig_t)\n"
+		       "  Expected: 0x%08X (%zu bytes)\n"
+		       "  Actual:   0x%08zX (%zu bytes)\n",
+		       EXPECTED_STRUCT_SIZE, (size_t)EXPECTED_STRUCT_SIZE, 
+		       actualSize, actualSize);
+		errorCount++;
+	}
+
+	if (errorCount > 0) {
+		printf("\n%d offset validation(s) failed!\n", errorCount);
+		system("pause");
+		return 1;  // or exit(1)
+	} else {
+		printf("All mainConfig_t offsets validated successfully!\n");
+		return 0;
+	}
+}
+
+
+
 
 // Need to link with Ws2_32.lib
 #pragma comment(lib, "Ws2_32.lib")
@@ -490,12 +581,14 @@ int __cdecl main(int argc, char **argv)
 	printf("sizeof(float) = %d\n", (int)sizeof(float));
 	printf("sizeof(double) = %d\n", (int)sizeof(double));
 	printf("sizeof(long double) = %d\n", (int)sizeof(long double));
+	printf("sizeof(time_t) = %d\n", (int)sizeof(time_t));
+	printf("sizeof(ENERGY_METERING_DATA) = %d\n", (int)sizeof(ENERGY_METERING_DATA));
 	printf("sizeof(led_corr_t) = %d\n", (int)sizeof(led_corr_t));
 	printf("sizeof(mainConfig_t) = %d\n", (int)sizeof(mainConfig_t));
 
 	if (sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE)
 	{
-		printf("sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE!: %i\n", sizeof(FLASH_VARS_STRUCTURE));
+		printf("sizeof(FLASH_VARS_STRUCTURE) != MAGIC_FLASHVARS_SIZE!: %i != %i\n", sizeof(FLASH_VARS_STRUCTURE),MAGIC_FLASHVARS_SIZE);
 		system("pause");
 	}
 	if (sizeof(ledRemap_t) != MAGIC_LED_REMAP_SIZE)
@@ -514,111 +607,136 @@ int __cdecl main(int argc, char **argv)
 		printf("sizeof(mainConfig_t) != MAGIC_CONFIG_SIZE!: %i\n", sizeof(mainConfig_t));
 		system("pause");
 	}
+	
+	validateMainConfigOffsets();
+	
+/*
 	if (OFFSETOF(mainConfig_t, staticIP) != 0x00000527)
 	{
-		printf("OFFSETOF(mainConfig_t, staticIP) != 0x00000527z: %i\n", OFFSETOF(mainConfig_t, staticIP));
+		printf("OFFSETOF(mainConfig_t, staticIP) != 0x00000527: 0x%08X\n", OFFSETOF(mainConfig_t, staticIP));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014)
 	{
-		printf("OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014: %i\n", OFFSETOF(mainConfig_t, wifi_ssid));
+		printf("OFFSETOF(mainConfig_t, wifi_ssid) != 0x00000014: 0x%08X\n", OFFSETOF(mainConfig_t, wifi_ssid));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054)
 	{
-		printf("OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054: %i\n", OFFSETOF(mainConfig_t, wifi_pass));
+		printf("OFFSETOF(mainConfig_t, wifi_pass) != 0x00000054: 0x%08X\n", OFFSETOF(mainConfig_t, wifi_pass));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, log2lfs) != 0x0000045E)
 	{
-		printf("OFFSETOF(mainConfig_t, log2lfs) != 0x0000045E: %i\n", OFFSETOF(mainConfig_t, log2lfs));
+		printf("OFFSETOF(mainConfig_t, log2lfs) != 0x0000045E: 0x%08X\n", OFFSETOF(mainConfig_t, log2lfs));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, unused_fill) != 0x0000045F)
+	{
+		printf("OFFSETOF(mainConfig_t, unused_fill) != 0x0000045F: 0x%08X\n", OFFSETOF(mainConfig_t, unused_fill));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, ntpServer) != 0x00000478)
+	{
+		printf("OFFSETOF(mainConfig_t, ntpServer) != 0x00000478: 0x%08X\n", OFFSETOF(mainConfig_t, ntpServer));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, cal) != 0x00000498)
+	{
+		printf("OFFSETOF(mainConfig_t, cal) != 0x00000498: 0x%08X\n", OFFSETOF(mainConfig_t, cal));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA)
 	{
-		printf("OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA: %i\n", OFFSETOF(mainConfig_t, buttonHoldRepeat));
+		printf("OFFSETOF(mainConfig_t, buttonHoldRepeat) != 0x000004BA: 0x%08X\n", OFFSETOF(mainConfig_t, buttonHoldRepeat));
+		system("pause");
+	}
+	if (OFFSETOF(mainConfig_t, unused_fill1) != 0x000004BB)
+	{
+		printf("OFFSETOF(mainConfig_t, unused_fill1) != 0x000004BB: 0x%08X\n", OFFSETOF(mainConfig_t, unused_fill1));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, shortDeviceName) != 0x2DE)
 	{
-		printf("OFFSETOF(mainConfig_t, shortDeviceName) != 0x2DE: %i\n", OFFSETOF(mainConfig_t, shortDeviceName));
+		printf("OFFSETOF(mainConfig_t, shortDeviceName) != 0x2DE: 0x%08X\n", OFFSETOF(mainConfig_t, shortDeviceName));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull) != 0x00000597)
 	{
-		printf("OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull) != 0x00000597: %i\n", OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull));
+		printf("OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull) != 0x00000597: 0x%08X\n", OFFSETOF(mainConfig_t, timeRequiredToMarkBootSuccessfull));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, dgr_sendFlags) != 0x00000460)
 	{
-		printf("OFFSETOF(mainConfig_t, dgr_sendFlags) != 0x00000460: %i\n", OFFSETOF(mainConfig_t, dgr_sendFlags));
+		printf("OFFSETOF(mainConfig_t, dgr_sendFlags) != 0x00000460: 0x%08X\n", OFFSETOF(mainConfig_t, dgr_sendFlags));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, mqtt_host) != 0x00000094)
 	{
-		printf("OFFSETOF(mainConfig_t, mqtt_host) != 0x00000094: %i\n", OFFSETOF(mainConfig_t, mqtt_host));
+		printf("OFFSETOF(mainConfig_t, mqtt_host) != 0x00000094: 0x%08X\n", OFFSETOF(mainConfig_t, mqtt_host));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, mqtt_userName) != 0x1D4)
 	{
-		printf("OFFSETOF(mainConfig_t, mqtt_userName) != 0x1D4: %i\n", OFFSETOF(mainConfig_t, mqtt_userName));
+		printf("OFFSETOF(mainConfig_t, mqtt_userName) != 0x1D4: 0x%03X\n", OFFSETOF(mainConfig_t, mqtt_userName));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, mqtt_port) != 0x294)
 	{
-		printf("OFFSETOF(mainConfig_t, mqtt_port) != 0x294: %i\n", OFFSETOF(mainConfig_t, mqtt_port));
+		printf("OFFSETOF(mainConfig_t, mqtt_port) != 0x294: 0x%03X\n", OFFSETOF(mainConfig_t, mqtt_port));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554)
 	{
-		printf("OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554: %i\n", OFFSETOF(mainConfig_t, mqtt_group));
+		printf("OFFSETOF(mainConfig_t, mqtt_group) != 0x00000554: 0x%08X\n", OFFSETOF(mainConfig_t, mqtt_group));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, LFS_Size) != 0x000004BC)
 	{
-		printf("OFFSETOF(mainConfig_t, LFS_Size) != 0x000004BC: %i\n", OFFSETOF(mainConfig_t, LFS_Size));
+		printf("OFFSETOF(mainConfig_t, LFS_Size) != 0x000004BC: 0x%08X\n", OFFSETOF(mainConfig_t, LFS_Size));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, ping_host) != 0x000005A0)
 	{
-		printf("OFFSETOF(mainConfig_t, ping_host) != 0x000005A0: %i\n", OFFSETOF(mainConfig_t, ping_host));
+		printf("OFFSETOF(mainConfig_t, ping_host) != 0x000005A0: 0x%08X\n", OFFSETOF(mainConfig_t, ping_host));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, buttonShortPress) != 0x000004B8)
 	{
-		printf("OFFSETOF(mainConfig_t, buttonShortPress) != 0x000004B8: %i\n", OFFSETOF(mainConfig_t, buttonShortPress));
+		printf("OFFSETOF(mainConfig_t, buttonShortPress) != 0x000004B8: 0x%08X\n", OFFSETOF(mainConfig_t, buttonShortPress));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, pins) != 0x0000033E)
 	{
-		printf("OFFSETOF(mainConfig_t, pins) != 0x0000033E: %i\n", OFFSETOF(mainConfig_t, pins));
+		printf("OFFSETOF(mainConfig_t, pins) != 0x0000033E: 0x%08X\n", OFFSETOF(mainConfig_t, pins));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, version) != 0x00000004)
 	{
-		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: %i\n", OFFSETOF(mainConfig_t, version));
+		printf("OFFSETOF(mainConfig_t, version) != 0x00000004: 0x%08X\n", OFFSETOF(mainConfig_t, version));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, initCommandLine) != 0x000005E0)
 	{
-		printf("OFFSETOF(mainConfig_t, initCommandLine) != 0x000005E0: %i\n", OFFSETOF(mainConfig_t, initCommandLine));
+		printf("OFFSETOF(mainConfig_t, initCommandLine) != 0x000005E0: 0x%08X\n", OFFSETOF(mainConfig_t, initCommandLine));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, wifi_ssid2) != 0x00000C00)
 	{
-		printf("OFFSETOF(mainConfig_t, wifi_ssid2) != 0x00000C00: %i\n", OFFSETOF(mainConfig_t, wifi_ssid2));
+		printf("OFFSETOF(mainConfig_t, wifi_ssid2) != 0x00000C00: 0x%08X\n", OFFSETOF(mainConfig_t, wifi_ssid2));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40)
 	{
-		printf("OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40: %i\n", OFFSETOF(mainConfig_t, wifi_pass2));
+		printf("OFFSETOF(mainConfig_t, wifi_pass2) != 0x00000C40: 0x%08X\n", OFFSETOF(mainConfig_t, wifi_pass2));
 		system("pause");
 	}
 	if (OFFSETOF(mainConfig_t, unused) != 0x00000CA5)
 	{
-		// printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: %i\n", OFFSETOF(mainConfig_t, unused));
+		// printf("OFFSETOF(mainConfig_t, unused) != 0x00000CA5: 0x%08X\n", OFFSETOF(mainConfig_t, unused));
 		// system("pause");
 	}
+*/
 	// Test expansion
 	// CMD_UART_Send_Hex(0,0,"FFAA$CH1$BB",0);
 

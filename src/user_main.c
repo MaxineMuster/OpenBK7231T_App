@@ -35,7 +35,7 @@
 
 #if ENABLE_LITTLEFS
 #include "littlefs/our_lfs.h"
-unsigned short g_log2lfs;
+uint8_t g_log2lfs;
 #endif
 
 
@@ -1477,6 +1477,171 @@ void Main_ForceUnsafeInit() {
 	Main_Init_AfterDelay_Unsafe(false);
 	bSafeMode = 0;
 }
+
+
+// inspired by test in win_main.c with a small extension to
+// simplify testing with a function
+#if ENABLE_CHECK_CFG
+#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+
+struct OffsetCheck {
+	const char *fieldName;
+	size_t expected;
+	size_t actual;
+};
+
+#define CHECK(FIELD, EXPECTED) { #FIELD, EXPECTED, OFFSETOF(mainConfig_t, FIELD) }
+
+void validateMainConfigOffsets(void) {
+    const struct OffsetCheck checks[] = {
+        // Starting with bese offsets (same for all platforms
+        CHECK(ident0,               0x00000000),
+        CHECK(version,              0x00000004),
+        CHECK(genericFlags,         0x00000008),
+        CHECK(genericFlags2,        0x0000000C),
+        CHECK(changeCounter,        0x00000010),
+        CHECK(wifi_ssid,            0x00000014),
+        CHECK(wifi_pass,            0x00000054),
+        CHECK(mqtt_host,            0x00000094),
+        CHECK(mqtt_clientId,        0x00000194),
+        CHECK(mqtt_userName,        0x000001D4),
+        CHECK(mqtt_pass,            0x00000214),
+        CHECK(mqtt_port,            0x00000294),
+        CHECK(webappRoot,           0x00000298),
+        CHECK(mac,                  0x000002D8),
+        CHECK(shortDeviceName,      0x000002DE),
+        CHECK(longDeviceName,       0x000002FE),
+        CHECK(pins,                 0x0000033E),
+
+#if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
+        // PLATFORM GROUP A 
+        CHECK(startChannelValues,   0x0000040E),
+        CHECK(log2lfs,              0x0000048E),
+        CHECK(dgr_sendFlags,        0x00000490),
+        CHECK(dgr_recvFlags,        0x00000494),
+        CHECK(dgr_name,             0x00000498),
+        CHECK(ntpServer,            0x000004A8),
+        CHECK(cal,                  0x000004C8),
+        CHECK(buttonShortPress,     0x000004E8),
+        CHECK(buttonLongPress,      0x000004E9),
+        CHECK(LFS_Size,             0x000004EC),
+        CHECK(loggerFlags,          0x000004F0),
+        CHECK(mqtt_group,           0x00000554),
+        CHECK(webPassword,          0x00000C84),
+        CHECK(mqtt_use_tls,         0x00000CA5),
+        CHECK(mqtt_verify_tls_cert, 0x00000CA6),
+        CHECK(mqtt_cert_file,       0x00000CA7),
+        CHECK(disable_web_server,   0x00000CBB),
+        CHECK(unused,               0x00000CBC),
+
+#elif PLATFORM_ESPIDF
+        // PLATFORM GROUP B
+        CHECK(startChannelValues,   0x00000414),
+        CHECK(log2lfs,              0x00000494),
+        CHECK(dgr_sendFlags,        0x00000496),
+        CHECK(dgr_recvFlags,        0x0000049A),
+        CHECK(dgr_name,             0x0000049E),
+        CHECK(ntpServer,            0x000004AE),
+        CHECK(cal,                  0x000004CE),
+        CHECK(buttonShortPress,     0x000004EE),
+        CHECK(buttonLongPress,      0x000004EF),
+        CHECK(LFS_Size,             0x000004F2),
+        CHECK(loggerFlags,          0x000004F6),
+        CHECK(mqtt_group,           0x00000552),
+        CHECK(webPassword,          0x00000C82),
+        CHECK(mqtt_use_tls,         0x00000CA3),
+        CHECK(mqtt_verify_tls_cert, 0x00000CA4),
+        CHECK(mqtt_cert_file,       0x00000CA5),
+        CHECK(disable_web_server,   0x00000CB9),
+        CHECK(unused,               0x00000CBA),
+
+#elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
+        // PLATFORM GROUP C
+        CHECK(startChannelValues,   0x0000043E),
+        CHECK(log2lfs,              0x000004BE),
+        CHECK(dgr_sendFlags,        0x000004C0),
+        CHECK(dgr_recvFlags,        0x000004C4),
+        CHECK(dgr_name,             0x000004C8),
+        CHECK(ntpServer,            0x000004D8),
+        CHECK(cal,                  0x000004F8),
+        CHECK(buttonShortPress,     0x00000518),
+        CHECK(buttonLongPress,      0x00000519),
+        CHECK(LFS_Size,             0x0000051C),
+        CHECK(loggerFlags,          0x00000520),
+        CHECK(mqtt_group,           0x00000552),
+        CHECK(webPassword,          0x00000C82),
+        CHECK(mqtt_use_tls,         0x00000CA3),
+        CHECK(mqtt_verify_tls_cert, 0x00000CA4),
+        CHECK(mqtt_cert_file,       0x00000CA5),
+        CHECK(disable_web_server,   0x00000CB9),
+        CHECK(unused,               0x00000CBA),
+
+#else
+        // PLATFORM GROUP D (Default/ESP8266)
+        CHECK(startChannelValues,   0x000003DE),
+        CHECK(log2lfs,              0x0000045E),
+        CHECK(unused_fill,          0x0000045F),
+        CHECK(dgr_sendFlags,        0x00000460),
+        CHECK(dgr_recvFlags,        0x00000464),
+        CHECK(dgr_name,             0x00000468),
+        CHECK(ntpServer,            0x00000478),
+        CHECK(cal,                  0x00000498),
+        CHECK(buttonShortPress,     0x000004B8),
+        CHECK(buttonLongPress,      0x000004B9),
+        CHECK(buttonHoldRepeat,     0x000004BA),
+        CHECK(unused_fill1,         0x000004BB),
+        CHECK(LFS_Size,             0x000004BC),
+        CHECK(loggerFlags,          0x000004C0),
+        CHECK(mqtt_group,           0x00000554),
+        CHECK(webPassword,          0x00000C84),
+        CHECK(mqtt_use_tls,         0x00000CA5),
+        CHECK(mqtt_verify_tls_cert, 0x00000CA6),
+        CHECK(mqtt_cert_file,       0x00000CA7),
+        CHECK(disable_web_server,   0x00000CBB),
+        CHECK(unused,               0x00000CBC),
+#endif
+    };
+
+
+	int errorCount = 0;
+	
+	// Check individual field offsets
+	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); i++) {
+		if (checks[i].actual != checks[i].expected) {
+			printf("ERROR: OFFSETOF(mainConfig_t, %s)\n"
+			       "  Expected: 0x%08zX\n"
+			       "  Actual:   0x%08zX\n",
+			       checks[i].fieldName, checks[i].expected, checks[i].actual);
+			errorCount++;
+		}
+	}
+
+	// Check struct size
+	#define EXPECTED_STRUCT_SIZE 0x00000E00  // 3584 bytes
+	size_t actualSize = sizeof(mainConfig_t);
+	
+	if (actualSize != EXPECTED_STRUCT_SIZE) {
+		printf("ERROR: sizeof(mainConfig_t)\n"
+		       "  Expected: 0x%08X (%zu bytes)\n"
+		       "  Actual:   0x%08zX (%zu bytes)\n",
+		       EXPECTED_STRUCT_SIZE, (size_t)EXPECTED_STRUCT_SIZE, 
+		       actualSize, actualSize);
+		errorCount++;
+	}
+
+	if (errorCount > 0) {
+		printf("\n%d offset validation(s) failed!\n", errorCount);
+		return 1;  // or exit(1)
+	} else {
+		printf("All mainConfig_t offsets validated successfully!\n");
+		return 0;
+	}
+}
+
+#endif
+
+
+
 //////////////////////////////////////////////////////
 // do things which should happen BEFORE we delay at Startup
 // e.g. set lights to last value, so we get immediate response at
@@ -1505,10 +1670,11 @@ void Main_Init_Before_Delay()
 	}
 	CFG_InitAndLoad();
 #if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+	// defines/macros (LOG2LFS_SECONDS) included from logging.h
 	void initLog2LFS(void);	// implemented in logging.c
 	// Now CFG flash is ininitialized, immediatley check 
 	// if we want startup log to be saved to LFS
-	g_log2lfs = CFG_Get_log2lfs();
+	g_log2lfs = LOG2LFS_SECONDS(CFG_Get_log2lfs());
 	if (g_log2lfs > 0) initLog2LFS();
 //	bk_printf("g_log2lfs=%i\r\n", g_log2lfs);
 #endif
@@ -1516,7 +1682,9 @@ void Main_Init_Before_Delay()
 #if ENABLE_LITTLEFS
 	LFSAddCmds();
 #endif
-
+#if ENABLE_CHECK_CFG
+	validateMainConfigOffsets();
+#endif
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
 	{

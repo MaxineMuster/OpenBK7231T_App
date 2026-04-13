@@ -48,7 +48,18 @@ extern volatile int direct_serial_log;
 // Set to 0 to disable, or N to log for the first N seconds of uptime.
 // The log is written to "startupLog_<timestamp_or_counter>.txt" on LittleFS.
 // Controlled at runtime with the "log2lfs" command.
-extern unsigned short g_log2lfs;
+extern uint8_t g_log2lfs;
+#define LOG2LFS_MAX_SECONDS 	30
+#define LOG2LFS_BASE 		(uint8_t)(LOG2LFS_MAX_SECONDS + 1)
+#define LOG2LFS_MAX_REPEATS 	(uint8_t)((255 / LOG2LFS_BASE) + 1 )		// adding 0 will mean once / one repetition
+
+// some helpers
+#define LOG2LFS_SECONDS(X) 	(uint8_t)(X % LOG2LFS_BASE)
+#define LOG2LFS_REPEATS(X) 	(uint8_t)(X / LOG2LFS_BASE + 1)
+#define LOG2LFS_ENCODE(S,R) 	(uint8_t)(S + ((R > 1) ? LOG2LFS_BASE * (R - 1) : 0))
+#define LOG2LFS_DECREASE_REPEAT(X) 	(uint8_t)(X >= (LOG2LFS_BASE) ? X - LOG2LFS_BASE : X)
+
+
 #endif
 
 typedef enum logType_e {

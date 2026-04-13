@@ -241,8 +241,17 @@ static void LOG_LFS_StartThread(const char *prefix);
 
 static commandResult_t CMD_logStartup2lfs(const void* context, const char* cmd, const char* args, int cmdFlags) {
 	Tokenizer_TokenizeString(args, 0);
-	int arg = Tokenizer_GetArgIntegerDefault(0,10);
-	CFG_Set_log2lfs(arg);
+	uint8_t secs = (uint8_t)Tokenizer_GetArgIntegerDefault(0,10);
+	if (secs > LOG2LFS_MAX_SECONDS) {
+		ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: Seconds out of range. Set seconds to maximum value %i",LOG2LFS_MAX_SECONDS);
+		secs = LOG2LFS_MAX_SECONDS;
+	}
+	uint8_t repeats = (uint8_t)Tokenizer_GetArgIntegerDefault(1,1);
+	if (repeats > LOG2LFS_MAX_REPEATS) {
+		ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: Repeats out of range. Set repeats to maximum value %i",LOG2LFS_MAX_REPEATS);
+		repeats = LOG2LFS_MAX_REPEATS;
+	}
+	CFG_Set_log2lfs(LOG2LFS_ENCODE(secs,repeats));
 	CFG_Save_IfThereArePendingChanges();
 	return CMD_RES_OK;
 }
@@ -290,13 +299,16 @@ static void initLog(void)
 	//cmddetail:"examples":""}
 	CMD_RegisterCommand("logdelay", log_command, NULL);
 #if ENABLE_LITTLEFS && ENABLE_LOG2LFS
-	//cmddetail:{"name":"log2lfs","args":"[Seconds - default: 10s]",
-	//cmddetail:"descr":"Start logging to LittleFS. Value is the number of seconds log lines are appended to startupLog_N.txt on LFS. Set to 0 to disable/stop a running logging.",
-	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
-	//cmddetail:"examples":"log2lfs 10"}
-	CMD_RegisterCommand("log2lfs", log_command, NULL);
-	//cmddetail:{"name":"logStartup2lfs","args":"[Seconds - default: 10s]",
-	//cmddetail:"descr":"Enable startup logging to LittleFS. Value is the number of seconds from boot during which log lines are appended to startupLog_N.txt on LFS. Set to 0 to disable.",
+// for now, no logging to lfs during normal operation
+// don't simply comment out the block, but every line to
+// make sure, cmddetails are alos commented out - else they would be included to docs later 
+//	//cmddetail:{"name":"log2lfs","args":"[Seconds - default: 10s]",
+//	//cmddetail:"descr":"Start logging to LittleFS. Value is the number of seconds log lines are appended to startupLog_N.txt on LFS. Set to 0 to disable/stop a running logging.",
+//	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
+//	//cmddetail:"examples":"log2lfs 10"}
+//	CMD_RegisterCommand("log2lfs", log_command, NULL);
+	//cmddetail:{"name":"logStartup2lfs","args":"[Seconds - default: 10s] [repetitions - default 1]",
+	//cmddetail:"descr":"Enable startup logging to LittleFS. Value is the number of seconds from boot during which log lines are appended to startupLog_N.txt on LFS. Set to 0 to disable.\nIf you want to log severals startups, use optional repeats argument",
 	//cmddetail:"fn":"log_command","file":"logging/logging.c","requires":"",
 	//cmddetail:"examples":"logStartup2lfs 15"}
 	CMD_RegisterCommand("logStartup2lfs", CMD_logStartup2lfs, NULL);
@@ -617,7 +629,24 @@ static const char *g_lfsLogPrefix = "startupLog"; // default name
 
 // how much to write in one chunk 
 #define LOG2LFS_WRITE_CHUNK             128
-static volatile int g_log2lfs_running = 0; // 1 while thread is alive
+
+// only needed for logging during operation.
+// static volatile int g_log2lfs_running = 0; // 1 while thread is alive
+
+// after sucesfull logging, set new value for the next start:
+// set to 0, if this was the only/last logging configured
+// else set new value for next start (decrease repeat count by 1)
+void log2lfs_set_next_startup(){
+	uint8_t act = CFG_Get_log2lfs();
+	// shall we repeat logging?
+	// then set value for next startup
+	if (LOG2LFS_REPEATS(act) > 1) {
+		CFG_Set_log2lfs(LOG2LFS_DECREASE_REPEAT(act));
+	} else {
+	// not repeating? Set to 0 for next startup
+		CFG_Set_log2lfs(0);
+	}
+}
 
 
 // two versions of static void log2lfs_thread(beken_thread_arg_t arg) follow
@@ -770,14 +799,21 @@ static void log2lfs_thread(beken_thread_arg_t arg)
         rtos_delay_milliseconds(100);
     }
 
+/*
+// only for logging durlig operation; quite sure there's no valid time startup
     // Choose filename now that LFS is mounted (dir scan sees real files).
     // Use timestamp if time is available, otherwise incrementing counter.
     if (TIME_IsTimeSynced()) {
         uint32_t tempt = TIME_GetCurrentTime();
         snprintf(g_lfsLogName, sizeof(g_lfsLogName), "%s_%s.txt", g_lfsLogPrefix, TS2STR(tempt, TIME_FORMAT_SHORT));
-    } else {
+    } else 
+*/
+    {
         int highest = -1;
         unsigned int cnt;
+        // caution: we made cnt an unsigned int, so it won't accept "negative numbers" in sscanf (using %u instead of %d)
+        // to compare them, make sure to cast cnt to int
+        // else highest will be casted as unsigned, resulting in a huge number if it was negative!!!
         char t = '0';
         lfs_dir_t dir;
         struct lfs_info info;
@@ -790,8 +826,8 @@ static void log2lfs_thread(beken_thread_arg_t arg)
                 if (info.type == LFS_TYPE_REG &&
                     sscanf(info.name, scanfmt, &cnt, &t) == 2 &&
                     t == '.' &&
-                    cnt > highest) {
-                        highest = cnt;
+                    (int)cnt > highest) {
+                        highest = (int)cnt;
                     }
             }
             lfs_dir_close(&lfs, &dir);
@@ -829,13 +865,18 @@ done:
         ADDLOG_INFO(LOG_FEATURE_LFS, "log2lfs: done, file closed");
     }
     os_free(lf);
+    log2lfs_set_next_startup();
     g_log2lfs = 0;
-    g_log2lfs_running = 0;
+// only needed for logging during operation.
+//  g_log2lfs_running = 0;
     rtos_delete_thread(NULL);
 }
 
 static void LOG_LFS_StartThread(const char *prefix)
 {
+/*
+// only needed for logging during operation. Else there will be exactly one 
+// thread after startup.
     g_lfsLogPrefix = prefix;
     if (g_log2lfs_running == 1) {
         // Thread already active — use the new g_log2lfs_end value.
@@ -843,13 +884,15 @@ static void LOG_LFS_StartThread(const char *prefix)
         return;
     }
     g_log2lfs_running = 1;
+*/
     if (rtos_create_thread(NULL, BEKEN_APPLICATION_PRIORITY,
             "log2lfs",
             (beken_thread_function_t)log2lfs_thread,
             0x800,
             (beken_thread_arg_t)0) != kNoErr) {
         ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: could not create thread");
-        g_log2lfs_running = 0;
+// only needed for logging during operation.
+//        g_log2lfs_running = 0;
     } else {
         ADDLOG_DEBUG(LOG_FEATURE_LFS, "log2lfs: created thread");    
     }
@@ -1164,6 +1207,8 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			result = CMD_RES_OK;
 			break;
 		}
+/*
+// for now, only implement logging at startup, not during operation
 #if ENABLE_LITTLEFS && ENABLE_LOG2LFS
 		if (!stricmp(cmd, "log2lfs")) {
 			int res, secs;
@@ -1189,7 +1234,7 @@ commandResult_t log_command(const void* context, const char* cmd, const char* ar
 			break;
 		}
 #endif // ENABLE_LITTLEFS && ENABLE_LOG2LFS
-
+*/
 	} while (0);
 
 	return result;
