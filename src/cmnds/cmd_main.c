@@ -21,7 +21,7 @@ int cmd_uartInitIndex = 0;
 #if ENABLE_LITTLEFS
 #include "../littlefs/our_lfs.h"
 #endif
-#ifdef PLATFORM_BL602
+#if PLATFORM_BL602 && !PLATFORM_BL_NEW
 #include <wifi_mgmr_ext.h>
 #include "bl_flash.h"
 #include "bl602_hbn.h"
@@ -176,6 +176,17 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 	else {
 		wifi_mgmr_sta_ps_exit();
 	}
+#elif PLATFORM_BL_NEW
+	void bl_pm_enter_ps(void);
+	void bl_pm_exit_ps(void);
+	if(bOn)
+	{
+		bl_pm_enter_ps();
+	}
+	else
+	{
+		bl_pm_exit_ps();
+	}
 #elif defined(PLATFORM_LN882H) || PLATFORM_LN8825
 	// this will be applied after WiFi connect
 	if (Main_IsConnectedToWiFi() == 0){
@@ -287,11 +298,12 @@ static commandResult_t CMD_PowerSave(const void* context, const char* cmd, const
 #endif
 		wifi_disable_powersave();
 	}
-#elif PLATFORM_XRADIO
+#elif PLATFORM_XRADIO && !PLATFORM_XR806 // XR806 has power save on by default, and this increases power consumption compared to default settings
 	if(g_powersave)
 	{
 		wlan_set_ps_mode(g_wlan_netif, 1);
 		wlan_ext_ps_cfg_t ps_cfg;
+		//wlan_ext_request(g_wlan_netif, WLAN_EXT_CMD_SET_BCN_WIN_US, 2300);
 		memset(&ps_cfg, 0, sizeof(wlan_ext_ps_cfg_t));
 		ps_cfg.ps_mode = 1;
 		ps_cfg.ps_idle_period = 40;
@@ -380,7 +392,7 @@ static commandResult_t CMD_DeepSleep(const void* context, const char* cmd, const
 #elif PLATFORM_XRADIO
 	HAL_Wakeup_SetTimer_mS(timeMS * DS_MS_TO_S);
 	pm_enter_mode(DEEP_SLEEP);
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 && !PLATFORM_BL_NEW
 	HBN_APP_CFG_Type cfg = {
 		.useXtal32k = 0,
 		.sleepTime = timeMS,

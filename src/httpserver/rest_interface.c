@@ -199,6 +199,9 @@ static int http_rest_post(http_request_t* request) {
 	}
 	if (!strcmp(request->url, "api/ota")) {
 		OTA_IncrementProgress(1);
+#if ENABLE_BT_PROXY
+		HAL_BTProxy_StopScan();
+#endif
 		int r = 0;
 #if PLATFORM_BEKEN
 		r = http_rest_post_flash(request, START_ADR_OF_BK_PARTITION_OTA, LFS_BLOCKS_END);
@@ -206,7 +209,7 @@ static int http_rest_post(http_request_t* request) {
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_W800
 		r = http_rest_post_flash(request, -1, -1);
-#elif PLATFORM_BL602
+#elif PLATFORM_BL602 || PLATFORM_BL_NEW
 		r = http_rest_post_flash(request, -1, -1);
 #elif PLATFORM_LN882H || PLATFORM_LN8825
 		r = http_rest_post_flash(request, -1, -1);
