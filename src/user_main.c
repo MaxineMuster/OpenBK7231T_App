@@ -1481,7 +1481,7 @@ void Main_ForceUnsafeInit() {
 
 // inspired by test in win_main.c with a small extension to
 // simplify testing with a function
-#if ENABLE_CHECK_CFG
+#if ENABLE_CHECK_CFG && ! WINDOWS
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 struct OffsetCheck {
@@ -1608,7 +1608,7 @@ void validateMainConfigOffsets(void) {
 	// Check individual field offsets
 	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); i++) {
 		if (checks[i].actual != checks[i].expected) {
-			printf("ERROR: OFFSETOF(mainConfig_t, %s)\n"
+			bk_printf("ERROR: OFFSETOF(mainConfig_t, %s)\n"
 			       "  Expected: 0x%08zX\n"
 			       "  Actual:   0x%08zX\n",
 			       checks[i].fieldName, checks[i].expected, checks[i].actual);
@@ -1621,7 +1621,7 @@ void validateMainConfigOffsets(void) {
 	size_t actualSize = sizeof(mainConfig_t);
 	
 	if (actualSize != EXPECTED_STRUCT_SIZE) {
-		printf("ERROR: sizeof(mainConfig_t)\n"
+		bk_printf("ERROR: sizeof(mainConfig_t)\n"
 		       "  Expected: 0x%08X (%zu bytes)\n"
 		       "  Actual:   0x%08zX (%zu bytes)\n",
 		       EXPECTED_STRUCT_SIZE, (size_t)EXPECTED_STRUCT_SIZE, 
@@ -1630,15 +1630,13 @@ void validateMainConfigOffsets(void) {
 	}
 
 	if (errorCount > 0) {
-		printf("\n%d offset validation(s) failed!\n", errorCount);
-		return 1;  // or exit(1)
+		bk_printf("\n%d offset validation(s) failed!\n", errorCount);
 	} else {
-		printf("All mainConfig_t offsets validated successfully!\n");
-		return 0;
+		bk_printf("All mainConfig_t offsets validated successfully!\n");
 	}
 }
 
-#endif
+#endif // ENABLE_CHECK_CFG && ! WINDOWS
 
 
 
