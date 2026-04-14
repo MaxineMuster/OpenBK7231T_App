@@ -1481,7 +1481,7 @@ void Main_ForceUnsafeInit() {
 
 // inspired by test in win_main.c with a small extension to
 // simplify testing with a function
-#if ENABLE_CHECK_CFG && ! WINDOWS
+#if ENABLE_CHECK_CFG || WINDOWS
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 struct OffsetCheck {
@@ -1680,7 +1680,7 @@ void Main_Init_Before_Delay()
 #if ENABLE_LITTLEFS
 	LFSAddCmds();
 #endif
-#if ENABLE_CHECK_CFG
+#if ENABLE_CHECK_CFG || WINDOWS
 	validateMainConfigOffsets();
 #endif
 	// only initialise certain things if we are not in AP mode

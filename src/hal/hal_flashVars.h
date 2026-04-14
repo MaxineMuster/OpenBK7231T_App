@@ -8,7 +8,6 @@
 #define MAX_RETAIN_CHANNELS 12
 
 /* Fixed size 32 bytes */
-#ifndef WINDOWS
 typedef struct ENERGY_METERING_DATA {
 	float TotalConsumption;
 	float TodayConsumpion;
@@ -24,42 +23,6 @@ typedef struct ENERGY_METERING_DATA {
 	unsigned char reseved[3];
 	char actual_mday;
 } ENERGY_METERING_DATA;
-#else
-// use explicit sizes - else we will NOT have a 32 bit struct on 64 bit systems (but 48 bytes):
-/*
-sizeof(short) = 2
-sizeof(int) = 4
-sizeof(long) = 8
-sizeof(unsigned long) = 8
-sizeof(float) = 4
-sizeof(double) = 8
-sizeof(long double) = 16
-sizeof(time_t) = 8
-*/
-typedef struct ENERGY_METERING_DATA {
-	float TotalConsumption;
-	// offset 0x04
-	float TodayConsumpion;
-	// offset 0x08
-	float YesterdayConsumption;
-	// offset 0x0C: [would need 4 byte padding for 8-byte alignment for 8 byte long!]
-	int save_counter;
-	// offset 0x10 (16 decimal)
-#if ENABLE_BL_TWIN
-	float TotalConsumption_b;
-	float TodayConsumpion_b;
-#else
-	float ConsumptionHistory[2];
-#endif
-	// offset 0x18 (24 decimal) - 8-byte aligned for time_t
-	uint32_t ConsumptionResetTime;
-	// offset 0x1C (28 decimal)
-	unsigned char reseved[3];
-	// offset 0x1f (31 decimal)
-	char actual_mday;
-	// --> resulting size is now also 32 bytes !!!
-} ENERGY_METERING_DATA;
-#endif
 
 // size 8 bytes
 typedef struct {
