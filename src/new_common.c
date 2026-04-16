@@ -64,7 +64,7 @@ int vsprintf3(char *buffer, const char *fmt, va_list val) {
 
 #endif
 
-#if ( WINDOWS && ! LINUX ) || PLATFORM_W800 || PLATFORM_TXW81X
+#if WINDOWS || PLATFORM_W800 || PLATFORM_TXW81X
 const char* strcasestr(const char* str1, const char* str2)
 {
 	const char* p1 = str1;
