@@ -12,7 +12,8 @@
 #include "../littlefs/our_lfs.h"
 #include "../new_cfg.h"	// we will use CFG_Set_log2lfs();
 // end "uptime" if log2lfs is enabled
-static int log2lfs_end = 0;
+// not needed if logging only on startup
+//static int log2lfs_end = 0;
 // uptime counter - seconds since boot to know how long to logg to LFS
 extern int g_secondsElapsed;
 #endif
@@ -263,7 +264,8 @@ void initLog2LFS(void){
 	// if so, g_log2lfs will hold the numbers of seconds to log to LFS
 	// we will calculate "end time" for this here
 	if (g_log2lfs >0 && g_secondsElapsed < g_log2lfs) {
-		log2lfs_end = g_secondsElapsed + g_log2lfs;
+// not needed if logging only on startup
+//		log2lfs_end = g_secondsElapsed + g_log2lfs;
 		LOG_LFS_StartThread("startupLog");
 	}
 }
@@ -794,8 +796,10 @@ static void log2lfs_thread(beken_thread_arg_t arg)
 
     // Wait for LFS to become available before opening the file.
     while (!lfs_present()) {
-        if (g_secondsElapsed > log2lfs_end)
-            goto done; // logging window closed before LFS ever mounted
+// not needed if logging only on startup
+//        if (g_secondsElapsed > log2lfs_end)
+        if (g_secondsElapsed > g_log2lfs)
+                    goto done; // logging window closed before LFS ever mounted
         rtos_delay_milliseconds(100);
     }
 
@@ -844,7 +848,9 @@ static void log2lfs_thread(beken_thread_arg_t arg)
     ADDLOG_INFO(LOG_FEATURE_LFS, "log2lfs: writing to %s", g_lfsLogName);
 
     // Drain taillfs continuously until the capture window closes.
-    while (g_secondsElapsed <= log2lfs_end) {
+// not needed if logging only on startup
+//    while (g_secondsElapsed <= log2lfs_end) {
+    while (g_secondsElapsed <= g_log2lfs) {
         while ((n = getData(chunk, sizeof(chunk), &logMemory.taillfs)) > 0) {
             if (lfs_file_write(&lfs, lf, chunk, n) < 0) {
                 ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: write error, stopping");

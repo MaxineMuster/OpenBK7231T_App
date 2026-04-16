@@ -1673,6 +1673,9 @@ void Main_Init_Before_Delay()
 	// Now CFG flash is ininitialized, immediatley check 
 	// if we want startup log to be saved to LFS
 	g_log2lfs = LOG2LFS_SECONDS(CFG_Get_log2lfs());
+#if WINDOWS
+	if (g_log2lfs == 0) g_log2lfs = 20;
+#endif
 	if (g_log2lfs > 0) initLog2LFS();
 //	bk_printf("g_log2lfs=%i\r\n", g_log2lfs);
 #endif
