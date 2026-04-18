@@ -1517,6 +1517,7 @@ void validateMainConfigOffsets(void) {
         // PLATFORM GROUP A 
         CHECK(startChannelValues,   0x0000040E),
         CHECK(log2lfs,              0x0000048E),
+        CHECK(unused_fill,          0x0000048F),
         CHECK(dgr_sendFlags,        0x00000490),
         CHECK(dgr_recvFlags,        0x00000494),
         CHECK(dgr_name,             0x00000498),
@@ -1538,6 +1539,7 @@ void validateMainConfigOffsets(void) {
         // PLATFORM GROUP B
         CHECK(startChannelValues,   0x00000414),
         CHECK(log2lfs,              0x00000494),
+        CHECK(unused_fill,          0x00000495),
         CHECK(dgr_sendFlags,        0x00000496),
         CHECK(dgr_recvFlags,        0x0000049A),
         CHECK(dgr_name,             0x0000049E),
@@ -1559,6 +1561,7 @@ void validateMainConfigOffsets(void) {
         // PLATFORM GROUP C
         CHECK(startChannelValues,   0x0000043E),
         CHECK(log2lfs,              0x000004BE),
+        CHECK(unused_fill,          0x000004BF),
         CHECK(dgr_sendFlags,        0x000004C0),
         CHECK(dgr_recvFlags,        0x000004C4),
         CHECK(dgr_name,             0x000004C8),
