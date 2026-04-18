@@ -1667,18 +1667,6 @@ void Main_Init_Before_Delay()
 		ADDLOGF_INFO("###### safe mode activated - boot failures %d", g_bootFailures);
 	}
 	CFG_InitAndLoad();
-#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
-	// defines/macros (LOG2LFS_SECONDS) included from logging.h
-	void initLog2LFS(void);	// implemented in logging.c
-	// Now CFG flash is ininitialized, immediatley check 
-	// if we want startup log to be saved to LFS
-	g_log2lfs = LOG2LFS_SECONDS(CFG_Get_log2lfs());
-#if WINDOWS
-	if (g_log2lfs == 0) g_log2lfs = 20;
-#endif
-	if (g_log2lfs > 0) initLog2LFS();
-//	bk_printf("g_log2lfs=%i\r\n", g_log2lfs);
-#endif
 
 #if ENABLE_LITTLEFS
 	LFSAddCmds();
@@ -1796,6 +1784,26 @@ void Main_Init_After_Delay()
 		}
 #endif
 		Main_Init_AfterDelay_Unsafe(true);
+#if ENABLE_LITTLEFS && ENABLE_LOG2LFS
+	// we have to wait until berry was run - it will else somewhow reinit/remount lfs and 
+	// log2lfs will crash when its already writing ...
+	// defines/macros (LOG2LFS_SECONDS) included from logging.h
+	void initLog2LFS(void);	// implemented in logging.c
+	// Now CFG flash is ininitialized, immediatley check 
+	// if we want startup log to be saved to LFS
+	g_log2lfs = LOG2LFS_SECONDS(CFG_Get_log2lfs());
+#if WINDOWS
+	// don't run log2lfs in selTestMode  - it will kill LFS while 
+	// log2lfs uses LFS 
+	extern int g_selfTestsMode;
+	if ( g_selfTestsMode != 0) g_log2lfs = 0;
+	// for testing: set to log first 20 seconds
+	else
+		if (g_log2lfs == 0) g_log2lfs = 20;
+#endif
+	if (g_log2lfs > 0) initLog2LFS();
+//	bk_printf("g_log2lfs=%i\r\n", g_log2lfs);
+#endif
 	}
 
 	ADDLOGF_INFO("%s done", __func__);
