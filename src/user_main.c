@@ -1609,9 +1609,9 @@ void validateMainConfigOffsets(void) {
 	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); i++) {
 		if (checks[i].actual != checks[i].expected) {
 			bk_printf("ERROR: OFFSETOF(mainConfig_t, %s)\n"
-			       "  Expected: 0x%08zX\n"
-			       "  Actual:   0x%08zX\n",
-			       checks[i].fieldName, checks[i].expected, checks[i].actual);
+			       "  Expected: 0x%08lX\n"
+			       "  Actual:   0x%08lX\n",
+			       checks[i].fieldName, (unsigned long)checks[i].expected, (unsigned long)checks[i].actual);
 			errorCount++;
 		}
 	}
@@ -1622,10 +1622,10 @@ void validateMainConfigOffsets(void) {
 	
 	if (actualSize != EXPECTED_STRUCT_SIZE) {
 		bk_printf("ERROR: sizeof(mainConfig_t)\n"
-		       "  Expected: 0x%08X (%zu bytes)\n"
-		       "  Actual:   0x%08zX (%zu bytes)\n",
-		       EXPECTED_STRUCT_SIZE, (size_t)EXPECTED_STRUCT_SIZE, 
-		       actualSize, actualSize);
+		       "  Expected: 0x%08lX (%lu bytes)\n"
+		       "  Actual:   0x%08lX (%lu bytes)\n",
+		       (unsigned long)EXPECTED_STRUCT_SIZE, (unsigned long)EXPECTED_STRUCT_SIZE, 
+		       (unsigned long)actualSize, (unsigned long)actualSize);
 		errorCount++;
 	}
 
