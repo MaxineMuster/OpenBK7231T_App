@@ -1567,38 +1567,40 @@ typedef struct mainConfig_s {
 	// dgr_sendFlags at offset:
 	//   0x00000460 (D: else/default/ESP8266)
 	//   0x00000490 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x00000496 (B: ESPIDF)
+	//   0x00000496 (B: ESPIDF) 
+	//		--> NOT aligned for 4 byte int 
+	//		--> will be padded to 0x00000498 !!!
 	//   0x000004C0 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	int dgr_sendFlags;
 	// dgr_recvFlags at offset:
 	//   0x00000464 (D: else/default/ESP8266)
 	//   0x00000494 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x0000049A (B: ESPIDF)
+	//   0x0000049C (B: ESPIDF - due to padding before (would be 0x0000049A))
 	//   0x000004C4 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	int dgr_recvFlags;
 	// dgr_name at offset:
 	//   0x00000468 (D: else/default/ESP8266)
 	//   0x00000498 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x0000049E (B: ESPIDF)
+	//   0x000004A0 (B: ESPIDF  - due to padding before (would be 0x0000049E))
 	//   0x000004C8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char dgr_name[16];
 	// ntpServer at offset:
 	//   0x00000478 (D: else/default/ESP8266)
 	//   0x000004A8 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x000004AE (B: ESPIDF)
+	//   0x000004B0 (B: ESPIDF  - due to padding before (would be 0x000004AE))
 	//   0x000004D8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char ntpServer[32];
 	// cal at offset:
 	//   0x00000498 (D: else/default/ESP8266)
 	//   0x000004C8 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x000004CE (B: ESPIDF)
+	//   0x000004D0 (B: ESPIDF  - due to padding before (would be 0x000004CE))
 	//   0x000004F8 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	// 8 * 4 = 32 bytes
 	cfgPowerMeasurementCalibration_t cal;
 	// buttonShortPress at offset:
 	//   0x000004B8 (D: else/default/ESP8266)
 	//   0x000004E8 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x000004EE (B: ESPIDF)
+	//   0x000004F0 (B: ESPIDF  - due to padding before (would be 0x000004EE))
 	//   0x00000518 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	// short press 1 means 100 ms short press time
 	// So basically unit is 0.1 second
@@ -1606,18 +1608,19 @@ typedef struct mainConfig_s {
 	// buttonLongPress at offset:
 	//   0x000004B9 (D: else/default/ESP8266)
 	//   0x000004E9 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x000004EF (B: ESPIDF)
+	//   0x000004F1 (B: ESPIDF  - due to padding before (would be 0x000004EF))
 	//   0x00000519 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte buttonLongPress;
 	// buttonHoldRepeat at offset:
 	//   0x000004BA (D: else/default/ESP8266)
 	//   0x000004EA (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x000004F0 (B: ESPIDF)
+	//   0x000004F2 (B: ESPIDF  - due to padding before (would be 0x000004F0))
 	//   0x0000051A (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte buttonHoldRepeat;
 	// unused_fill1 at offset:
 	//   0x000004BB (D: else/default/ESP8266)
 	//   0x000004EB (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x000004F3 (B: ESPIDF  - due to padding before (would be 0x000004F1))
 	//   0x000004F1 (B: ESPIDF)
 	//   0x0000051B (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte unused_fill1;
@@ -1625,7 +1628,7 @@ typedef struct mainConfig_s {
 	// LFS_Size at offset:
 	//   0x000004BC (D: else/default/ESP8266)
 	//   0x000004EC (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x000004F2 (B: ESPIDF)
+	//   0x000004F4 (B: ESPIDF  - due to padding before (would be 0x000004F2))
 	//   0x0000051C (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	// NOTE: 'unsigned long' is 4 bytes on all supported 32-bit embedded platforms,
 	// so no alignment padding is inserted by the compiler here.
@@ -1636,14 +1639,15 @@ typedef struct mainConfig_s {
 	// loggerFlags at offset:
 	//   0x000004C0 (D: else/default/ESP8266)
 	//   0x000004F0 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x000004F6 (B: ESPIDF)
+	//   0x000004F8 (B: ESPIDF  - due to padding before (would be 0x000004F6))
 	//   0x00000520 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	int loggerFlags;
 // unusedSectorAB: sized per platform to keep obkStaticIP_t, ledRemap_t, led_corr_t
 // and the fields following them aligned "identically".
-// Sadly this (by incident, I suppose) doesn't align all equl, but builds two groups:
+// Sadly this (by incident, I suppose) doesn't align all eqal, but builds two groups:
 //	groups D and A,
-// 	groups B and C; they "land" 2 bytes earlier (staticIP at 0x0525 instead of 0x0527).
+// 	groups B and C; they (would) "land" 2 bytes earlier (staticIP at 0x0525 instead of 0x0527).
+// 	group B (ESPDIF): due to unaligned "int" before, we also "land" staticIP at 0x0527.
 //
 //       The original "0x0554" comment below (for mqtt_group) is correct for D/A only!
 #if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
@@ -1662,7 +1666,7 @@ typedef struct mainConfig_s {
 	// staticIP at offset:
 	//   0x00000527 (D: else/default/ESP8266)
 	//   0x00000527 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x00000525 (B: ESPIDF)
+	//   0x00000527 (B: ESPIDF  - due to padding before (would be 0x00000525))
 	//   0x00000525 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	obkStaticIP_t staticIP;
 	// ledRemap_t (5 bytes): staticIP_off + 16
@@ -1672,54 +1676,55 @@ typedef struct mainConfig_s {
 	// mqtt_group at offset:
 	//   0x00000554 (D: else/default/ESP8266)
 	//   0x00000554 (A: W800/BK7252/BK7252N/XR872/BL616)
-	//   0x00000552 (B: ESPIDF)           <-- 2 bytes earlier than D/A
+	//   0x00000554 (B: ESPIDF  - due to padding before (would be 0x00000552))
 	//   0x00000552 (C: RTL8720D family)  <-- 2 bytes earlier than D/A
 	// alternate topic name for receiving MQTT commands
 	char mqtt_group[64];
-	// offs 0x00000594 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs 0x00000592 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// offs 0x00000594 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs 0x00000592 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte unused_bytefill[3];
-	// offs 0x00000597 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs 0x00000595 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// offs 0x00000597 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs 0x00000595 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte timeRequiredToMarkBootSuccessfull;
-	// offs 0x00000598 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs 0x00000596 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// offs 0x00000598 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs 0x00000596 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	int ping_interval;
 	int ping_seconds;
-	// ping_host at offs 0x000005A0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)\n	// offs  0x0000059E (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// ping_host at offs 0x000005A0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x0000059E (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char ping_host[64];
-	// initCommandLine at offs 0x000005E0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs 0x000005DE (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)  (dec 1504 for D/A)
+	// initCommandLine at offs 0x000005E0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs 0x000005DE (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)  (dec 1504 for D/A)
 	//char initCommandLine[512];
 #define ALLOW_SSID2 1
 #define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[1568];
-	// wifi_ssid2 at offs 0x00000C00 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000BFE (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// wifi_ssid2 at offs 0x00000C00 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000BFE (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char wifi_ssid2[64];
-	// wifi_pass2 at offs 0x00000C40 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000C3E (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// wifi_pass2 at offs 0x00000C40 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000C3E (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char wifi_pass2[68];
-	// webPassword at offs 0x00000C84 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000C82 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// webPassword at offs 0x00000C84 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000C82 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char webPassword[33];
-	// mqtt_use_tls at offs 0x00000CA5 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000CA3 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// mqtt_use_tls at offs 0x00000CA5 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000CA3 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte mqtt_use_tls;
-	// mqtt_verify_tls_cert at offs 0x00000CA6 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000CA4 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// mqtt_verify_tls_cert at offs 0x00000CA6 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000CA4 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte mqtt_verify_tls_cert;
-	// mqtt_cert_file at offs 0x00000CA7 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000CA5 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// mqtt_cert_file at offs 0x00000CA7 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000CA5 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char mqtt_cert_file[20];
-	// disable_web_server at offs 0x00000CBB (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000CB9 (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// disable_web_server at offs 0x00000CBB (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000CB9 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	byte disable_web_server;
-	// unused[324] at offs 0x00000CBC (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// 	offs  0x00000CBA (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// unused[324] at offs 0x00000CBC (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// 	offs  0x00000CBA (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	//
-	// total struct size: 0x0E00 (= 3584 bytes) (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616)
-	// total struct size: 0x0DFE (= 3582 bytes) (B: ESPIDF and C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// total struct size: 0x0E00 (= 3584 bytes) (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
+	// total struct size: 0x0DFE (= 3582 bytes) (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char unused[324];
 } mainConfig_t;
 
