@@ -51,12 +51,6 @@ ifeq ($(UBSAN),1)
     LDFLAGS += -g -static-libasan -fsanitize=undefined
 endif
 
-
-# Append 32bit for linux
-CPPFLAGS += -m32
-CFLAGS += -m32
-LDFLAGS += -m32
-
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	@echo "Linking: $@"
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(LDLIBS)

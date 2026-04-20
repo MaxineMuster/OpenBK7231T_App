@@ -1481,6 +1481,7 @@ void Main_ForceUnsafeInit() {
 
 // inspired by test in win_main.c with a small extension to
 // simplify testing with a function
+// removed from win_main.c, so enabled for WINDOWS 
 #if ENABLE_CHECK_CFG || WINDOWS
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
@@ -1540,6 +1541,8 @@ void validateMainConfigOffsets(void) {
         CHECK(startChannelValues,   0x00000414),
         CHECK(log2lfs,              0x00000494),
         CHECK(unused_fill,          0x00000495),
+// missing padding in struct for next "int" dgr_sendFlags
+// 	would be 0x00000496 else but needs 4 byte alignment
         CHECK(dgr_sendFlags,        0x00000498),
         CHECK(dgr_recvFlags,        0x0000049C),
         CHECK(dgr_name,             0x000004A0),
@@ -1639,7 +1642,7 @@ void validateMainConfigOffsets(void) {
 	}
 }
 
-#endif // ENABLE_CHECK_CFG && ! WINDOWS
+#endif // ENABLE_CHECK_CFG && || WINDOWS
 
 
 
