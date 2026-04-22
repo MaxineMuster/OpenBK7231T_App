@@ -244,12 +244,12 @@ static commandResult_t CMD_logStartup2lfs(const void* context, const char* cmd, 
 	Tokenizer_TokenizeString(args, 0);
 	uint8_t secs = (uint8_t)Tokenizer_GetArgIntegerDefault(0,10);
 	if (secs > LOG2LFS_MAX_SECONDS) {
-		ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: Seconds out of range. Set seconds to maximum value %i",LOG2LFS_MAX_SECONDS);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "log2lfs: Seconds out of range. Set seconds to maximum value %i",LOG2LFS_MAX_SECONDS);
 		secs = LOG2LFS_MAX_SECONDS;
 	}
 	uint8_t repeats = (uint8_t)Tokenizer_GetArgIntegerDefault(1,1);
 	if (repeats > LOG2LFS_MAX_REPEATS) {
-		ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: Repeats out of range. Set repeats to maximum value %i",LOG2LFS_MAX_REPEATS);
+		ADDLOG_ERROR(LOG_FEATURE_CMD, "log2lfs: Repeats out of range. Set repeats to maximum value %i",LOG2LFS_MAX_REPEATS);
 		repeats = LOG2LFS_MAX_REPEATS;
 	}
 	CFG_Set_log2lfs(LOG2LFS_ENCODE(secs,repeats));
@@ -648,6 +648,7 @@ void log2lfs_set_next_startup(){
 	// not repeating? Set to 0 for next startup
 		CFG_Set_log2lfs(0);
 	}
+	ADDLOG_INFO(LOG_FEATURE_RAW, "log2lfs: Remaining logs to LFS: %i",LOG2LFS_REPEATS(act)-1);
 }
 
 
@@ -790,7 +791,7 @@ static void log2lfs_thread(beken_thread_arg_t arg)
     int n;
 
     if (!lf) {
-        ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: could not allocate lfs_file_t");
+        ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: could not allocate lfs_file_t");
         goto done;
     }
 
@@ -840,12 +841,12 @@ static void log2lfs_thread(beken_thread_arg_t arg)
     }
 
     if (lfs_file_open(&lfs, lf, g_lfsLogName, LFS_O_RDWR | LFS_O_CREAT) < 0) {
-        ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: could not open %s", g_lfsLogName);
+        ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: could not open %s", g_lfsLogName);
         goto done;
     }
     file_open = 1;
     lfs_file_seek(&lfs, lf, 0, LFS_SEEK_END);
-    ADDLOG_INFO(LOG_FEATURE_LFS, "log2lfs: writing to %s", g_lfsLogName);
+    ADDLOG_INFO(LOG_FEATURE_RAW, "log2lfs: writing to %s", g_lfsLogName);
 
     // Drain taillfs continuously until the capture window closes.
 // not needed if logging only on startup
@@ -853,7 +854,7 @@ static void log2lfs_thread(beken_thread_arg_t arg)
     while (g_secondsElapsed <= g_log2lfs) {
         while ((n = getData(chunk, sizeof(chunk), &logMemory.taillfs)) > 0) {
             if (lfs_file_write(&lfs, lf, chunk, n) < 0) {
-                ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: write error, stopping");
+                ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: write error, stopping");
                 goto done;
             }
         }
@@ -868,7 +869,7 @@ static void log2lfs_thread(beken_thread_arg_t arg)
 done:
     if (file_open) {
         lfs_file_close(&lfs, lf);
-        ADDLOG_INFO(LOG_FEATURE_LFS, "log2lfs: done, file closed");
+        ADDLOG_INFO(LOG_FEATURE_RAW, "log2lfs: done, file closed");
     }
     os_free(lf);
     log2lfs_set_next_startup();
@@ -896,11 +897,11 @@ static void LOG_LFS_StartThread(const char *prefix)
             (beken_thread_function_t)log2lfs_thread,
             0x800,
             (beken_thread_arg_t)0) != kNoErr) {
-        ADDLOG_ERROR(LOG_FEATURE_LFS, "log2lfs: could not create thread");
+        ADDLOG_ERROR(LOG_FEATURE_RAW, "log2lfs: could not create thread");
 // only needed for logging during operation.
 //        g_log2lfs_running = 0;
     } else {
-        ADDLOG_DEBUG(LOG_FEATURE_LFS, "log2lfs: created thread");    
+        ADDLOG_DEBUG(LOG_FEATURE_RAW, "log2lfs: created thread");
     }
 }
 
