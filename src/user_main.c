@@ -1481,8 +1481,8 @@ void Main_ForceUnsafeInit() {
 
 // inspired by test in win_main.c with a small extension to
 // simplify testing with a function
-// removed from win_main.c, so enabled for WINDOWS 
-#if ENABLE_CHECK_CFG || WINDOWS
+// removed from win_main.c (enabled for WINDOWS in obk_config.h)
+#if ENABLE_CHECK_CFG
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 
 struct OffsetCheck {
@@ -1799,13 +1799,15 @@ void Main_Init_After_Delay()
 	// if we want startup log to be saved to LFS
 	g_log2lfs = LOG2LFS_SECONDS(CFG_Get_log2lfs());
 #if WINDOWS
-	// don't run log2lfs in selTestMode  - it will kill LFS while 
+	// don't run log2lfs in selfTestMode  - it will kill LFS while 
 	// log2lfs uses LFS 
 	extern int g_selfTestsMode;
 	if ( g_selfTestsMode != 0) g_log2lfs = 0;
-	// for testing: set to log first 20 seconds
+	// uncomment for testing on Simulator: set to log first 20 seconds
+/*
 	else
 		if (g_log2lfs == 0) g_log2lfs = 20;
+*/
 #endif
 	if (g_log2lfs > 0) initLog2LFS();
 //	bk_printf("g_log2lfs=%i\r\n", g_log2lfs);

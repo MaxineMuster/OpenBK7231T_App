@@ -211,6 +211,8 @@
 #define ENABLE_DRIVER_DMX						1
 #define ENABLE_DRIVER_MQTTSERVER				1
 //#define ENABLE_DRIVER_ARISTON					1
+// moved from "windows only" to general feature enabled here
+#define ENABLE_CHECK_CFG						1
 
 #elif PLATFORM_BL602
 
@@ -744,11 +746,6 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
-// test for writing log to LFS: enable for all platforms, if FLS is present:
-#if ENABLE_LITTLEFS
-#define ENABLE_LOG2LFS	1
-#endif
-#define ENABLE_CHECK_CFG 1
 
 // closing OBK_CONFIG_H
 #endif
