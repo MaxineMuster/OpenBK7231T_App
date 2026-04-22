@@ -1670,62 +1670,59 @@ typedef struct mainConfig_s {
 	//   0x00000525 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	obkStaticIP_t staticIP;
 	// ledRemap_t (5 bytes): staticIP_off + 16
+	//   0x00000537 (D: else/default/ESP8266)
+	//   0x00000537 (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x00000537 (B: ESPIDF  - due to padding before (would be 0x00000535))
+	//   0x00000535 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	ledRemap_t ledRemap;
 	// led_corr_t (24 bytes): ledRemap_off + 5
+	//   0x0000053C (D: else/default/ESP8266)
+	//   0x0000053C (A: W800/BK7252/BK7252N/XR872/BL616)
+	//   0x0000053C (B: ESPIDF  - due to padding before (would be 0x0000053A))
+	//   0x0000053A (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X) NOT 4 byte aligend for led_corr using floats!
+	// 	--> "hidden" padding to start at 0x0000053C
+	// so after two "undocumented" padding, now all platforms are "aligned" to the same adresses
+	// starting here !!!
 	led_corr_t led_corr;
 	// mqtt_group at offset:
 	//   0x00000554 (D: else/default/ESP8266)
 	//   0x00000554 (A: W800/BK7252/BK7252N/XR872/BL616)
 	//   0x00000554 (B: ESPIDF  - due to padding before (would be 0x00000552))
-	//   0x00000552 (C: RTL8720D family)  <-- 2 bytes earlier than D/A
+	//   0x00000554 (C: RTL8720D family)  <-- 2 bytes padding before led_corr ! (would be 0x00000552)
 	// alternate topic name for receiving MQTT commands
 	char mqtt_group[64];
-	// offs 0x00000594 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs 0x00000592 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// offs 0x00000594
 	byte unused_bytefill[3];
-	// offs 0x00000597 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs 0x00000595 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// offs 0x00000597
 	byte timeRequiredToMarkBootSuccessfull;
-	// offs 0x00000598 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs 0x00000596 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// offs 0x00000598
 	int ping_interval;
 	int ping_seconds;
-	// ping_host at offs 0x000005A0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x0000059E (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// ping_host at offs 0x000005A0
 	char ping_host[64];
-	// initCommandLine at offs 0x000005E0 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs 0x000005DE (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)  (dec 1504 for D/A)
+	// initCommandLine at offs 0x000005E0
 	//char initCommandLine[512];
 #define ALLOW_SSID2 1
 #define ALLOW_WEB_PASSWORD 1
 	char initCommandLine[1568];
-	// wifi_ssid2 at offs 0x00000C00 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000BFE (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// wifi_ssid2 at offs 0x00000C00
 	char wifi_ssid2[64];
-	// wifi_pass2 at offs 0x00000C40 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000C3E (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// wifi_pass2 at offs 0x00000C40
 	char wifi_pass2[68];
-	// webPassword at offs 0x00000C84 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000C82 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// webPassword at offs 0x00000C84
 	char webPassword[33];
-	// mqtt_use_tls at offs 0x00000CA5 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000CA3 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// mqtt_use_tls at offs 0x00000CA5
 	byte mqtt_use_tls;
-	// mqtt_verify_tls_cert at offs 0x00000CA6 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000CA4 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// mqtt_verify_tls_cert at offs 0x00000CA6
 	byte mqtt_verify_tls_cert;
-	// mqtt_cert_file at offs 0x00000CA7 (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000CA5 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// mqtt_cert_file at offs 0x00000CA7
 	char mqtt_cert_file[20];
-	// disable_web_server at offs 0x00000CBB (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000CB9 (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// disable_web_server at offs 0x00000CBB
 	byte disable_web_server;
-	// unused[324] at offs 0x00000CBC (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// 	offs  0x00000CBA (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
+	// unused[324] at offs 0x00000CBC
 	//
-	// total struct size: 0x0E00 (= 3584 bytes) (D: else/default/ESP8266 and A: W800/BK7252/BK7252N/XR872/BL616 - and (due to padding) B: ESPIDF)
-	// total struct size: 0x0DFE (= 3582 bytes) (C: RTL8720D/RTL8721DA/RTL8720E/TXW81X)
 	char unused[324];
+	// total struct size: 0x0E00 (= 3584 bytes)
 } mainConfig_t;
 
 

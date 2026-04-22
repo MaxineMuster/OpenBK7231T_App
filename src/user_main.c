@@ -1496,116 +1496,139 @@ struct OffsetCheck {
 void validateMainConfigOffsets(void) {
     const struct OffsetCheck checks[] = {
         // Starting with bese offsets (same for all platforms
-        CHECK(ident0,               0x00000000),
-        CHECK(version,              0x00000004),
-        CHECK(genericFlags,         0x00000008),
-        CHECK(genericFlags2,        0x0000000C),
-        CHECK(changeCounter,        0x00000010),
-        CHECK(wifi_ssid,            0x00000014),
-        CHECK(wifi_pass,            0x00000054),
-        CHECK(mqtt_host,            0x00000094),
-        CHECK(mqtt_clientId,        0x00000194),
-        CHECK(mqtt_userName,        0x000001D4),
-        CHECK(mqtt_pass,            0x00000214),
-        CHECK(mqtt_port,            0x00000294),
-        CHECK(webappRoot,           0x00000298),
-        CHECK(mac,                  0x000002D8),
-        CHECK(shortDeviceName,      0x000002DE),
-        CHECK(longDeviceName,       0x000002FE),
-        CHECK(pins,                 0x0000033E),
+        CHECK(ident0,                             0x00000000),
+        CHECK(ident1,                             0x00000001),
+        CHECK(ident2,                             0x00000002),
+        CHECK(crc,                                0x00000003),
+        CHECK(version,                            0x00000004),
+        CHECK(genericFlags,                       0x00000008),
+        CHECK(genericFlags2,                      0x0000000C),
+        CHECK(changeCounter,                      0x00000010),
+        CHECK(otaCounter,                         0x00000012),
+        CHECK(wifi_ssid,                          0x00000014),
+        CHECK(wifi_pass,                          0x00000054),
+        CHECK(mqtt_host,                          0x00000094),
+        CHECK(mqtt_clientId,                      0x00000194),
+        CHECK(mqtt_userName,                      0x000001D4),
+        CHECK(mqtt_pass,                          0x00000214),
+        CHECK(mqtt_port,                          0x00000294),
+        CHECK(webappRoot,                         0x00000298),
+        CHECK(mac,                                0x000002D8),
+        CHECK(shortDeviceName,                    0x000002DE),
+        CHECK(longDeviceName,                     0x000002FE),
+        CHECK(pins,                               0x0000033E),
 
 #if PLATFORM_W800 || PLATFORM_BK7252 || PLATFORM_BK7252N || PLATFORM_XR872 || PLATFORM_BL616
         // PLATFORM GROUP A 
-        CHECK(startChannelValues,   0x0000040E),
-        CHECK(log2lfs,              0x0000048E),
-        CHECK(unused_fill,          0x0000048F),
-        CHECK(dgr_sendFlags,        0x00000490),
-        CHECK(dgr_recvFlags,        0x00000494),
-        CHECK(dgr_name,             0x00000498),
-        CHECK(ntpServer,            0x000004A8),
-        CHECK(cal,                  0x000004C8),
-        CHECK(buttonShortPress,     0x000004E8),
-        CHECK(buttonLongPress,      0x000004E9),
-        CHECK(LFS_Size,             0x000004EC),
-        CHECK(loggerFlags,          0x000004F0),
-        CHECK(mqtt_group,           0x00000554),
-        CHECK(webPassword,          0x00000C84),
-        CHECK(mqtt_use_tls,         0x00000CA5),
-        CHECK(mqtt_verify_tls_cert, 0x00000CA6),
-        CHECK(mqtt_cert_file,       0x00000CA7),
-        CHECK(disable_web_server,   0x00000CBB),
-        CHECK(unused,               0x00000CBC),
+        CHECK(startChannelValues,                 0x0000040E),
+        CHECK(log2lfs,                            0x0000048E),
+        CHECK(unused_fill,                        0x0000048F),
+        CHECK(dgr_sendFlags,                      0x00000490),
+        CHECK(dgr_recvFlags,                      0x00000494),
+        CHECK(dgr_name,                           0x00000498),
+        CHECK(ntpServer,                          0x000004A8),
+        CHECK(cal,                                0x000004C8),
+        CHECK(buttonShortPress,                   0x000004E8),
+        CHECK(buttonLongPress,                    0x000004E9),
+        CHECK(buttonHoldRepeat,                   0x000004EA),
+        CHECK(unused_fill1,                       0x000004EB),
+        CHECK(LFS_Size,                           0x000004EC),
+        CHECK(loggerFlags,                        0x000004F0),
+        CHECK(unusedSectorAB,                     0x000004F4),
+        CHECK(staticIP,                           0x00000527),
+        CHECK(ledRemap,                           0x00000537),
+        CHECK(led_corr,                           0x0000053C),
 
 #elif PLATFORM_ESPIDF
         // PLATFORM GROUP B
-        CHECK(startChannelValues,   0x00000414),
-        CHECK(log2lfs,              0x00000494),
-        CHECK(unused_fill,          0x00000495),
+        CHECK(startChannelValues,                 0x00000414),
+        CHECK(log2lfs,                            0x00000494),
+        CHECK(unused_fill,                        0x00000495),
 // missing padding in struct for next "int" dgr_sendFlags
 // 	would be 0x00000496 else but needs 4 byte alignment
-        CHECK(dgr_sendFlags,        0x00000498),
-        CHECK(dgr_recvFlags,        0x0000049C),
-        CHECK(dgr_name,             0x000004A0),
-        CHECK(ntpServer,            0x000004B0),
-        CHECK(cal,                  0x000004D0),
-        CHECK(buttonShortPress,     0x000004F0),
-        CHECK(buttonLongPress,      0x000004F1),
-        CHECK(LFS_Size,             0x000004F4),
-        CHECK(loggerFlags,          0x000004F8),
-        CHECK(mqtt_group,           0x00000554),
-        CHECK(webPassword,          0x00000C84),
-        CHECK(mqtt_use_tls,         0x00000CA5),
-        CHECK(mqtt_verify_tls_cert, 0x00000CA6),
-        CHECK(mqtt_cert_file,       0x00000CA7),
-        CHECK(disable_web_server,   0x00000CBB),
-        CHECK(unused,               0x00000CBC),
+        CHECK(dgr_sendFlags,                      0x00000498),
+        CHECK(dgr_recvFlags,                      0x0000049C),
+        CHECK(dgr_name,                           0x000004A0),
+        CHECK(ntpServer,                          0x000004B0),
+        CHECK(cal,                                0x000004D0),
+        CHECK(buttonShortPress,                   0x000004F0),
+        CHECK(buttonLongPress,                    0x000004F1),
+        CHECK(buttonHoldRepeat,                   0x000004F2),
+        CHECK(unused_fill1,                       0x000004F3),
+        CHECK(LFS_Size,                           0x000004F4),
+        CHECK(loggerFlags,                        0x000004F8),
+        CHECK(unusedSectorAB,                     0x000004FC),
+        CHECK(staticIP,                           0x00000527),
+        CHECK(ledRemap,                           0x00000537),
+        CHECK(led_corr,                           0x0000053C),
 
 #elif PLATFORM_RTL8720D || PLATFORM_RTL8721DA || PLATFORM_RTL8720E || PLATFORM_TXW81X
         // PLATFORM GROUP C
-        CHECK(startChannelValues,   0x0000043E),
-        CHECK(log2lfs,              0x000004BE),
-        CHECK(unused_fill,          0x000004BF),
-        CHECK(dgr_sendFlags,        0x000004C0),
-        CHECK(dgr_recvFlags,        0x000004C4),
-        CHECK(dgr_name,             0x000004C8),
-        CHECK(ntpServer,            0x000004D8),
-        CHECK(cal,                  0x000004F8),
-        CHECK(buttonShortPress,     0x00000518),
-        CHECK(buttonLongPress,      0x00000519),
-        CHECK(LFS_Size,             0x0000051C),
-        CHECK(loggerFlags,          0x00000520),
-        CHECK(mqtt_group,           0x00000552),
-        CHECK(webPassword,          0x00000C82),
-        CHECK(mqtt_use_tls,         0x00000CA3),
-        CHECK(mqtt_verify_tls_cert, 0x00000CA4),
-        CHECK(mqtt_cert_file,       0x00000CA5),
-        CHECK(disable_web_server,   0x00000CB9),
-        CHECK(unused,               0x00000CBA),
+        CHECK(startChannelValues,                 0x0000043E),
+        CHECK(log2lfs,                            0x000004BE),
+        CHECK(unused_fill,                        0x000004BF),
+        CHECK(dgr_sendFlags,                      0x000004C0),
+        CHECK(dgr_recvFlags,                      0x000004C4),
+        CHECK(dgr_name,                           0x000004C8),
+        CHECK(ntpServer,                          0x000004D8),
+        CHECK(cal,                                0x000004F8),
+        CHECK(buttonShortPress,                   0x00000518),
+        CHECK(buttonLongPress,                    0x00000519),
+        CHECK(buttonHoldRepeat,                   0x0000051A),
+        CHECK(unused_fill1,                       0x0000051B),
+        CHECK(LFS_Size,                           0x0000051C),
+        CHECK(loggerFlags,                        0x00000520),
+        CHECK(unusedSectorAB,                     0x00000524),
+        CHECK(staticIP,                           0x00000525),
+        CHECK(ledRemap,                           0x00000535),
+// missing padding in struct for next struct "led_corr" is a struct using floats,
+// 	it needs to be 4 byte aligned
+// 	would be at 0x0000053A else but needs 4 byte alignment
+//	so 0x0000053A and 0x0000053B are unused
+        CHECK(led_corr,                           0x0000053C),
 
 #else
         // PLATFORM GROUP D (Default/ESP8266)
-        CHECK(startChannelValues,   0x000003DE),
-        CHECK(log2lfs,              0x0000045E),
-        CHECK(unused_fill,          0x0000045F),
-        CHECK(dgr_sendFlags,        0x00000460),
-        CHECK(dgr_recvFlags,        0x00000464),
-        CHECK(dgr_name,             0x00000468),
-        CHECK(ntpServer,            0x00000478),
-        CHECK(cal,                  0x00000498),
-        CHECK(buttonShortPress,     0x000004B8),
-        CHECK(buttonLongPress,      0x000004B9),
-        CHECK(buttonHoldRepeat,     0x000004BA),
-        CHECK(unused_fill1,         0x000004BB),
-        CHECK(LFS_Size,             0x000004BC),
-        CHECK(loggerFlags,          0x000004C0),
-        CHECK(mqtt_group,           0x00000554),
-        CHECK(webPassword,          0x00000C84),
-        CHECK(mqtt_use_tls,         0x00000CA5),
-        CHECK(mqtt_verify_tls_cert, 0x00000CA6),
-        CHECK(mqtt_cert_file,       0x00000CA7),
-        CHECK(disable_web_server,   0x00000CBB),
-        CHECK(unused,               0x00000CBC),
+        CHECK(startChannelValues,                 0x000003DE),
+        CHECK(log2lfs,                            0x0000045E),
+        CHECK(unused_fill,                        0x0000045F),
+        CHECK(dgr_sendFlags,                      0x00000460),
+        CHECK(dgr_recvFlags,                      0x00000464),
+        CHECK(dgr_name,                           0x00000468),
+        CHECK(ntpServer,                          0x00000478),
+        CHECK(cal,                                0x00000498),
+        CHECK(buttonShortPress,                   0x000004B8),
+        CHECK(buttonLongPress,                    0x000004B9),
+        CHECK(buttonHoldRepeat,                   0x000004BA),
+        CHECK(unused_fill1,                       0x000004BB),
+        CHECK(LFS_Size,                           0x000004BC),
+        CHECK(loggerFlags,                        0x000004C0),
+        CHECK(unusedSectorAB,                     0x000004C4),
+        CHECK(staticIP,                           0x00000527),
+        CHECK(ledRemap,                           0x00000537),
+        CHECK(led_corr,                           0x0000053C),
 #endif
+
+// after this all platforms are aligned equally again
+//        CHECK(mqtt_group,                         0x00000554),
+//
+        CHECK(unused_bytefill,                    0x00000594),
+        CHECK(timeRequiredToMarkBootSuccessfull,  0x00000597),
+        CHECK(ping_interval,                      0x00000598),
+        CHECK(ping_seconds,                       0x0000059C),
+        CHECK(ping_host,                          0x000005A0),
+        CHECK(initCommandLine,                    0x000005E0),
+        CHECK(wifi_ssid2,                         0x00000C00),
+        CHECK(wifi_pass2,                         0x00000C40),
+        CHECK(webPassword,                        0x00000C84),
+        CHECK(mqtt_use_tls,                       0x00000CA5),
+        CHECK(mqtt_verify_tls_cert,               0x00000CA6),
+        CHECK(mqtt_cert_file,                     0x00000CA7),
+        CHECK(disable_web_server,                 0x00000CBB),
+        CHECK(unused,                             0x00000CBC),
+
+
+
     };
 
 
@@ -1641,9 +1664,89 @@ void validateMainConfigOffsets(void) {
 		bk_printf("All mainConfig_t offsets validated successfully!\n");
 	}
 }
+/*
+// helper to print actual offsets in mainConfig_t
 
-#endif // ENABLE_CHECK_CFG && || WINDOWS
+#define LISTOFFSET(FIELD) { #FIELD, OFFSETOF(mainConfig_t, FIELD) }
 
+
+struct ListOffsetCheck {
+	const char *fieldName;
+	size_t actual;
+};
+
+
+void listMainConfigOffsets(void) {
+    const struct ListOffsetCheck checks[] = {
+		LISTOFFSET(ident0),
+		LISTOFFSET(ident1),
+		LISTOFFSET(ident2),
+		LISTOFFSET(crc),
+		LISTOFFSET(version),
+		LISTOFFSET(genericFlags),
+		LISTOFFSET(genericFlags2),
+		LISTOFFSET(changeCounter),
+		LISTOFFSET(otaCounter),
+		LISTOFFSET(wifi_ssid),
+		LISTOFFSET(wifi_pass),
+		LISTOFFSET(mqtt_host),
+		LISTOFFSET(mqtt_clientId),
+		LISTOFFSET(mqtt_userName),
+		LISTOFFSET(mqtt_pass),
+		LISTOFFSET(mqtt_port),
+		LISTOFFSET(webappRoot),
+		LISTOFFSET(mac),
+		LISTOFFSET(shortDeviceName),
+		LISTOFFSET(longDeviceName),
+		LISTOFFSET(pins),
+		LISTOFFSET(startChannelValues),
+		LISTOFFSET(log2lfs),
+		LISTOFFSET(unused_fill),
+		LISTOFFSET(dgr_sendFlags),
+		LISTOFFSET(dgr_recvFlags),
+		LISTOFFSET(dgr_name),
+		LISTOFFSET(ntpServer),
+		LISTOFFSET(cal),
+		LISTOFFSET(buttonShortPress),
+		LISTOFFSET(buttonLongPress),
+		LISTOFFSET(buttonHoldRepeat),
+		LISTOFFSET(unused_fill1),
+		LISTOFFSET(LFS_Size),
+		LISTOFFSET(loggerFlags),
+		LISTOFFSET(unusedSectorAB),
+		LISTOFFSET(staticIP),
+		LISTOFFSET(ledRemap),
+		LISTOFFSET(led_corr),
+		LISTOFFSET(mqtt_group),
+		LISTOFFSET(unused_bytefill),
+		LISTOFFSET(timeRequiredToMarkBootSuccessfull),
+		LISTOFFSET(ping_interval),
+		LISTOFFSET(ping_seconds),
+		LISTOFFSET(ping_host),
+		LISTOFFSET(initCommandLine),
+		LISTOFFSET(wifi_ssid2),
+		LISTOFFSET(wifi_pass2),
+		LISTOFFSET(webPassword),
+		LISTOFFSET(mqtt_use_tls),
+		LISTOFFSET(mqtt_verify_tls_cert),
+		LISTOFFSET(mqtt_cert_file),
+		LISTOFFSET(disable_web_server),
+		LISTOFFSET(unused),
+	};
+	char namepluscomma[128];
+	for (size_t i = 0; i < sizeof(checks) / sizeof(checks[0]); i++) {
+		sprintf(namepluscomma,"%s,",checks[i].fieldName);
+//		bk_printf("        CHECK(%-35s, 0x%08lX),\n", checks[i].fieldName, (unsigned long)checks[i].actual);
+		bk_printf("        CHECK(%-35s 0x%08lX),\n", namepluscomma, (unsigned long)checks[i].actual);
+	}
+
+
+}
+*/
+
+
+
+#endif // ENABLE_CHECK_CFG
 
 
 //////////////////////////////////////////////////////
@@ -1677,8 +1780,9 @@ void Main_Init_Before_Delay()
 #if ENABLE_LITTLEFS
 	LFSAddCmds();
 #endif
-#if ENABLE_CHECK_CFG || WINDOWS
+#if ENABLE_CHECK_CFG
 	validateMainConfigOffsets();
+//	listMainConfigOffsets();
 #endif
 	// only initialise certain things if we are not in AP mode
 	if (!bSafeMode)
