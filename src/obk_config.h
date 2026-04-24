@@ -744,5 +744,12 @@
 #undef ENABLE_DRIVER_IR
 #endif
 
+
+// for testing: enable log2lfs if FLS is present
+#if ENABLE_LITTLEFS
+#define ENABLE_LOG2LFS						1
+#endif
+
+
 // closing OBK_CONFIG_H
 #endif
