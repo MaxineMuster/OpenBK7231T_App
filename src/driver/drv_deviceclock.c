@@ -416,14 +416,12 @@ static inline void DST_SetRulesFromTokenizer(int add, int base2) {
     dst_config.month1 = Tokenizer_GetArgInteger(1 + add);
     dst_config.day1   = Tokenizer_GetArgInteger(2 + add) - 1;
     dst_config.hour1  = Tokenizer_GetArgInteger(3 + add);
-    dst_config.isDST1 = (add != 0);
 
     add *= -1;
     dst_config.week2  = Tokenizer_GetArgInteger(base2 + add);
     dst_config.month2 = Tokenizer_GetArgInteger(base2 + 1 + add);
     dst_config.day2   = Tokenizer_GetArgInteger(base2 + 2 + add) - 1;
     dst_config.hour2  = Tokenizer_GetArgInteger(base2 + 3 + add);
-    dst_config.isDST2 = (add == 0);  // add already flipped!
 }
 
 
@@ -449,9 +447,10 @@ commandResult_t CMD_TIME_SetDST(const void *context, const char *cmd, const char
     // if dstoffset != 1, assume minutes, if dstoffest 1, assume "1 hour", so multiply with another 60
     if ( offs == 1 ) offs = 60;
 
+    int add = (Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(6)) ? 0 : 5;
+
 /*    
     // DST1 must be before DST2 (compare month)
-    int add = (Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(6)) ? 0 : 5;
 
     dst_config.week1  = Tokenizer_GetArgInteger(0 + add);
     dst_config.month1 = Tokenizer_GetArgInteger(1 + add);
@@ -469,7 +468,9 @@ commandResult_t CMD_TIME_SetDST(const void *context, const char *cmd, const char
 */
 
     // CMD_TIME_SetDST: 10 args, base2=5
-    DST_SetRulesFromTokenizer((Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(6)) ? 0 : 5, 5);
+    DST_SetRulesFromTokenizer(add, 5);
+    dst_config.isDST1 = (Tokenizer_GetArgInteger(4 + add) != 0);
+    dst_config.isDST2 = !dst_config.isDST1;
 
     
     dst_config.DSToffset = 60 * offs;
@@ -500,9 +501,9 @@ commandResult_t CMD_TIME_CalcDST(const void *context, const char *cmd, const cha
 	// dst_config will need the information in the order of "first DST switch time in year" "second DST switch time in year"
 	// so it's independent from which one is "start" or "end" of DST
 
-/*	
 	// DST1 must be before DST2 (compare month)
 	int add = (Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(5)) ? 0 : 4;
+/*	
 	
 	dst_config.week1  = Tokenizer_GetArgInteger(0 + add);
 	dst_config.month1 = Tokenizer_GetArgInteger(1 + add);
@@ -518,12 +519,13 @@ commandResult_t CMD_TIME_CalcDST(const void *context, const char *cmd, const cha
 */
 
 	// CMD_TIME_CalcDST: 8 args, base2=4:
-	DST_SetRulesFromTokenizer((Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(5)) ? 0 : 4, 4);
+	DST_SetRulesFromTokenizer(add, 4);
 
 	dst_config.DSToffset = 3600 * Tokenizer_GetArgIntegerDefault(8, 1);
 
-	dst_config.isDST1 = (Tokenizer_GetArgInteger(1) > Tokenizer_GetArgInteger(5));
-	dst_config.isDST2 = ! dst_config.isDST1;
+	// if add == 0, the first (DSTend) date is at the beginning of the year --> so the SECOND date starts DST
+	dst_config.isDST1 = (add != 0);
+	dst_config.isDST2 = (add == 0);
 	dst_config.DSTinitialized = 1;
 
 	if (TIME_IsTimeSynced()) setDST();
