@@ -779,6 +779,9 @@
 #undef ENABLE_LOG2LFS
 #endif
 
+// TESTING 
+#define ENABLE_TIME_DST						1
+
 
 // closing OBK_CONFIG_H
 #endif

@@ -305,9 +305,7 @@ int getDST_offset() {
     return dst_config.DSTactive ? dst_config.DSToffset : 0;
 }
 
-int IsDST() {
-    return dst_config.DSTactive;
-}
+#define IsDST()              (dst_config.DSTactive)
 
 bool IsDST_initialized() {
     return dst_config.DSTinitialized;
@@ -366,17 +364,18 @@ uint32_t setDST() {
 }
 
 
-
+/*
 //
-//	             |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
+//	            |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time
 //	TIME_setDST 0 3 1 2 60 0 10 1 3 0	
-//	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
+//	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time
 commandResult_t TIME_SetDST(const int *args) {
     // d1/d2 for day and DST values, needed more than once, so store values to avoid multiple "GetArg" calls
-    uint8_t d1,d2;
+    uint8_t d1,d2,dsum;
 
     // DST1 must be before DST2
     int add = (args[1] < args[6])? 0 : 5;		// check if first entry is "before" second (compare month number)
+    int *rule = args + (args[1] < args[6])? 0 : 5;		// check if first entry is "before" second (compare month number)
     dst_config.week1 = args[add];
     dst_config.month1 = args[1+add];
     dst_config.day1 = args[2+add]-1;
@@ -390,10 +389,13 @@ commandResult_t TIME_SetDST(const int *args) {
     dst_config.hour2 = args[8+add];
     d2 = args[9+add];	// second DST offset
 
-    // no case needed for "DSToffset": one entry must be 0, one != 0, so if valid, the sum is the DST offset 
-    dst_config.DSToffset = 60*(d1+d2)*(d1*d2 == 0);
-    if ( dst_config.DSToffset == 0 )  return CMD_RES_BAD_ARGUMENT;		// neither two times 0 nor two times != 0 is valid !
+    dsum = d1+d2;
+    if ( dsum==0 || d1*d2 != 0) return CMD_RES_BAD_ARGUMENT;		// neither two times 0 nor two times != 0 is valid !
     
+    // if dstoffset != 1, assume minutes, if dstoffest 1, assume "1 hour", so multiply with another 60
+    if ( dsum == 1 ) dsum = 60;
+
+    dst_config.DSToffset = 60*dsum;
 
     dst_config.isDST1 = (d1 != 0);
     dst_config.isDST2 = (d2 != 0);
@@ -406,24 +408,77 @@ commandResult_t TIME_SetDST(const int *args) {
              dst_config.DSToffset);
     return CMD_RES_OK;
 }
+*/
+
+// helper
+static inline void DST_SetRulesFromTokenizer(int add, int base2) {
+    dst_config.week1  = Tokenizer_GetArgInteger(0 + add);
+    dst_config.month1 = Tokenizer_GetArgInteger(1 + add);
+    dst_config.day1   = Tokenizer_GetArgInteger(2 + add) - 1;
+    dst_config.hour1  = Tokenizer_GetArgInteger(3 + add);
+    dst_config.isDST1 = (add != 0);
+
+    add *= -1;
+    dst_config.week2  = Tokenizer_GetArgInteger(base2 + add);
+    dst_config.month2 = Tokenizer_GetArgInteger(base2 + 1 + add);
+    dst_config.day2   = Tokenizer_GetArgInteger(base2 + 2 + add) - 1;
+    dst_config.hour2  = Tokenizer_GetArgInteger(base2 + 3 + add);
+    dst_config.isDST2 = (add == 0);  // add already flipped!
+}
+
 
 //
-//	             |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
+//	            |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
 //	TIME_setDST 0 3 1 2 60 0 10 1 3 0	
 //	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
 commandResult_t CMD_TIME_SetDST(const void *context, const char *cmd, const char *args, int cmdFlags) {
     Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
-    if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 10)) {
+    if (Tokenizer_CheckArgsCountAndPrintWarning(cmd, 10))
         return CMD_RES_NOT_ENOUGH_ARGUMENTS;
-    }
-    int clkargs[10];
-    for (int i=0; i<10; i++){
-    	clkargs[i]=Tokenizer_GetArgInteger(i);
-    }
-    return TIME_SetDST(clkargs);
+
+    // check for valid Offsets - cache values for multple use
+    uint8_t d1=(uint8_t)Tokenizer_GetArgInteger(4);
+    uint8_t d2=(uint8_t)Tokenizer_GetArgInteger(9);
+
+    uint8_t offs = d1+d2;
+    if ( offs==0 || d1*d2 != 0) return CMD_RES_BAD_ARGUMENT;		// neither two times 0 nor two times != 0 is valid !
+    
+    // after this point we are sure, exactly one offset is set.
+    // in this case, the sum of both offsets the one offset (the other is 0)
+    
+    // if dstoffset != 1, assume minutes, if dstoffest 1, assume "1 hour", so multiply with another 60
+    if ( offs == 1 ) offs = 60;
+
+/*    
+    // DST1 must be before DST2 (compare month)
+    int add = (Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(6)) ? 0 : 5;
+
+    dst_config.week1  = Tokenizer_GetArgInteger(0 + add);
+    dst_config.month1 = Tokenizer_GetArgInteger(1 + add);
+    dst_config.day1   = Tokenizer_GetArgInteger(2 + add) - 1;
+    dst_config.hour1  = Tokenizer_GetArgInteger(3 + add);
+    dst_config.isDST1 = (Tokenizer_GetArgInteger(4 + add) != 0);
+
+    add *= -1;
+
+    dst_config.week2  = Tokenizer_GetArgInteger(5 + add);
+    dst_config.month2 = Tokenizer_GetArgInteger(6 + add);
+    dst_config.day2   = Tokenizer_GetArgInteger(7 + add) - 1;
+    dst_config.hour2  = Tokenizer_GetArgInteger(8 + add);
+    dst_config.isDST2 = (Tokenizer_GetArgInteger(9 + add) != 0);
+*/
+
+    // CMD_TIME_SetDST: 10 args, base2=5
+    DST_SetRulesFromTokenizer((Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(6)) ? 0 : 5, 5);
+
+    
+    dst_config.DSToffset = 60 * offs;
+    dst_config.DSTinitialized = 1;
+
+    if (TIME_IsTimeSynced()) setDST();
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "DST config set: offset=%d seconds", dst_config.DSToffset);
+    return CMD_RES_OK;
 }
-
-
 
 
 // to keep compatibility to prior command
@@ -431,13 +486,6 @@ commandResult_t CMD_TIME_CalcDST(const void *context, const char *cmd, const cha
 	// arguments:  nthWeekEnd, monthEnd, dayEnd, hourEnd, nthWeekStart, monthStart, dayStart, hourStart,g_DST_offset
 	// we know that new command "TIME_setDST" will take care or finding first or last DST event, so only add "0" as DST-Offset for "ending" (arg[4])
 	// and use 1 as default DST if non given (arg[9])
-	//
-	//  for reference
-	//
-	//
-	//	             |         |-- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time  
-	//	TIME_setDST 0 3 1 2 60 0 10 1 3 0	
-	//	                       |         |-- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time 
 	//
 	
 	Tokenizer_TokenizeString(args, TOKENIZER_ALLOW_QUOTES);
@@ -448,16 +496,41 @@ commandResult_t CMD_TIME_CalcDST(const void *context, const char *cmd, const cha
 		return CMD_RES_NOT_ENOUGH_ARGUMENTS;
 	}
 	
-	int clkargs[10];
-	clkargs[4]=0;	// starts with "DST-End", so after this DST offset is 0
-	for (int i=0; i<4; i++){
-		clkargs[i]=Tokenizer_GetArgInteger(i);
-	}
-	for (int i=4; i<8; i++){
-		clkargs[i+1]=Tokenizer_GetArgInteger(i);
-	}
-	clkargs[9]=Tokenizer_GetArgIntegerDefault(8, 1)*60;	// we'll use minutes with TIME_SetDST
-	return TIME_SetDST(clkargs);
+
+	// dst_config will need the information in the order of "first DST switch time in year" "second DST switch time in year"
+	// so it's independent from which one is "start" or "end" of DST
+
+/*	
+	// DST1 must be before DST2 (compare month)
+	int add = (Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(5)) ? 0 : 4;
+	
+	dst_config.week1  = Tokenizer_GetArgInteger(0 + add);
+	dst_config.month1 = Tokenizer_GetArgInteger(1 + add);
+	dst_config.day1   = Tokenizer_GetArgInteger(2 + add) - 1;
+	dst_config.hour1  = Tokenizer_GetArgInteger(3 + add);
+
+	add *= -1;
+
+	dst_config.week2  = Tokenizer_GetArgInteger(4 + add);
+	dst_config.month2 = Tokenizer_GetArgInteger(5 + add);
+	dst_config.day2   = Tokenizer_GetArgInteger(6 + add) - 1;
+	dst_config.hour2  = Tokenizer_GetArgInteger(7 + add);
+*/
+
+	// CMD_TIME_CalcDST: 8 args, base2=4:
+	DST_SetRulesFromTokenizer((Tokenizer_GetArgInteger(1) < Tokenizer_GetArgInteger(5)) ? 0 : 4, 4);
+
+	dst_config.DSToffset = 3600 * Tokenizer_GetArgIntegerDefault(8, 1);
+
+	dst_config.isDST1 = (Tokenizer_GetArgInteger(1) > Tokenizer_GetArgInteger(5));
+	dst_config.isDST2 = ! dst_config.isDST1;
+	dst_config.DSTinitialized = 1;
+
+	if (TIME_IsTimeSynced()) setDST();
+	addLogAdv(LOG_INFO, LOG_FEATURE_RAW, "CMD_TIME_CalcDST deprecated! Please use TIME_setDST!");
+	addLogAdv(LOG_INFO, LOG_FEATURE_NTP, "DST config set: offset=%d seconds", dst_config.DSToffset);
+	
+	return CMD_RES_OK;
 }
 
 
@@ -489,7 +562,7 @@ void TIME_Init() {
 	//cmddetail:{"name":"time_setDST","args":" Rule# [1/2] nthWeek month day hour DSToffset [additional minutes _after_ this Point: <DST-Offset> for 'start' of DST, 0 for 'end' of DST]",
 	//cmddetail:"descr":"Sets daylight saving time (DST).",
 	//cmddetail:"fn":"CMD_TIME_SetDST","file":"driver/drv_deviceclock.c","requires":"",
-	//cmddetail:"examples":"TIME_setDST 0 3 1 2 1 0 10 1 3 0 \n     -- 1st rule: last_week March sunday 2_o_clock 1_hour_DST_after_this_time \n     -- 2nd_rule: last_week October sunday 3_o_clock 0_hours_DST_after_this_time "}
+	//cmddetail:"examples":"TIME_setDST 0 3 1 2 60 0 10 1 3 0 \n     -- 1st rule: last_week March sunday 2_o_clock 60_minutes_DST_after_this_time \n     -- 2nd_rule: last_week October sunday 3_o_clock 0_minutes_DST_after_this_time "}
     CMD_RegisterCommand("time_setDST",CMD_TIME_SetDST, NULL);
 	//cmddetail:{"name":"clock_calcDST","args":" Depreciated! Only for backward compatibility! Please use 'TIME_setDST' in the future!",
 	//cmddetail:"descr":"Sets DST settings.",
