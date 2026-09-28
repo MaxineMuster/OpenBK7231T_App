@@ -1,5 +1,8 @@
 #if PLATFORM_LN882H || PLATFORM_LN8825
 
+#include "../../logging/logging.h"
+#include "../../new_cfg.h"
+#include "../../new_pins.h"
 #include "../hal_wifi.h"
 #include "wifi.h"
 #include "dhcp.h"
@@ -41,15 +44,13 @@
 #else
 #include "wifi_port.h"
 #include "ln_wifi_err.h"
+#include "ln_kv_api.h"
+#include "ln882h_best_bssid.h"
 
-// to find the best AP (BSSID) for the SSID we want to connect to
-char searchssid[35];	// global var to "know" SSID inside wifi_scan_complete_cb()
-char t_bssid[7];	// global var to set "best" BSSID inside wifi_scan_complete_cb()
-int t_chan = 0;		// global var to set channel for "best" BSSID inside wifi_scan_complete_cb()
-int t_rssi = -5000;	// global var for RSSI to set channel for "best" BSSID inside wifi_scan_complete_cb()
-bool scandone = false;
-int scancount = 0;
-
+static ln_best_bssid_t best_bssid;
+static unsigned int retry_without_best_bssid;
+static unsigned int bssid_association_pending;
+static obkFastConnectData_t fcdata = { 0 };
 #endif
 
 
@@ -74,7 +75,7 @@ void alert_log(const char *format, ...) {
 // length of "192.168.103.103" is 15 but we also need a NULL terminating character
 static char g_IP[32] = "unknown";
 static int g_bOpenAccessPointMode = 0;
-static uint8_t psk_value[40]      = {0x0};
+static uint8_t* psk_value = NULL;
 
 
 struct netif* get_connected_nif() {
@@ -212,18 +213,13 @@ void HAL_WiFi_SetupStatusCallback(void (*cb)(int code))
 }
 
 #if PLATFORM_LN882H
-bool bestBSSIDfound(){
-  for (int i = 0; i < 6; i++) {
-    if (t_bssid[i] != 0xFF) {
-        return true;
-    }
-  }
-  return false;
-}
 
 static void wifi_scan_complete_cb(void * arg)
 {
     LN_UNUSED(arg);
+    if (ln_bssid_scan_complete() || !ln_bssid_list_acquire()) {
+        return;
+    }
 
     ln_list_t *list;
     uint8_t node_count = 0;
@@ -246,9 +242,11 @@ static void wifi_scan_complete_cb(void * arg)
     }
 
     wifi_manager_ap_list_update_enable(LN_TRUE);
+    ln_bssid_list_release();
 }
 
 static void wifi_connect_failed_cb(void* arg) {
+    __atomic_store_n(&bssid_association_pending, 0, __ATOMIC_RELEASE);
     wifi_sta_connect_failed_reason_t reason = *((wifi_sta_connect_failed_reason_t*) arg);
     if (reason == WIFI_STA_CONN_WRONG_PWD) {
         if (g_wifiStatusCallback != NULL) {
@@ -271,134 +269,46 @@ static void wifi_disconnected_cb(void* arg)
 static void wifi_connected_cb(void* arg)
 {
     LN_UNUSED(arg);
+#if PLATFORM_LN882H
+    __atomic_store_n(&retry_without_best_bssid, 0, __ATOMIC_RELEASE);
+    __atomic_store_n(&bssid_association_pending, 0, __ATOMIC_RELEASE);
+#endif
     if(g_wifiStatusCallback != NULL)
     {
         g_wifiStatusCallback(WIFI_STA_CONNECTED);
     }
-}
-
 #if PLATFORM_LN882H
-static OS_Semaphore_t * sem_scan = NULL;
-
-static void exec_wifi_scan_complete_cb(void * arg)
-{
-    LN_UNUSED(arg);
-    scancount++;
-    LOG(LOG_LVL_INFO, "\r\n\r\n##################### exec_wifi_scan_complete_cb() START  -- scancount=%d ##################### \r\n\r\n",scancount);
-
-    ln_list_t *list;
-    uint8_t node_count = 0;
-    ap_info_node_t *pnode;
-
-    wifi_manager_ap_list_update_enable(LN_FALSE);
-
-    // 1.get ap info list.
-    wifi_manager_get_ap_list(&list, &node_count);
-
-    // 2. loop all ap info in the list.
-    LN_LIST_FOR_EACH_ENTRY(pnode, ap_info_node_t, list,list)
+    if(CFG_HasFlag(OBK_FLAG_WIFI_ENHANCED_FAST_CONNECT))
     {
-        uint8_t * mac = (uint8_t*)pnode->info.bssid;
-        ap_info_t *ap_info = &pnode->info;
+        const char* ssid = NULL;
+        const uint8_t* bssid = NULL;
+        uint8_t chan = 0;
+        wifi_get_sta_conn_info(&ssid, &bssid);
+        HAL_GetWiFiChannel(&chan);
 
-	// try to find "best" BSSID for the SSID "searchssid" - set inside void wifi_init_sta()
-/*
-	LOG(LOG_LVL_INFO, "TEST AP DEBUG: searchssid=%s - apssid=%s  - actual best found BSSID %02X:%02X:%02X:%02X:%02X:%02X with RSSI=%i on channel %i \r\n"
-		" (actual BSSID %02X:%02X:%02X:%02X:%02X:%02X with RSSI=%i on channel %i) \r\n", searchssid, ap_info->ssid,
-		t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5], t_rssi, t_chan,
-		mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ap_info->rssi, ap_info->channel);
-*/
-	LOG(LOG_LVL_INFO, "\tAP DEBUG: Found SSID=%s on BSSID %02X:%02X:%02X:%02X:%02X:%02X with RSSI=%i on channel %i \r\n",
-		ap_info->ssid, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ap_info->rssi, ap_info->channel);
-	if (! strcmp(searchssid,ap_info->ssid)){
-		LOG(LOG_LVL_INFO, "Find best AP: for SSID=%s found BSSID %02X:%02X:%02X:%02X:%02X:%02X with RSSI=%i on channel %i ... ", searchssid, mac[0], mac[1], mac[2], mac[3], mac[4], mac[5], ap_info->rssi, ap_info->channel);
-		if (ap_info->rssi > t_rssi) {
-			memcpy(t_bssid, mac, sizeof(t_bssid));
-			t_chan = ap_info->channel;
-			LOG(LOG_LVL_INFO, "better than prior best RSSI=%i\r\n",t_rssi);
-			t_rssi=ap_info->rssi;
-		}
-		else {
-			LOG(LOG_LVL_INFO, "RSSI=%i is still the best\r\n",t_rssi);
-		}
-	}
+        if((psk_value && memcmp(psk_value, fcdata.psk, sizeof(fcdata.psk)) != 0) ||
+            memcmp(fcdata.bssid, bssid, 6) != 0 ||
+            chan != fcdata.channel)
+        {
+            ADDLOG_INFO(LOG_FEATURE_GENERAL, "Saved fast connect data differ to current one, saving...");
+            memcpy(fcdata.bssid, bssid, 6);
+            fcdata.channel = chan;
+            memcpy(fcdata.psk, psk_value, sizeof(fcdata.psk));
+            ln_kv_set("fcdata", &fcdata, sizeof(obkFastConnectData_t));
+        }
     }
-
-    wifi_manager_ap_list_update_enable(LN_TRUE);
-    scandone = true;
-    LOG(LOG_LVL_INFO, "\r\n\r\n##################### exec_wifi_scan_complete_cb() END ##################### \r\n\r\n");
-
-    if (sem_scan) {
-       OS_SemaphoreRelease(sem_scan);
-    }
-}
-
-void wifi_exec_scan(void * arg)
-{
-    LN_UNUSED(arg);
-
-    #define SCAN_TIMES       	2
-    #define SCAN_TIMEOUT        2000
-
-    uint8_t scan_cnt = SCAN_TIMES;
-    scancount = 0;
-
-    wifi_scan_cfg_t scan_cfg = {
-        .channel   = 0,
-        .scan_type = WIFI_SCAN_TYPE_ACTIVE,
-        .scan_time = 30,
-    };
-
-
-    // 1. creat sem, reg scan complete callback.
-    sem_scan = OS_Malloc(sizeof(OS_Semaphore_t));
-    if (!sem_scan)
-    {
-        return;
-    }
-    memset(sem_scan, 0, sizeof(OS_Semaphore_t));
-    if(OS_SemaphoreCreate(sem_scan, 0, 1) != 0)
-    {
-        if (sem_scan) OS_Free(sem_scan);
-        sem_scan = NULL;
-        return;
-    }
-
-    wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &exec_wifi_scan_complete_cb);
-
-    // 2. start scan, wait scan complete
-    for (; scan_cnt > 0; scan_cnt--)
-    {
-        wifi_sta_scan(&scan_cfg);
-        if (OS_OK != OS_SemaphoreWait(sem_scan, SCAN_TIMEOUT)) {
-		if (sem_scan) {
-			OS_SemaphoreDelete(sem_scan);
-			OS_Free(sem_scan);
-			sem_scan = NULL;
-		}
-		return;
-	}
-    }
-
-    // 3. delete sem, callback
-    wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, NULL);
-    if (sem_scan){
-	OS_SemaphoreDelete(sem_scan);
-	OS_Free(sem_scan);
-	sem_scan = NULL;
-    }
-}
 #endif
+}
 
-void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
+void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip, uint8_t chan, uint8_t* bssid, uint8_t* psk)
 {
 #if PLATFORM_LN882H
     sta_ps_mode_t ps_mode = PM_WIFI_DEFAULT_PS_MODE;
 	wifi_sta_connect_t connect = {
 		.ssid    = oob_ssid,
 		.pwd     = connect_key,
-		.bssid   = NULL,
-		.psk_value = NULL,
+		.bssid   = bssid,
+		.psk_value = psk,
 	};
 #else
     wifi_config_t connect = { 0 };
@@ -412,10 +322,11 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 #endif
 //	wifi_manager_set_ap_list_sort_rule(1);
 	wifi_scan_cfg_t scan_cfg = {
-        .channel   = 0,
+        .channel   = chan,
         .scan_type = WIFI_SCAN_TYPE_ACTIVE,
-        .scan_time = 30,
+        .scan_time = 20,
 	};
+
     //1. sta mac get
     uint8_t mac_addr[6];
     if (SYSPARAM_ERR_NONE != sysparam_sta_mac_get(mac_addr)) {
@@ -459,29 +370,24 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 
     //3. wifi start
 #if PLATFORM_LN882H
-    strcpy(searchssid,oob_ssid); 	// so callback function can find "best BSSID" for the SSID we want to connect to
+    ln_bssid_init();
+    wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &wifi_scan_complete_cb);
 
-    if(WIFI_ERR_NONE != wifi_sta_start(mac_addr, ps_mode)){
+    bool can_select_bssid = wifi_sta_start(mac_addr, ps_mode) == WIFI_ERR_NONE;
+    if (!can_select_bssid) {
         LOG(LOG_LVL_ERROR, "[%s]wifi sta start failed!!!\r\n", __func__);
     }
-    // set all entries to "0xFF" in case no BSSID found
-    memset(t_bssid, 0xFF, sizeof(t_bssid));
-    t_rssi = -5000;
 
-    wifi_exec_scan(&scan_cfg);
-    if ( bestBSSIDfound() ){
-	connect.bssid = t_bssid;
-	scan_cfg.channel = t_chan;
-	LOG(LOG_LVL_INFO, "\r\n\r\nFind best AP: BSSID/channel for SSID=%s set!\r\n\tBSSID=%02X:%02X:%02X:%02X:%02X:%02X channel=%d\r\n\r\n", oob_ssid, t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5], t_chan);
-    } else {
-	    LOG(LOG_LVL_INFO, "\r\n\r\nFind best AP: for SSID=%s not found (BSSID %02X:%02X:%02X:%02X:%02X:%02X channel=%d)\r\n\r\n", oob_ssid, t_bssid[0], t_bssid[1], t_bssid[2], t_bssid[3], t_bssid[4], t_bssid[5], t_chan);
-    }
-
-    connect.psk_value = NULL;
-    if (strlen(connect.pwd) != 0) {
-        if (0 == ln_psk_calc(connect.ssid, connect.pwd, psk_value, sizeof (psk_value))) {
-            connect.psk_value = psk_value;
-            hexdump(LOG_LVL_INFO, "psk value ", psk_value, sizeof(psk_value));
+    if(connect.psk_value == NULL)
+    {
+        if(strlen(connect.pwd) != 0)
+        {
+            if(!psk_value) psk_value = os_malloc(40);
+            if(0 == ln_psk_calc(connect.ssid, connect.pwd, psk_value, 40))
+            {
+                connect.psk_value = psk_value;
+                hexdump(LOG_LVL_INFO, "psk value ", psk_value, 40);
+            }
         }
     }
 #endif
@@ -491,13 +397,49 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
     }
 
 #if PLATFORM_LN882H
-    wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_SCAN_COMPLETE, &wifi_scan_complete_cb);
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECTED, &wifi_connected_cb);
     wifi_manager_reg_event_callback(WIFI_MGR_EVENT_STA_CONNECT_FAILED, &wifi_connect_failed_cb);
     extern void ln_wpa_sae_enable(void);
     ln_wpa_sae_enable();
 
-    wifi_sta_connect(&connect, &scan_cfg);
+    /* An explicit BSSID/channel belongs to fast connect; do not override it.
+     * If the last selected AP did not connect, try unrestricted SSID association
+     * on the next ordinary attempt instead of repeatedly pinning that same AP.
+     */
+    if (can_select_bssid && bssid == NULL && chan == 0) {
+        if (__atomic_exchange_n(&retry_without_best_bssid, 0, __ATOMIC_ACQ_REL)) {
+            ADDLOG_INFO(LOG_FEATURE_GENERAL, "Retrying WiFi without a selected BSSID");
+        } else if (!__atomic_load_n(&bssid_association_pending, __ATOMIC_ACQUIRE)) {
+            /* Wait for the previous association's terminal SDK callback before
+             * arming another pre-scan. Its own scan callback has no request ID.
+             */
+            ln_best_bssid_t candidate;
+            ln_bssid_result_t selected = ln_bssid_select(oob_ssid, &candidate);
+            if (selected == LN_BSSID_FOUND) {
+                best_bssid = candidate;
+                connect.bssid = best_bssid.bssid;
+                scan_cfg.channel = best_bssid.channel;
+                __atomic_store_n(&retry_without_best_bssid, 1, __ATOMIC_RELEASE);
+                ADDLOG_INFO(LOG_FEATURE_GENERAL, "Selected BSSID " MACSTR " channel %u RSSI %d",
+                    MAC2STR(best_bssid.bssid), best_bssid.channel, best_bssid.rssi);
+            } else if (selected == LN_BSSID_SCAN_FAILED) {
+                ADDLOG_WARN(LOG_FEATURE_GENERAL, "BSSID pre-scan failed; using normal association until reboot");
+            }
+        }
+    }
+    unsigned int was_pending = __atomic_exchange_n(&bssid_association_pending, 1, __ATOMIC_ACQ_REL);
+    if (wifi_sta_connect(&connect, &scan_cfg) != WIFI_ERR_NONE) {
+        /* A rejected retry must not forget callbacks owned by an older request.
+         * Nor should it resurrect pending state cleared by a terminal callback.
+         */
+        if (!was_pending) {
+            __atomic_store_n(&bssid_association_pending, 0, __ATOMIC_RELEASE);
+        }
+        ADDLOG_WARN(LOG_FEATURE_GENERAL, "WiFi association could not start");
+        if (g_wifiStatusCallback != NULL) {
+            g_wifiStatusCallback(WIFI_STA_DISCONNECTED);
+        }
+    }
 #else
     netif_set_hostname(ethernetif_get_netif(STATION_IF), CFG_GetDeviceName());
     hal_sleep_set_mode(ACTIVE);
@@ -530,7 +472,7 @@ void wifi_init_sta(const char* oob_ssid, const char* connect_key, obkStaticIP_t 
 void HAL_ConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t *ip)
 {
 	g_bOpenAccessPointMode = 0;
-	wifi_init_sta(oob_ssid, connect_key, ip);
+	wifi_init_sta(oob_ssid, connect_key, ip, 0, NULL, NULL);
 }
 
 void HAL_DisconnectFromWifi()
@@ -632,6 +574,30 @@ int HAL_SetupWiFiOpenAccessPoint(const char* ssid)
 	g_bOpenAccessPointMode = 1;
 
 	return 0;
+}
+
+void HAL_FastConnectToWiFi(const char* oob_ssid, const char* connect_key, obkStaticIP_t* ip)
+{
+    if(ln_kv_has_key("fcdata") == LN_FALSE)
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "Fast connect data is empty, connecting normally");
+        HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+        return;
+    }
+    size_t len = 0;
+    ln_kv_get("fcdata", &fcdata, sizeof(obkFastConnectData_t), &len);
+    if(len == sizeof(obkFastConnectData_t))
+    {
+        ADDLOG_INFO(LOG_FEATURE_GENERAL, "We have fast connection data, connecting...");
+        wifi_init_sta(oob_ssid, connect_key, ip, fcdata.channel, (uint8_t*)&fcdata.bssid, fcdata.psk);
+        return;
+    }
+    HAL_ConnectToWiFi(oob_ssid, connect_key, ip);
+}
+
+void HAL_DisableEnhancedFastConnect()
+{
+    ln_kv_del("fcdata");
 }
 
 #else

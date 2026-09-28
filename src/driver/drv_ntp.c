@@ -60,6 +60,7 @@ static int adrLen;
 // in seconds, before next retry
 static int g_ntp_delay = 0;
 static bool g_synced = false;
+static unsigned int g_ntp_syncCount = 0;
 // time offset (time zone?) in seconds
 //#define CFG_DEFAULT_TIMEOFFSETSECONDS (-8 * 60 * 60)
 static int g_timeOffsetSeconds = 0;
@@ -116,6 +117,7 @@ void NTP_SetSimulatedTime(unsigned int timeNow) {
 	g_ntpTime += g_timeOffsetSeconds;
 */
 	TIME_setDeviceTime(timeNow);
+	g_ntp_syncCount++;
 #if ENABLE_TIME_DST
 //	g_ntpTime += setDST(0)*60;
 	setDST(0);
@@ -286,8 +288,9 @@ void NTP_CheckForReceive() {
     g_ntpTime += g_timeOffsetSeconds;
 */
    TIME_setDeviceTime((uint32_t) (secsSince1900 - NTP_OFFSET) );
+    g_ntp_syncCount++;
 //    g_ntpTime=(time_t)TIME_GetCurrentTime();
-    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time  : %u - local Time %s",(uint32_t) (secsSince1900 - NTP_OFFSET),TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_LONG));
+    addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"Unix time: %u - local Time %s",(uint32_t) (secsSince1900 - NTP_OFFSET),TS2STR(TIME_GetCurrentTime(),TIME_FORMAT_LONG));
 //    ltm = gmtime(&g_ntpTime);
 //    addLogAdv(LOG_INFO, LOG_FEATURE_NTP, LTSTR, LTM2TIME(ltm));
 
@@ -302,12 +305,12 @@ void NTP_CheckForReceive() {
     //ptm = gmtime (&g_ntpTime);
     ptm = gmtime(&g_ntpTime);
     if(ptm == 0) {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime somehow returned 0\n");
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime somehow returned 0");
     } else {
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_year: %i\n",ptm->tm_year);
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mon: %i\n",ptm->tm_mon);
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mday: %i\n",ptm->tm_mday);
-        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_hour: %i\n",ptm->tm_hour  );
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_year: %i",ptm->tm_year);
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mon: %i",ptm->tm_mon);
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_mday: %i",ptm->tm_mday);
+        addLogAdv(LOG_INFO, LOG_FEATURE_NTP,"gmtime => tm_hour: %i",ptm->tm_hour  );
     }
 #endif
     NTP_Shutdown();
@@ -380,6 +383,11 @@ void NTP_AppendInformationToHTTPIndexPage(http_request_t* request, int bPreState
 bool NTP_IsTimeSynced()
 {
     return g_synced;
+}
+
+unsigned int NTP_GetSyncCount()
+{
+    return g_ntp_syncCount;
 }
 
 #endif // #if ENABLE_NTP

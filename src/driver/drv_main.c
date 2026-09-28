@@ -2,6 +2,7 @@
 #include "../logging/logging.h"
 #include "drv_bl0937.h"
 #include "drv_bl0942.h"
+#include "drv_bl0939.h"
 #include "drv_bl_shared.h"
 #include "drv_neo6m.h"
 #include "drv_cse7766.h"
@@ -11,16 +12,19 @@
 #include "drv_ntp.h"
 #include "drv_deviceclock.h"
 #include "drv_public.h"
+#include "drv_mdns.h"
 #include "drv_ssdp.h"
 #include "drv_test_drivers.h"
 #include "drv_tuyaMCU.h"
 #include "drv_girierMCU.h"
 #include "drv_uart.h"
+#include "drv_gaitekAC.h"
 #include "drv_ds1820_simple.h"
 #include "drv_ds1820_full.h"
 #include "drv_ds1820_common.h"
 #include "drv_ds3231.h"
 #include "drv_hlw8112.h"
+#include "drv_DCF77.h"
 
 void DRV_MQTTServer_Init();
 void DRV_MQTTServer_AppendInformationToHTTPIndexPage(http_request_t *request, int bPreState);
@@ -152,6 +156,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // appendInformationToHTTPIndexPage
 	Freeze_RunFrame,                         // runQuickTick
 	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_ESPHOME_API
+	//drvdetail:{"name":"ESPHomeAPI",
+	//drvdetail:"title":"ESPHome Protocol Bridge",
+	//drvdetail:"descr":"Native ESPHome API server (port 6053) for discovering and controlling BT Proxy and other entities seamlessly in Home Assistant.",
+	//drvdetail:"requires":"BT Proxy"}
+	{ "ESPHomeAPI",                          // Driver Name
+	DRV_ESPHome_API_Init,                    // Init
+	DRV_ESPHome_API_OnEverySecond,           // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	DRV_ESPHome_API_Deinit,                  // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -381,6 +401,22 @@ static driver_t g_drivers[] = {
    	false,                                   // loaded
 	},
 #endif
+#if ENABLE_DRIVER_DCF77
+	//drvdetail:{"name":"DSCF77",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Decoding DCF77 signal (german radio time source sending near Frankfurt Main, Germany)",
+	//drvdetail:"requires":""}
+	{ "DCF77",                              // Driver Name
+   	DCF77_Init,                              // Init
+   	DCF77_OnEverySecond,                     // onEverySecond
+   	DCF77_AppendInformationToHTTPIndexPage,  // appendInformationToHTTPIndexPage
+   	DCF77_QuickTick,                         // runQuickTick
+   	DCF77_Stop,                              // stopFunction
+   	NULL,                                    // onChannelChanged
+   	NULL,                                    // onHassDiscovery
+   	false,                                   // loaded
+	},
+#endif
 #if ENABLE_DRIVER_HTTPBUTTONS
 	//drvdetail:{"name":"HTTPButtons",
 	//drvdetail:"title":"TODO",
@@ -393,7 +429,11 @@ static driver_t g_drivers[] = {
 	NULL,                                    // runQuickTick
 	NULL,                                    // stopFunction
 	NULL,                                    // onChannelChanged
+#if ENABLE_HA_DISCOVERY
+	DRV_HTTPButtons_OnHassDiscovery,        // onHassDiscovery
+#else
 	NULL,                                    // onHassDiscovery
+#endif
 	false,                                   // loaded
 	},
 #endif
@@ -586,6 +626,22 @@ static driver_t g_drivers[] = {
 	HLW8112SPI_Stop,                         // stopFunction
 	NULL,                                    // onChannelChanged
 	HLW8112_OnHassDiscovery,                 // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_BL0939SPI
+	//drvdetail:{"name":"BL0939SPI",
+	//drvdetail:"title":"BL0939 SPI dual-channel bidirectional power meter",
+	//drvdetail:"descr":"BL0939 SPI driver for dual CT clamp bidirectional power meters. Requires BL0939_SCLK, BL0939_MOSI and BL0939_MISO pin roles.",
+	//drvdetail:"requires":""}
+	{ "BL0939SPI",                           // Driver Name
+	BL0939_SPI_Init,                         // Init
+	BL0939_SPI_RunEverySecond,               // onEverySecond
+	BL0939_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	BL0939_SPI_Stop,                         // stopFunction
+	NULL,                                    // onChannelChanged
+	BL0939_OnHassDiscovery,                 // onHassDiscovery
 	false,                                   // loaded
 	},
 #endif
@@ -840,6 +896,22 @@ static driver_t g_drivers[] = {
 	DRV_DDP_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
 	DRV_DDP_RunFrame,                        // runQuickTick
 	DRV_DDP_Shutdown,                        // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_MDNS
+	//drvdetail:{"name":"MDNS",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"mDNS/DNS-SD discovery service. Publishes the device hostname and HTTP service on local network.",
+	//drvdetail:"requires":""}
+	{ "MDNS",                                // Driver Name
+	DRV_MDNS_Init,                           // Init
+	DRV_MDNS_RunEverySecond,                 // onEverySecond
+	NULL,                                    // appendInformationToHTTPIndexPage
+	DRV_MDNS_RunQuickTick,                   // runQuickTick
+	DRV_MDNS_Shutdown,                       // stopFunction
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
@@ -1333,6 +1405,70 @@ static driver_t g_drivers[] = {
 	//drvdetail:"title":"TODO",
 	//drvdetail:"descr":"Custom mechanism to measure battery level with ADC and an optional relay. See [example here](https://www.elektroda.com/rtvforum/topic3959103.html).",
 	//drvdetail:"requires":""}
+#if ENABLE_DRIVER_BKCHARGE
+	//drvdetail:{"name":"BKCharge",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Reports the state of the BK7252N on-chip Li-ion charger: trickle, CC, CV, full, recharge and USB present. Publishes charging, charge_full and usb_power over MQTT and can drive a channel.",
+	//drvdetail:"requires":""}
+	{ "BKCharge",                            // Driver Name
+	BKCharge_Init,                                // Init
+	BKCharge_OnEverySecond,                       // onEverySecond
+	BKCharge_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	BKCharge_StopDriver,                          // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_BKSDCARD
+	//drvdetail:{"name":"BKSDCard",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Drives the BK7252N SD host, reports the card in the slot and reads raw blocks.",
+	//drvdetail:"requires":""}
+	{ "BKSDCard",                            // Driver Name
+	BKSDCard_Init,                           // Init
+	BKSDCard_OnEverySecond,                  // onEverySecond
+	BKSDCard_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	BKSDCard_StopDriver,                     // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_BKAUDIO
+	//drvdetail:{"name":"BKAudio",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"Captures from the BK7252N on-chip audio ADC and reports the level: RMS, peak, and a peak held until it is read. The ring buffer is drained from the quick tick, and the driver reports the sample rate it actually observes so that coverage can be checked.",
+	//drvdetail:"requires":""}
+	{ "BKAudio",                             // Driver Name
+	BKAudio_Init,                            // Init
+	BKAudio_OnEverySecond,                   // onEverySecond
+	BKAudio_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	BKAudio_RunQuickTick,                    // runQuickTick
+	BKAudio_StopDriver,                      // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_RTC
+	//drvdetail:{"name":"BKRTC",
+	//drvdetail:"title":"BK7252N RTC clock",
+	//drvdetail:"descr":"Keeps a wall clock on the always-on RTC counter of the BK7252N. The clock is anchored to NTP, re-anchored only when a fresh NTP response disagrees with it by five seconds or more, and the driver reports how far the software second counter has drifted from the hardware one.",
+	//drvdetail:"requires":""}
+	{ "BKRTC",                               // Driver Name
+	BKRTC_Init,                                // Init
+	BKRTC_OnEverySecond,                       // onEverySecond
+	BKRTC_AppendInformationToHTTPIndexPage,    // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	NULL,                                    // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
+	},
+#endif
 	{ "Battery",                             // Driver Name
 	Batt_Init,                               // Init
 	Batt_OnEverySecond,                      // onEverySecond
@@ -1390,6 +1526,18 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_GAITEKAC
+	{ "GaitekAC",
+	GaitekAC_Init,
+	GaitekAC_RunEverySecond,
+	NULL,
+	GaitekAC_RunQuickTick,
+	GaitekAC_Shutdown,
+	GaitekAC_OnChannelChanged,
+	NULL,
+	false,
 	},
 #endif
 #if PLATFORM_TXW81X
@@ -1470,6 +1618,22 @@ static driver_t g_drivers[] = {
 	NULL,                                    // onChannelChanged
 	NULL,                                    // onHassDiscovery
 	false,                                   // loaded
+	},
+#endif
+#if ENABLE_DRIVER_VKL060
+	//drvdetail:{"name":"VKL060",
+	//drvdetail:"title":"TODO",
+	//drvdetail:"descr":"VKL060 segment LCD driver (soft I2C).",
+	//drvdetail:"requires":""}
+	{ "VKL060",                               // Driver Name
+	VKL060_Init,                             // Init
+	VKL060_OnEverySecond,                    // onEverySecond
+	VKL060_AppendInformationToHTTPIndexPage, // appendInformationToHTTPIndexPage
+	NULL,                                    // runQuickTick
+	VKL060_StopDriver,                       // stopFunction
+	NULL,                                    // onChannelChanged
+	NULL,                                    // onHassDiscovery
+	false,                                   // loaded
 	}
 #endif
 	//{ "", NULL, NULL, NULL, NULL, NULL, NULL, NULL, false },
@@ -1489,6 +1653,15 @@ bool DRV_IsRunning(const char* name) {
 		}
 	}
 	return false;
+}
+
+void DRV_SavePowerMeterDriverStatistics(void) {
+#if ENABLE_DRIVER_HLW8112SPI
+	HLW8112_Save_Statistics();
+#endif
+#if ENABLE_DRIVER_BL0939SPI
+	BL0939_Save_Statistics();
+#endif
 }
 
 static SemaphoreHandle_t g_mutex = 0;
@@ -1607,28 +1780,29 @@ void DRV_StartDriver(const char* name) {
 #if (ENABLE_DRIVER_DS1820) && (ENABLE_DRIVER_DS1820_FULL)
 			twinrunning=false;
 			if (!stricmp("DS1820", name) && DRV_IsRunning("DS1820_FULL")){
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.\n", name);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820_FULL is already loaded - can't start DS1820, too.", name);
 				twinrunning=true;
 				break;
 			}
 			if (!stricmp("DS1820_FULL", name) && DRV_IsRunning("DS1820")){
-				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.\n", name);
+				addLogAdv(LOG_ERROR, LOG_FEATURE_MAIN, "Drv DS1820 is already loaded - can't start DS1820_FULL, too.", name);
 				twinrunning=true;
 				break;
 			}
 #endif
 			if (g_drivers[i].bLoaded) {
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Drv %s is already loaded.", name);
 				bStarted = 1;
 				break;
 
 			}
 			else {
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Starting %s.", name);
 				if (g_drivers[i].initFunc) {
 					g_drivers[i].initFunc();
 				}
 				g_drivers[i].bLoaded = true;
-				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.\n", name);
+				addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Started %s.", name);
 				bStarted = 1;
 				break;
 			}
@@ -1639,7 +1813,7 @@ void DRV_StartDriver(const char* name) {
 #else
 	if (!bStarted) {
 #endif
-		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.\n", name);
+		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Driver %s is not known in this build.", name);
 		addLogAdv(LOG_INFO, LOG_FEATURE_MAIN, "Available drivers: ");
 		for (i = 0; i < g_numDrivers; i++) {
 			if (i == 0) {
