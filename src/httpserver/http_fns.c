@@ -1170,10 +1170,12 @@ typedef enum {
 	// drawback : We need to take care, if driver is loaded and canvas will be displayed only on a reload of the page
 	// or we might try and hide/unhide it ...
 */
-//	if (DRV_IsRunning("Charts")) {
+	if (DRV_IsRunning("Charts")) {
 		poststr(request, "<canvas style='display: none' id=\"obkChart\" width=\"400\" height=\"200\"></canvas>");
-		poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
-//	};
+		if (Main_IsConnectedToWiFi()) {
+			poststr(request, "<script src=\"https://cdn.jsdelivr.net/npm/chart.js\"></script>");
+		}
+	};
 
 #endif
 
