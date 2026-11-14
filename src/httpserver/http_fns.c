@@ -1143,7 +1143,8 @@ typedef enum {
 */
 	// since we can't simply stop showing the graph in updated status, we need to "hide" it if driver was stopped
 	if (! DRV_IsRunning("Charts")) {
-		poststr(request, "<style onload=\"document.getElementById('obkChart').style.display='none'\"></style>");		
+		// if chart driver wasn't started before, 'obkChart' is not present, so test before setting it to invisible 
+		poststr(request, "<style onload=\"document.getElementById('obkChart')?.style.setProperty('display','none');\"></style>");		
 	};
 
 #endif
